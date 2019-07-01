@@ -12,7 +12,7 @@ gradle jar
 java -jar /build/classes/libs/onlineshop-1.0-SNAPSHOT.jar
 ```
 
-Сервер будет запущен на localhost по порту 8080
+Сервер будет запущен на localhost по порту 8888 (иной порт можно указать в ``src/resources/config.properties``)
 
 ## Состояние
 Список поддерживаемых методов

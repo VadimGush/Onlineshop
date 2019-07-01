@@ -1,0 +1,41 @@
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.1.6.RELEASE")
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+group 'thumbtack'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+// От нас требуют pom.xml
+apply plugin: 'maven'
+
+task createPom {
+    pom {
+        project {
+            groupId 'thumbtack'
+            artifactId 'onlineshop'
+            version '1.0'
+        }
+    }.writeTo("pom.xml")
+}

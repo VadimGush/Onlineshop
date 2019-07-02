@@ -1,5 +1,7 @@
 package net.thumbtack.onlineshop.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 public class AdminRegisterResponse {
 
     private int id;

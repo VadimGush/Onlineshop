@@ -7,11 +7,6 @@ public class ServerConfigurationResponse {
     private int maxNameLength;
     private int minPasswordLength;
 
-    public ServerConfigurationResponse(AppConfig config) {
-        maxNameLength = config.getMaxNameLength();
-        minPasswordLength = config.getMinPasswordLength();
-    }
-
     public ServerConfigurationResponse(int maxNameLength, int minPasswordLength) {
         this.maxNameLength = maxNameLength;
         this.minPasswordLength = minPasswordLength;

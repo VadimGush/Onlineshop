@@ -3,6 +3,7 @@ package net.thumbtack.onlineshop.controller;
 import net.thumbtack.onlineshop.AppConfig;
 import net.thumbtack.onlineshop.response.ServerConfigurationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,17 +17,16 @@ import static org.springframework.web.bind.annotation.RequestMethod.*;
 @RequestMapping("api")
 public class RequestController {
 
-    private AppConfig config;
+	@Value("${max_name_length}")
+	private int maxNameLength;
 
-    @Autowired
-    public RequestController(AppConfig config) {
-        this.config = config;
-    }
+	@Value("${min_password_length}")
+	private int minPasswordLength;
 
     @RequestMapping(method=GET, path="settings")
     @ResponseStatus(HttpStatus.OK)
     public ServerConfigurationResponse serverConfigurationResponse() {
-        return new ServerConfigurationResponse(config);
+        return new ServerConfigurationResponse(maxNameLength, minPasswordLength);
     }
 
     @RequestMapping(method=POST, path="debug/clear")

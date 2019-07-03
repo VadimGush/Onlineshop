@@ -1,7 +1,5 @@
 package net.thumbtack.onlineshop.response;
 
-import net.thumbtack.onlineshop.AppConfig;
-
 public class ServerConfigurationResponse {
 
     private int maxNameLength;

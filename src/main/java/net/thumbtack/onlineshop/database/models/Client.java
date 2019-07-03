@@ -1,32 +1,40 @@
 package net.thumbtack.onlineshop.database.models;
 
-import org.hibernate.annotations.GenericGenerator;
-
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
 @Table(name="client")
 public class Client {
 
     @Id
-    @GeneratedValue(generator="increment")
-    @GenericGenerator(name="increment", strategy="increment")
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @Column(nullable = false)
     private String firstName;
+
+    @Column(nullable = false)
     private String secondName;
+
     private String thirdName;
 
+    @Column(nullable = false)
     private String email;
 
+    @Column(nullable = false)
     private String postAddress;
+
+    @Column(nullable = false)
     private String phone;
 
+    @Column(unique = true, nullable = false)
     private String login;
+
+    @Column(nullable = false)
     private String password;
+
+    @Column(nullable = false, columnDefinition = "int default 0")
+    private Integer deposit;
 
 
     public Client() {}
@@ -67,6 +75,14 @@ public class Client {
         this.phone = phone;
         this.login = login;
         this.password = password;
+    }
+
+    public Integer getDeposit() {
+        return deposit;
+    }
+
+    public void setDeposit(Integer deposit) {
+        this.deposit = deposit;
     }
 
     public Long getId() {

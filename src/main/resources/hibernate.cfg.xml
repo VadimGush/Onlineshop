@@ -34,7 +34,8 @@
         <!-- Drop and re-create the database schema on startup -->
         <property name="hbm2ddl.auto">create</property>
 
-        <mapping class="net.thumbtack.onlineshop.database.models.Event"/>
+        <mapping class="net.thumbtack.onlineshop.database.models.Administrator"/>
+        <mapping class="net.thumbtack.onlineshop.database.models.Client"/>
 
     </session-factory>
 

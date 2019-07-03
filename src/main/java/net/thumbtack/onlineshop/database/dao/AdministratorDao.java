@@ -1,30 +1,30 @@
 package net.thumbtack.onlineshop.database.dao;
 
 import net.thumbtack.onlineshop.database.DatabaseSessionService;
-import net.thumbtack.onlineshop.database.models.Event;
+import net.thumbtack.onlineshop.database.models.Administrator;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class EventDao {
+public class AdministratorDao {
 
     private DatabaseSessionService service;
 
     @Autowired
-    public EventDao(DatabaseSessionService service) {
+    public AdministratorDao(DatabaseSessionService service) {
         this.service = service;
     }
 
-    public Event insertEvent(Event event) {
-
+    public Administrator insert(Administrator admin) {
         Session session = service.getSession();
         session.beginTransaction();
-        session.save(event);
+        session.save(admin);
         session.getTransaction().commit();
         session.close();
-
-        return event;
+        return admin;
     }
+
+
 
 }

@@ -31,7 +31,7 @@ public class AdminService {
      */
     public Account register(AdminDto admin) throws ServiceException {
         if (accountDao.exists(admin.getLogin()))
-            throw new ServiceException(ServiceException.ErrorCode.LOGIN_ALREADY_IN_USE);
+            throw new ServiceException(ServiceException.ErrorCode.LOGIN_ALREADY_IN_USE, "login");
 
         Account registeredAdmin = AccountFactory.createAdmin(
                 admin.getFirstName(), admin.getLastName(), admin.getPatronymic(), admin.getPosition(), admin.getLogin(), admin.getPassword()

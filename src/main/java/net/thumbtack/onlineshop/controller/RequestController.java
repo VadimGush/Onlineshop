@@ -23,25 +23,25 @@ public class RequestController {
 	@Value("${min_password_length}")
 	private int minPasswordLength;
 
-    @RequestMapping(method=GET, path="settings")
+    @GetMapping("settings")
     @ResponseStatus(HttpStatus.OK)
     public ServerConfigurationResponse serverConfigurationResponse() {
         return new ServerConfigurationResponse(maxNameLength, minPasswordLength);
     }
 
-    @RequestMapping(method=POST, path="debug/clear")
+    @PostMapping("debug/clear")
     @ResponseStatus(HttpStatus.OK)
     public String clearDatabase() {
         return "{}";
     }
 
-    @RequestMapping(method=POST, path="sessions")
+    @PostMapping("sessions")
     @ResponseStatus(HttpStatus.OK)
     public String login() {
         return "{}";
     }
 
-    @RequestMapping(method=DELETE, path="sessions")
+    @DeleteMapping("sessions")
     @ResponseStatus(HttpStatus.OK)
     public String logout() {
         return "{}";

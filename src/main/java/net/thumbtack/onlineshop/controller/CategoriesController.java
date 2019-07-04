@@ -1,10 +1,7 @@
 package net.thumbtack.onlineshop.controller;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import static org.springframework.web.bind.annotation.RequestMethod.*;
 
@@ -13,31 +10,31 @@ import static org.springframework.web.bind.annotation.RequestMethod.*;
 public class CategoriesController {
 
 
-    @RequestMapping(method=POST, path="categories")
+    @PostMapping("categories")
     @ResponseStatus(HttpStatus.OK)
     public String addCategories() {
         return "{}";
     }
 
-    @RequestMapping(method=GET, value="/categories/{id}")
+    @GetMapping("categories/{id}")
     @ResponseStatus(HttpStatus.OK)
     public String getCategoriesById(@PathVariable int id) {
         return String.valueOf(id);
     }
 
-    @RequestMapping(method=PUT, value="/categories/{id}")
+    @PutMapping("categories/{id}")
     @ResponseStatus(HttpStatus.OK)
     public String editCategories(@PathVariable int id) {
         return "{}";
     }
 
-    @RequestMapping(method=DELETE, value="/categories/{id}")
+    @DeleteMapping("categories/{id}")
     @ResponseStatus(HttpStatus.OK)
     public String deleteCategories(@PathVariable int id) {
         return "{}";
     }
 
-    @RequestMapping(method=GET, path="categories")
+    @GetMapping("categories")
     @ResponseStatus(HttpStatus.OK)
     public String getCategories() {
         return "{}";

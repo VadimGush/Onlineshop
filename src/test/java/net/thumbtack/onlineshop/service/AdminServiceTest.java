@@ -26,7 +26,6 @@ public class AdminServiceTest {
 
      */
 
-    
     @Test
     public void testRegistration() {
         // Регистрируем администратора

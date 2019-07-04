@@ -23,19 +23,32 @@ public class Product {
     @Column(nullable = false, columnDefinition = "int default 1")
     private Integer count;
 
+    @Column(nullable = false, columnDefinition = "int default 0")
+    private Integer price;
+
     public Product() {
 
     }
 
-    public Product(String name, Integer count) {
+    public Product(String name, Integer count, Integer price) {
         this.name = name;
         this.count = count;
+        this.price = price;
     }
 
-    public Product(String name, Integer count, List<Category> categories) {
+    public Product(String name, Integer count, Integer price, List<Category> categories) {
         this.name = name;
         this.count = count;
+        this.price = price;
         this.categories = categories;
+    }
+
+    public Integer getPrice() {
+        return price;
+    }
+
+    public void setPrice(Integer price) {
+        this.price = price;
     }
 
     public Long getId() {

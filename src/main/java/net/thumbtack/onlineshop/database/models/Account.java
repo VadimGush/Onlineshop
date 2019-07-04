@@ -1,6 +1,7 @@
 package net.thumbtack.onlineshop.database.models;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
 @Table(name="client")
@@ -198,5 +199,29 @@ public class Account {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Account)) return false;
+        Account account = (Account) o;
+        return Objects.equals(id, account.id) &&
+                Objects.equals(firstName, account.firstName) &&
+                Objects.equals(secondName, account.secondName) &&
+                Objects.equals(thirdName, account.thirdName) &&
+                Objects.equals(email, account.email) &&
+                Objects.equals(postAddress, account.postAddress) &&
+                Objects.equals(phone, account.phone) &&
+                Objects.equals(login, account.login) &&
+                Objects.equals(password, account.password) &&
+                Objects.equals(deposit, account.deposit) &&
+                Objects.equals(profession, account.profession) &&
+                Objects.equals(admin, account.admin);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, firstName, secondName, thirdName, email, postAddress, phone, login, password, deposit, profession, admin);
     }
 }

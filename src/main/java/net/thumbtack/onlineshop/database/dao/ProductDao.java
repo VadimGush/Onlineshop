@@ -37,11 +37,23 @@ public class ProductDao {
         manager.remove(manager.merge(product));
     }
 
+    public Product get(long id) {
+        CriteriaBuilder builder = manager.getCriteriaBuilder();
+        CriteriaQuery<Product> criteria = builder.createQuery(Product.class);
+        Root<Product> from = criteria.from(Product.class);
+
+        criteria.select(from).where(builder.equal(from.get("id"), id));
+
+        TypedQuery<Product> typed = manager.createQuery(criteria);
+        return typed.getSingleResult();
+    }
+
     public List<Product> getAll() {
         CriteriaBuilder builder = manager.getCriteriaBuilder();
         CriteriaQuery<Product> criteria = builder.createQuery(Product.class);
         Root<Product> from = criteria.from(Product.class);
-        CriteriaQuery<Product> all = criteria.select(from);
+
+        criteria.select(from);
 
         TypedQuery<Product> typed = manager.createQuery(criteria);
         return typed.getResultList();

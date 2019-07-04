@@ -35,7 +35,7 @@ public class ClientDto extends LoginDto {
 
     public ClientDto(Account account) {
         super(account.getLogin(), account.getPassword());
-        this.id = account.getId();
+        this.id = account.getId() == null ? 0 : account.getId();
         this.firstName = account.getFirstName();
         this.lastName = account.getSecondName();
         this.patronymic = account.getThirdName();

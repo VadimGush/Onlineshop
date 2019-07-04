@@ -1,24 +1,35 @@
 package net.thumbtack.onlineshop.service;
 
 import net.thumbtack.onlineshop.database.dao.AccountDao;
+import net.thumbtack.onlineshop.database.dao.BasketDao;
+import net.thumbtack.onlineshop.database.dao.ProductDao;
 import net.thumbtack.onlineshop.database.dao.SessionDao;
-import net.thumbtack.onlineshop.database.models.Account;
-import net.thumbtack.onlineshop.database.models.AccountFactory;
-import net.thumbtack.onlineshop.database.models.Product;
-import net.thumbtack.onlineshop.database.models.Session;
+import net.thumbtack.onlineshop.database.models.*;
+import net.thumbtack.onlineshop.dto.BuyProductDto;
 import net.thumbtack.onlineshop.dto.ClientDto;
 import net.thumbtack.onlineshop.dto.ClientEditDto;
+import net.thumbtack.onlineshop.request.ItemBuyRequest;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class ClientService {
 
     private AccountDao clientDao;
     private SessionDao sessionDao;
+    private ProductDao productDao;
+    private BasketDao basketDao;
 
-    public ClientService(AccountDao clientDao, SessionDao sessionDao) {
+    public ClientService(
+            AccountDao clientDao,
+            SessionDao sessionDao,
+            ProductDao productDao,
+            BasketDao basketDao) {
         this.clientDao = clientDao;
         this.sessionDao = sessionDao;
+        this.productDao = productDao;
+        this.basketDao = basketDao;
     }
 
     /**
@@ -76,22 +87,90 @@ public class ClientService {
 
     /**
      * Положить деньги на клиентский счёт
-     * @param sessionId
-     * @param amount
+     * @param sessionId сессия клиента
+     * @param amount количество денег
      */
-    public void putDeposit(String sessionId, int amount) {
+    public Account putDeposit(String sessionId, int amount) throws ServiceException {
+
+        Account account = getAccount(sessionId);
+        account.setDeposit(account.getDeposit() + amount);
+        clientDao.update(account);
+
+        return account;
+    }
+
+    /**
+     * Запросить количество денег на счету
+     * @param sessionId сессия клиента
+     * @return полная информация об аккаунте клиента
+     * @throws ServiceException
+     */
+    public Account getDeposit(String sessionId) throws ServiceException {
+        return getAccount(sessionId);
+    }
+
+    /**
+     * Купить некоторый товар
+     * @param sessionId сессия клиента
+     * @param buyProduct информиация о товаре
+     * @return информация о купленном товаре
+     * @throws ServiceException
+     */
+    public BuyProductDto buyProduct(String sessionId, BuyProductDto buyProduct) throws ServiceException {
+
+        Account account = getAccount(sessionId);
+        Product product = productDao.get(buyProduct.getId());
+
+        checkProducts(product, buyProduct);
+
+        if (buyProduct.getCount() > product.getCount())
+            throw new ServiceException(ServiceException.ErrorCode.NOT_ENOUGH_PRODUCT, "count");
+
+        // Очень спорный вопрос по поводу того, какое поле стало причиной такой ошибки
+        if (buyProduct.getCount() * buyProduct.getPrice() > account.getDeposit())
+            throw new ServiceException(ServiceException.ErrorCode.NOT_ENOUGH_MONEY, "price");
+
+        if (product.getCount() == buyProduct.getCount())
+            productDao.delete(product);
+        else if (product.getCount() > buyProduct.getCount()) {
+            product.setCount(product.getCount() - buyProduct.getCount());
+            productDao.update(product);
+        }
+
+        account.setDeposit(account.getDeposit() - buyProduct.getCount() * buyProduct.getPrice());
+        clientDao.update(account);
+
+        return buyProduct;
 
     }
 
-    public int getDeposit(String sessionId) {
-        return 0;
-    }
+    /**
+     * Добавляет товар в корзину
+     *
+     * <b>Внимание:</b> в записи корзины указывается ссылка на продукт в БД и рядом поле
+     * с количеством этого продукта, который заказывал клиент. Получается что у нас
+     * два поля с количеством. Один из таблицы product, который говорит сколько у нас
+     * товара на складе, а другой в таблице basket, который говорит
+     * сколько товара клиент положил в свою корзину.
+     *
+     * Поэтому количество товара в корзине надо получать только через Basket.getCount()
+     *
+     * @param sessionId сессия клиента
+     * @param buyProduct информация о товаре
+     * @return информация о купленном товаре
+     * @throws ServiceException
+     */
+    public List<Basket> addToBasket(String sessionId, BuyProductDto buyProduct) throws ServiceException {
 
-    public void buyProduct(String sessionId, Product product) {
+        Account account = getAccount(sessionId);
+        Product product = productDao.get(buyProduct.getId());
 
-    }
+        checkProducts(product, buyProduct);
 
-    public void addToBasket(String sessionId, Product product) {
+        Basket basket = new Basket(account, product, buyProduct.getCount());
+        basketDao.insert(basket);
+
+        return basketDao.get(account);
 
     }
 
@@ -109,6 +188,17 @@ public class ClientService {
 
     public void buyBasket(String sessionId) {
 
+    }
+
+    private void checkProducts(Product product, BuyProductDto buyProduct) throws ServiceException {
+        if (product == null)
+            throw new ServiceException(ServiceException.ErrorCode.PRODUCT_NOT_FOUND, "id");
+
+        if (!product.getName().equals(buyProduct.getName()))
+            throw new ServiceException(ServiceException.ErrorCode.WRONG_PRODUCT_INFO, "name");
+
+        if (product.getPrice() != buyProduct.getPrice())
+            throw new ServiceException(ServiceException.ErrorCode.WRONG_PRODUCT_INFO, "price");
     }
 
     private Account getAccount(String sessionId) throws ServiceException {

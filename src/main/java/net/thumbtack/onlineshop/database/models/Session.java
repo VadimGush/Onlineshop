@@ -37,8 +37,8 @@ public class Session {
         this.UUID = UUID;
     }
 
-    public boolean getAccount() {
-        return account != null;
+    public Account getAccount() {
+        return account;
     }
 
     public Long getId() {
@@ -47,10 +47,6 @@ public class Session {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Account getClient() {
-        return account;
     }
 
     public void setAccount(Account account) {

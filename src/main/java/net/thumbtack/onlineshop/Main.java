@@ -27,17 +27,6 @@ public class Main {
         ProductDao productDao = context.getBean(ProductDao.class);
         BasketDao basketDao = context.getBean(BasketDao.class);
 
-        Account admin = AccountFactory.createAdmin(
-                "vadim", "gush", "vadimovich", "coder", "vadim", "Iddqd225"
-        );
-        try {
-            adminService.register(admin);
-        } catch (ServiceException e) {
-            e.printStackTrace();
-        }
-
-        System.out.println(clientDao.exists("vadim"));
-
         /*
         Category category1 = new Category("category1");
         Category category2 = new Category("category2");

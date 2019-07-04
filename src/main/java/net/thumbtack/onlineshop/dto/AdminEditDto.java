@@ -1,6 +1,6 @@
-package net.thumbtack.onlineshop.request;
+package net.thumbtack.onlineshop.dto;
 
-public class AdminEditRequest {
+public class AdminEditDto {
 
     private String firstName;
     private String lastName;
@@ -8,6 +8,20 @@ public class AdminEditRequest {
     private String position;
     private String oldPassword;
     private String newPassword;
+
+
+    public AdminEditDto() {
+
+    }
+
+    public AdminEditDto(String firstName, String lastName, String patronymic, String position, String oldPassword, String newPassword) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.patronymic = patronymic;
+        this.position = position;
+        this.oldPassword = oldPassword;
+        this.newPassword = newPassword;
+    }
 
     public String getFirstName() {
         return firstName;

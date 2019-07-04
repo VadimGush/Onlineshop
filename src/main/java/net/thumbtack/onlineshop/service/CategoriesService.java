@@ -1,6 +1,5 @@
 package net.thumbtack.onlineshop.service;
 
-import net.thumbtack.onlineshop.database.dao.AdministratorDao;
 import net.thumbtack.onlineshop.database.dao.CategoryDao;
 import net.thumbtack.onlineshop.database.dao.SessionDao;
 import net.thumbtack.onlineshop.database.models.Category;
@@ -14,13 +13,11 @@ public class CategoriesService {
 
     private SessionDao sessionDao;
     private CategoryDao categoryDao;
-    private AdministratorDao adminDao;
 
     @Autowired
-    public CategoriesService(SessionDao sessionDao, CategoryDao categoryDao, AdministratorDao adminDao) {
+    public CategoriesService(SessionDao sessionDao, CategoryDao categoryDao) {
         this.sessionDao = sessionDao;
         this.categoryDao = categoryDao;
-        this.adminDao = adminDao;
     }
 
     public Category addCategory(String sessionId, Category category) {

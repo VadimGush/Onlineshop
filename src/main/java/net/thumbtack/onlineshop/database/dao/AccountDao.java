@@ -74,13 +74,13 @@ public class AccountDao {
         manager.remove(manager.merge(account));
     }
 
-    public List<Account> getAll() {
+    public List<Account> getClients() {
         CriteriaBuilder builder = manager.getCriteriaBuilder();
 
         CriteriaQuery<Account> criteria = builder.createQuery(Account.class);
         Root<Account> from = criteria.from(Account.class);
 
-        criteria.select(from);
+        criteria.select(from).where(builder.equal(from.get("admin"), false));
 
         TypedQuery<Account> typed = manager.createQuery(criteria);
         return typed.getResultList();

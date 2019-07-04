@@ -2,6 +2,7 @@ package net.thumbtack.onlineshop.database.models;
 
 import javax.persistence.*;
 
+@Deprecated
 @Entity
 @Table(name="admin")
 public class Administrator {

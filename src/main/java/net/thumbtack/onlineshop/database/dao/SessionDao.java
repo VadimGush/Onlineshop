@@ -1,6 +1,7 @@
 package net.thumbtack.onlineshop.database.dao;
 
 import net.thumbtack.onlineshop.database.models.Session;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,8 +17,12 @@ import javax.persistence.criteria.Root;
 @Repository
 public class SessionDao {
 
-    @PersistenceContext
     private EntityManager manager;
+
+    @Autowired
+    public SessionDao(EntityManager manager) {
+        this.manager = manager;
+    }
 
     public void insert(Session session) {
         manager.persist(session);

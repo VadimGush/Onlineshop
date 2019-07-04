@@ -1,6 +1,5 @@
 package net.thumbtack.onlineshop.database.models;
 
-import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -19,24 +18,15 @@ public class Session {
 
     @OneToOne
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private Client client;
-
-    @OneToOne
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    private Administrator admin;
+    private Account account;
 
     public Session() {
 
     }
 
-    public Session(String UUID, Client client) {
+    public Session(String UUID, Account account) {
         this.UUID = UUID;
-        this.client = client;
-    }
-
-    public Session(String UUID, Administrator admin) {
-        this.UUID = UUID;
-        this.admin = admin;
+        this.account = account;
     }
 
     public String getUUID() {
@@ -47,12 +37,8 @@ public class Session {
         this.UUID = UUID;
     }
 
-    public boolean isAdmin() {
-        return admin != null;
-    }
-
-    public boolean isClient() {
-        return client != null;
+    public boolean getAccount() {
+        return account != null;
     }
 
     public Long getId() {
@@ -63,19 +49,12 @@ public class Session {
         this.id = id;
     }
 
-    public Client getClient() {
-        return client;
+    public Account getClient() {
+        return account;
     }
 
-    public void setClient(Client client) {
-        this.client = client;
+    public void setAccount(Account account) {
+        this.account = account;
     }
 
-    public Administrator getAdmin() {
-        return admin;
-    }
-
-    public void setAdmin(Administrator admin) {
-        this.admin = admin;
-    }
 }

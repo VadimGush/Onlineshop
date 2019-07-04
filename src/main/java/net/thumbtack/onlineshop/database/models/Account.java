@@ -4,42 +4,39 @@ import javax.persistence.*;
 
 @Entity
 @Table(name="client")
-public class Client {
+public class Account {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(nullable = false)
     private String firstName;
 
-    @Column(nullable = false)
     private String secondName;
 
     private String thirdName;
 
-    @Column(nullable = false)
     private String email;
 
-    @Column(nullable = false)
     private String postAddress;
 
-    @Column(nullable = false)
     private String phone;
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true)
     private String login;
 
-    @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false, columnDefinition = "int default 0")
+    @Column(columnDefinition = "int default 0")
     private Integer deposit;
 
+    private String profession;
 
-    public Client() {}
+    private Boolean admin = false;
 
-    public Client(
+    public Account() {}
+
+    protected Account(
             String firstName,
             String secondName,
             String thirdName,
@@ -60,7 +57,7 @@ public class Client {
         this.deposit = 0;
     }
 
-    public Client(
+    protected Account(
             String firstName,
             String secondName,
             String email,
@@ -77,6 +74,50 @@ public class Client {
         this.login = login;
         this.password = password;
         this.deposit = 0;
+    }
+
+    protected Account(
+            String firstName,
+            String secondName,
+            String thirdName,
+            String profession,
+            String login,
+            String password
+    ) {
+        this.firstName = firstName;
+        this.secondName = secondName;
+        this.thirdName = thirdName;
+        this.profession = profession;
+        this.login = login;
+        this.password = password;
+        this.admin = true;
+    }
+
+    protected Account(
+            String firstName,
+            String secondName,
+            String profession,
+            String login,
+            String password
+    ) {
+        this.firstName = firstName;
+        this.secondName = secondName;
+        this.profession = profession;
+        this.login = login;
+        this.password = password;
+        this.admin = true;
+    }
+
+    public String getProfession() {
+        return profession;
+    }
+
+    public void setProfession(String profession) {
+        this.profession = profession;
+    }
+
+    public Boolean isAdmin() {
+        return admin;
     }
 
     public Integer getDeposit() {

@@ -1,6 +1,6 @@
 package net.thumbtack.onlineshop.response;
 
-import net.thumbtack.onlineshop.database.models.Client;
+import net.thumbtack.onlineshop.database.models.Account;
 
 public class ClientResponse {
 
@@ -13,14 +13,14 @@ public class ClientResponse {
     private String phone;
     private String userType = "client";
 
-    public ClientResponse(Client client) {
-        this.id = client.getId();
-        this.firstName = client.getFirstName();
-        this.lastName = client.getSecondName();
-        this.patronymic = client.getThirdName();
-        this.email = client.getEmail();
-        this.address = client.getPostAddress();
-        this.phone = client.getPhone();
+    public ClientResponse(Account account) {
+        this.id = account.getId();
+        this.firstName = account.getFirstName();
+        this.lastName = account.getSecondName();
+        this.patronymic = account.getThirdName();
+        this.email = account.getEmail();
+        this.address = account.getPostAddress();
+        this.phone = account.getPhone();
     }
 
     public ClientResponse(long id, String firstName, String lastName, String patronymic, String email, String address, String phone) {

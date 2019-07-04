@@ -1,31 +1,31 @@
 package net.thumbtack.onlineshop.service;
 
-import net.thumbtack.onlineshop.database.dao.ClientDao;
+import net.thumbtack.onlineshop.database.dao.AccountDao;
 import net.thumbtack.onlineshop.database.dao.SessionDao;
-import net.thumbtack.onlineshop.database.models.Client;
+import net.thumbtack.onlineshop.database.models.Account;
 import net.thumbtack.onlineshop.database.models.Product;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ClientService {
 
-    private ClientDao clientDao;
+    private AccountDao clientDao;
     private SessionDao sessionDao;
 
-    public ClientService(ClientDao clientDao, SessionDao sessionDao) {
+    public ClientService(AccountDao clientDao, SessionDao sessionDao) {
         this.clientDao = clientDao;
         this.sessionDao = sessionDao;
     }
 
-    public Client register(Client client) {
+    public Account register(Account account) {
         return null;
     }
 
-    public Client getAccount(String sessionId) {
+    public Account getAccount(String sessionId) {
         return null;
     }
 
-    public Client edit(String sessionId, Client client) {
+    public Account edit(String sessionId, Account account) {
         return null;
     }
 

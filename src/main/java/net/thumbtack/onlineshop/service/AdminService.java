@@ -1,10 +1,9 @@
 package net.thumbtack.onlineshop.service;
 
-import net.thumbtack.onlineshop.database.dao.AdministratorDao;
-import net.thumbtack.onlineshop.database.dao.ClientDao;
+import net.thumbtack.onlineshop.database.dao.AccountDao;
 import net.thumbtack.onlineshop.database.dao.SessionDao;
+import net.thumbtack.onlineshop.database.models.Account;
 import net.thumbtack.onlineshop.database.models.Administrator;
-import net.thumbtack.onlineshop.database.models.Client;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,33 +12,34 @@ import java.util.List;
 @Service
 public class AdminService {
 
-    private AdministratorDao adminDao;
-    private ClientDao clientDao;
+    private AccountDao accountDao;
     private SessionDao sessionDao;
 
     @Autowired
-    public AdminService(AdministratorDao adminDao, ClientDao clientDao, SessionDao sessionDao) {
-        this.adminDao = adminDao;
-        this.clientDao = clientDao;
+    public AdminService(AccountDao accountDao, SessionDao sessionDao) {
+        this.accountDao = accountDao;
         this.sessionDao = sessionDao;
     }
 
-    public Administrator register(Administrator admin) {
-        adminDao.insert(admin);
+    public Account register(Account admin) throws ServiceException {
+        if (accountDao.exists(admin.getLogin()))
+            throw new ServiceException(ServiceException.ErrorCode.LOGIN_ALREADY_IN_USE);
+
+        accountDao.insert(admin);
         return admin;
     }
 
-    public Administrator edit(String sessionId) {
+    public Account edit(String sessionId) {
         return null;
     }
 
-    public List<Client> getAll(String sessionId) {
+    public List<Account> getAll(String sessionId) {
 
         // Проверяем администратор ли
 
         // Если да, то выдаём весь список клиентов
 
-        return clientDao.getAll();
+        return accountDao.getAll();
 
     }
 

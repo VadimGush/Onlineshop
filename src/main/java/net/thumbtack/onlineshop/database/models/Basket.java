@@ -15,7 +15,7 @@ public class Basket {
 
     @OneToOne
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private Client client;
+    private Account account;
 
     @OneToOne
     @OnDelete(action = OnDeleteAction.CASCADE)
@@ -28,8 +28,8 @@ public class Basket {
 
     }
 
-    public Basket(Client client, Product product, Integer count) {
-        this.client = client;
+    public Basket(Account account, Product product, Integer count) {
+        this.account = account;
         this.product = product;
         this.count = count;
     }
@@ -42,12 +42,12 @@ public class Basket {
         this.id = id;
     }
 
-    public Client getClient() {
-        return client;
+    public Account getAccount() {
+        return account;
     }
 
-    public void setClient(Client client) {
-        this.client = client;
+    public void setAccount(Account account) {
+        this.account = account;
     }
 
     public Product getProduct() {

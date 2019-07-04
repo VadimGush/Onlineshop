@@ -1,6 +1,7 @@
 package net.thumbtack.onlineshop.database.dao;
 
 import net.thumbtack.onlineshop.database.models.Category;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
@@ -16,8 +17,12 @@ import java.util.List;
 @Repository
 public class CategoryDao {
 
-    @PersistenceContext
     private EntityManager manager;
+
+    @Autowired
+    public CategoryDao(EntityManager manager) {
+        this.manager = manager;
+    }
 
     public void insert(Category category) {
         manager.persist(category);

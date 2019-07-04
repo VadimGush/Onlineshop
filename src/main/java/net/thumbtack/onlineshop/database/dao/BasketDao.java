@@ -1,7 +1,8 @@
 package net.thumbtack.onlineshop.database.dao;
 
 import net.thumbtack.onlineshop.database.models.Basket;
-import net.thumbtack.onlineshop.database.models.Client;
+import net.thumbtack.onlineshop.database.models.Account;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
@@ -17,9 +18,12 @@ import java.util.List;
 @Repository
 public class BasketDao {
 
-    @PersistenceContext
     private EntityManager manager;
 
+    @Autowired
+    public BasketDao(EntityManager manager) {
+        this.manager = manager;
+    }
 
 
     public void insert(Basket basket) {
@@ -34,14 +38,14 @@ public class BasketDao {
         manager.remove(manager.merge(basket));
     }
 
-    public List<Basket> get(Client client) {
+    public List<Basket> get(Account account) {
 
         CriteriaBuilder builder = manager.getCriteriaBuilder();
         CriteriaQuery<Basket> criteria = builder.createQuery(Basket.class);
         Root<Basket> from = criteria.from(Basket.class);
 
         criteria.select(from).where(
-                builder.equal(from.get("client"), client.getId())
+                builder.equal(from.get("account"), account.getId())
         );
 
         TypedQuery<Basket> typed = manager.createQuery(criteria);

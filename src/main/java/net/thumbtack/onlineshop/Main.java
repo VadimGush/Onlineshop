@@ -1,11 +1,14 @@
 package net.thumbtack.onlineshop;
 
 import net.thumbtack.onlineshop.database.dao.BasketDao;
-import net.thumbtack.onlineshop.database.dao.ClientDao;
+import net.thumbtack.onlineshop.database.dao.AccountDao;
 import net.thumbtack.onlineshop.database.dao.ProductDao;
+import net.thumbtack.onlineshop.database.models.Account;
+import net.thumbtack.onlineshop.database.models.AccountFactory;
 import net.thumbtack.onlineshop.database.models.Basket;
-import net.thumbtack.onlineshop.database.models.Client;
 import net.thumbtack.onlineshop.database.models.Product;
+import net.thumbtack.onlineshop.service.AdminService;
+import net.thumbtack.onlineshop.service.ServiceException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
@@ -19,30 +22,21 @@ public class Main {
     public static void main(String... args) {
         ApplicationContext context = SpringApplication.run(Main.class);
 
-        ClientDao clientDao = context.getBean(ClientDao.class);
+        AdminService adminService = context.getBean(AdminService.class);
+        AccountDao clientDao = context.getBean(AccountDao.class);
         ProductDao productDao = context.getBean(ProductDao.class);
         BasketDao basketDao = context.getBean(BasketDao.class);
 
-        Client client = new Client("dfaer", "", "", "", "", "", "");
-        clientDao.insert(client);
-
-        Product product = new Product("product1", 1);
-        productDao.insert(product);
-
-        Basket basket = new Basket(client, product, 1);
-        basketDao.insert(basket);
-
-        List<Basket> list = basketDao.get(client);
-        for (Basket element : list) {
-            System.out.println(element.getClient().getId() + " - count: " + element.getCount() + " - " + element.getProduct().getId());
+        Account admin = AccountFactory.createAdmin(
+                "vadim", "gush", "vadimovich", "coder", "vadim", "Iddqd225"
+        );
+        try {
+            adminService.register(admin);
+        } catch (ServiceException e) {
+            e.printStackTrace();
         }
 
-        basketDao.delete(basket);
-
-        list = basketDao.get(client);
-        for (Basket element : list) {
-            System.out.println(element.getClient().getId() + " - count: " + element.getCount() + " - " + element.getProduct().getId());
-        }
+        System.out.println(clientDao.exists("vadim"));
 
         /*
         Category category1 = new Category("category1");

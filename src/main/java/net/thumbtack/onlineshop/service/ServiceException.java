@@ -7,7 +7,8 @@ public class ServiceException extends Exception {
         USER_NOT_FOUND("USER_NOT_FOUND", "Пользователь с таким логином и паролем не найден"),
         NOT_ADMIN("NOT_ADMIN", "Для вызова данного метода необходимо иметь права администратора"),
         WRONG_PASSWORD("WRONG_PASSWORD", "Неверный пароль"),
-        NOT_LOGIN("NOT_LOGIN", "Необходимо войти в систему");
+        NOT_LOGIN("NOT_LOGIN", "Необходимо войти в систему"),
+        NOT_CLIENT("NOT_CLIENT", "Для вызова данного метода необходимо быть клиентом");
 
         private String errorCode;
         private String message;

@@ -39,20 +39,13 @@ public class AdminServiceTest {
     @Test
     public void testRegistration() throws ServiceException {
 
-        Account admin = AccountFactory.createAdmin(
-                "vadim", "gush", "vadimovich", "coder", "vadim", "Iddqd225"
-        );
+        // Проверяем регистрацию администратора
+        Account admin = generateAdmin();
 
-        // Предполагаем что логин свободный
         when(mockAccountDao.exists(admin.getLogin())).thenReturn(false);
 
-        // Регистрируем администратора
-        Account result = adminService.register(new AdminDto(
-                admin.getFirstName(), admin.getSecondName(), admin.getThirdName(),
-                admin.getProfession(), admin.getLogin(), admin.getPassword()
-        ));
+        Account result = adminService.register(new AdminDto(admin));
 
-        // Должная быть запись в базу данных
         verify(mockAccountDao).insert(any());
 
         assertTrue(result.isAdmin());
@@ -63,29 +56,21 @@ public class AdminServiceTest {
         assertEquals(admin.getLogin(), result.getLogin());
         assertEquals(admin.getPassword(), result.getPassword());
 
-        // Провряем что можно без отчества
-        admin = AccountFactory.createAdmin(
-                "vadim", "gush", "coder", "vadim2", "Iddqd225"
-        );
-        result = adminService.register(new AdminDto(
-                admin.getFirstName(), admin.getSecondName(), admin.getThirdName(),
-                admin.getProfession(), admin.getLogin(), admin.getPassword()
-        ));
+        // Проверяем регистрацию без отчества
 
-        // Была вторая запись в БД
+        admin = generateAdmin();
+        admin.setThirdName(null);
+        result = adminService.register(new AdminDto(admin));
+
         verify(mockAccountDao, times(2)).insert(any());
 
-        // У возвращаемого аккаунта нету отчества
         assertNull(result.getThirdName());
     }
 
     @Test(expected = ServiceException.class)
     public void testRegisterWithSameLogin() throws ServiceException {
         // Проверяем что администратора с тем же логином создать нельзя
-
-        Account admin = AccountFactory.createAdmin(
-                "werewrwe", "ewrwe", "werew", "erer2", "vadim", "23423j"
-        );
+        Account admin =  generateAdmin();
 
         try {
             // Login already in use
@@ -97,7 +82,6 @@ public class AdminServiceTest {
             ));
 
         } catch (ServiceException e) {
-
             // Записиси пользователя не произошло
             verify(mockAccountDao, never()).insert(admin);
 
@@ -153,9 +137,7 @@ public class AdminServiceTest {
         clients.add(generateClient());
 
         when(mockAccountDao.getClients()).thenReturn(clients);
-        Account admin = AccountFactory.createAdmin(
-                "werewrwe", "ewrwe", "werew", "erer2", "vadim", "23"
-        );
+        Account admin = generateAdmin();
         when(mockSessionDao.get("token")).thenReturn(new Session("token", admin));
 
         List<Account> result = adminService.getAll("token");
@@ -228,6 +210,12 @@ public class AdminServiceTest {
        return AccountFactory.createClient(
                 "rewrw", "sder", "werew", "ewrwe", "wrwe", "werwe", "werw"
        );
+    }
+
+    private Account generateAdmin() {
+        return AccountFactory.createAdmin(
+                "vadim", "gush", "vadimovich", "coder", "vadim", "Iddqd225"
+        );
     }
 
 }

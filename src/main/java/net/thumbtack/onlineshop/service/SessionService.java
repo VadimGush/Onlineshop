@@ -31,6 +31,10 @@ public class SessionService {
         return session.getUUID();
     }
 
+    public String getAccount() {
+        return null;
+    }
+
     public void logout(String sessionId) {
         sessionDao.delete(sessionDao.get(sessionId));
     }

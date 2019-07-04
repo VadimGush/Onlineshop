@@ -1,8 +1,8 @@
-package net.thumbtack.onlineshop.request;
+package net.thumbtack.onlineshop.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class LoginRequest {
+public class LoginDto {
 
     @JsonProperty(required = true)
     private String login;
@@ -10,11 +10,11 @@ public class LoginRequest {
     @JsonProperty(required = true)
     private String password;
 
-    public LoginRequest() {
+    public LoginDto() {
 
     }
 
-    public LoginRequest(String login, String password) {
+    public LoginDto(String login, String password) {
         this.login = login;
         this.password = password;
     }

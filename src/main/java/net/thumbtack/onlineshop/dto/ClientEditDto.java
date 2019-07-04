@@ -1,6 +1,6 @@
-package net.thumbtack.onlineshop.request;
+package net.thumbtack.onlineshop.dto;
 
-public class ClientRegisterRequest extends LoginRequest{
+public class ClientEditDto {
 
     private String firstName;
     private String lastName;
@@ -8,6 +8,19 @@ public class ClientRegisterRequest extends LoginRequest{
     private String email;
     private String address;
     private String phone;
+    private String oldPassword;
+    private String newPassword;
+
+    public ClientEditDto(String firstName, String lastName, String patronymic, String email, String address, String phone, String oldPassword, String newPassword) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.patronymic = patronymic;
+        this.email = email;
+        this.address = address;
+        this.phone = phone;
+        this.oldPassword = oldPassword;
+        this.newPassword = newPassword;
+    }
 
     public String getFirstName() {
         return firstName;
@@ -57,4 +70,19 @@ public class ClientRegisterRequest extends LoginRequest{
         this.phone = phone;
     }
 
+    public String getOldPassword() {
+        return oldPassword;
+    }
+
+    public void setOldPassword(String oldPassword) {
+        this.oldPassword = oldPassword;
+    }
+
+    public String getNewPassword() {
+        return newPassword;
+    }
+
+    public void setNewPassword(String newPassword) {
+        this.newPassword = newPassword;
+    }
 }

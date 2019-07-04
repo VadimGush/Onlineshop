@@ -1,9 +1,9 @@
 package net.thumbtack.onlineshop.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import net.thumbtack.onlineshop.request.LoginRequest;
+import net.thumbtack.onlineshop.database.models.Account;
 
-public class AdminDto extends LoginRequest {
+public class AdminDto extends LoginDto {
 
     private long id;
     private String firstName;
@@ -42,6 +42,15 @@ public class AdminDto extends LoginRequest {
         this.firstName = firstName;
         this.lastName = lastName;
         this.position = position;
+    }
+
+    public AdminDto(Account account) {
+        super(account.getLogin(), account.getPassword());
+        this.id = account.getId();
+        this.firstName = account.getFirstName();
+        this.lastName = account.getSecondName();
+        this.patronymic = account.getThirdName();
+        this.position = account.getProfession();
     }
 
     public long id() {

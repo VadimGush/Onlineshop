@@ -57,6 +57,7 @@ public class Client {
         this.phone = phone;
         this.login = login;
         this.password = password;
+        this.deposit = 0;
     }
 
     public Client(
@@ -75,6 +76,7 @@ public class Client {
         this.phone = phone;
         this.login = login;
         this.password = password;
+        this.deposit = 0;
     }
 
     public Integer getDeposit() {

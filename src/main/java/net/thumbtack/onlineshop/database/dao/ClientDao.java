@@ -55,9 +55,11 @@ public class ClientDao {
 
     public List<Client> getAll() {
         CriteriaBuilder builder = manager.getCriteriaBuilder();
+
         CriteriaQuery<Client> criteria = builder.createQuery(Client.class);
         Root<Client> from = criteria.from(Client.class);
-        CriteriaQuery<Client> all = criteria.select(from);
+
+        criteria.select(from);
 
         TypedQuery<Client> typed = manager.createQuery(criteria);
         return typed.getResultList();

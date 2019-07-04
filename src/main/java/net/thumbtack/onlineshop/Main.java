@@ -1,18 +1,16 @@
 package net.thumbtack.onlineshop;
 
-import net.thumbtack.onlineshop.database.dao.AdministratorDao;
-import net.thumbtack.onlineshop.database.dao.CategoryDao;
+import net.thumbtack.onlineshop.database.dao.BasketDao;
+import net.thumbtack.onlineshop.database.dao.ClientDao;
 import net.thumbtack.onlineshop.database.dao.ProductDao;
-import net.thumbtack.onlineshop.database.dao.SessionDao;
-import net.thumbtack.onlineshop.database.models.Administrator;
-import net.thumbtack.onlineshop.database.models.Category;
+import net.thumbtack.onlineshop.database.models.Basket;
+import net.thumbtack.onlineshop.database.models.Client;
 import net.thumbtack.onlineshop.database.models.Product;
-import net.thumbtack.onlineshop.database.models.Session;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 
-import java.util.Arrays;
+import java.util.List;
 
 
 @SpringBootApplication
@@ -21,15 +19,30 @@ public class Main {
     public static void main(String... args) {
         ApplicationContext context = SpringApplication.run(Main.class);
 
-        CategoryDao categoryDao = context.getBean(CategoryDao.class);
+        ClientDao clientDao = context.getBean(ClientDao.class);
         ProductDao productDao = context.getBean(ProductDao.class);
+        BasketDao basketDao = context.getBean(BasketDao.class);
 
-        Product product1 = new Product("vadim", 1);
-        product1 = productDao.insert(product1);
+        Client client = new Client("dfaer", "", "", "", "", "", "");
+        clientDao.insert(client);
 
-        product1.setName("another");
+        Product product = new Product("product1", 1);
+        productDao.insert(product);
 
-        productDao.delete(product1);
+        Basket basket = new Basket(client, product, 1);
+        basketDao.insert(basket);
+
+        List<Basket> list = basketDao.get(client);
+        for (Basket element : list) {
+            System.out.println(element.getClient().getId() + " - count: " + element.getCount() + " - " + element.getProduct().getId());
+        }
+
+        basketDao.delete(basket);
+
+        list = basketDao.get(client);
+        for (Basket element : list) {
+            System.out.println(element.getClient().getId() + " - count: " + element.getCount() + " - " + element.getProduct().getId());
+        }
 
         /*
         Category category1 = new Category("category1");
@@ -43,7 +56,6 @@ public class Main {
 
         productDao.delete(product1);
          */
-
     }
 
 }

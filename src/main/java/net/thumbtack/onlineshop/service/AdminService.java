@@ -24,8 +24,9 @@ public class AdminService {
         this.sessionDao = sessionDao;
     }
 
-    public String register(Administrator admin) {
-        return null;
+    public Administrator register(Administrator admin) {
+        adminDao.insert(admin);
+        return admin;
     }
 
     public Administrator edit(String sessionId) {

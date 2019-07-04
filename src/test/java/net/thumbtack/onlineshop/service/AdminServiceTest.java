@@ -1,15 +1,41 @@
-package service;
+package net.thumbtack.onlineshop.service;
 
 import org.junit.Test;
 
 public class AdminServiceTest {
 
+    /*
+
+    @Mock
+    private AdminService adminService;
+
+    @Before
+    public void setUpClass() {
+        MockitoAnnotation.initMocks(true);
+        underTest = new PersonController(this.personService)
+    }
+
+    @Test
+    public void testGetAllPersons() {
+        List<Person> persons = Arrays.asList(
+            new ...
+            new ..
+        );
+        when() ...
+    }
+
+     */
+
+    
     @Test
     public void testRegistration() {
         // Регистрируем администратора
 
         // Проверяем что администратора с тем же логином создать нельзя
+
+        // Провряем что можно без отчества
     }
+
 
     @Test
     public void testLogin() {

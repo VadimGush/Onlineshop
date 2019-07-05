@@ -1,7 +1,7 @@
 # Онлайн магазин
 Реализация онлайн магазина в рамках стажировки в компании Thumbtack
 
-[](https://pp.userapi.com/c858336/v858336414/afdc/henFDM91Z-g.jpg)
+![](https://pp.userapi.com/c858336/v858336414/afdc/henFDM91Z-g.jpg)
 
 ## Сборка и запуск
 Для начала собираем .jar файл:

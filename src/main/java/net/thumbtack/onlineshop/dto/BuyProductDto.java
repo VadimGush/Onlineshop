@@ -5,7 +5,7 @@ public class BuyProductDto {
     private long id;
     private String name;
     private int price;
-    private int count = 1;
+    private Integer count;
 
     public BuyProductDto() {
 
@@ -16,6 +16,13 @@ public class BuyProductDto {
         this.name = name;
         this.price = price;
         this.count = count;
+    }
+
+    public BuyProductDto(long id, String name, int price) {
+        this.id = id;
+        this.name = name;
+        this.price = price;
+        this.count = 1;
     }
 
     public long getId() {
@@ -42,7 +49,7 @@ public class BuyProductDto {
         this.price = price;
     }
 
-    public int getCount() {
+    public Integer getCount() {
         return count;
     }
 

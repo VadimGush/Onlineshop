@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -38,6 +39,27 @@ public class BasketDao {
         manager.remove(manager.merge(basket));
     }
 
+    public Basket get(Account account, long productId) {
+
+        CriteriaBuilder builder = manager.getCriteriaBuilder();
+        CriteriaQuery<Basket> criteria = builder.createQuery(Basket.class);
+        Root<Basket> from = criteria.from(Basket.class);
+
+        criteria.select(from).where(
+                builder.equal(from.get("account"), account.getId()),
+                builder.and(),
+                builder.equal(from.get("product"), productId)
+        );
+
+        TypedQuery<Basket> typed = manager.createQuery(criteria);
+        try {
+            return typed.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
+
+
     public List<Basket> get(Account account) {
 
         CriteriaBuilder builder = manager.getCriteriaBuilder();
@@ -49,6 +71,7 @@ public class BasketDao {
         );
 
         TypedQuery<Basket> typed = manager.createQuery(criteria);
+
         return typed.getResultList();
 
     }

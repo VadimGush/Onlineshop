@@ -1,5 +1,6 @@
 package net.thumbtack.onlineshop.service;
 
+import com.sun.tools.javac.util.Pair;
 import net.thumbtack.onlineshop.database.dao.AccountDao;
 import net.thumbtack.onlineshop.database.dao.BasketDao;
 import net.thumbtack.onlineshop.database.dao.ProductDao;
@@ -8,9 +9,9 @@ import net.thumbtack.onlineshop.database.models.*;
 import net.thumbtack.onlineshop.dto.BuyProductDto;
 import net.thumbtack.onlineshop.dto.ClientDto;
 import net.thumbtack.onlineshop.dto.ClientEditDto;
-import net.thumbtack.onlineshop.request.ItemBuyRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -126,16 +127,11 @@ public class ClientService {
         if (buyProduct.getCount() > product.getCount())
             throw new ServiceException(ServiceException.ErrorCode.NOT_ENOUGH_PRODUCT, "count");
 
-        // Очень спорный вопрос по поводу того, какое поле стало причиной такой ошибки
         if (buyProduct.getCount() * buyProduct.getPrice() > account.getDeposit())
-            throw new ServiceException(ServiceException.ErrorCode.NOT_ENOUGH_MONEY, "price");
+            throw new ServiceException(ServiceException.ErrorCode.NOT_ENOUGH_MONEY);
 
-        if (product.getCount() == buyProduct.getCount())
-            productDao.delete(product);
-        else if (product.getCount() > buyProduct.getCount()) {
-            product.setCount(product.getCount() - buyProduct.getCount());
-            productDao.update(product);
-        }
+        product.setCount(product.getCount() - buyProduct.getCount());
+        productDao.update(product);
 
         account.setDeposit(account.getDeposit() - buyProduct.getCount() * buyProduct.getPrice());
         clientDao.update(account);
@@ -154,6 +150,7 @@ public class ClientService {
      * сколько товара клиент положил в свою корзину.
      *
      * Поэтому количество товара в корзине надо получать только через Basket.getCount()
+     * (Никакого Basket.getProduct().getCount() - это количество товара на складе!)
      *
      * @param sessionId сессия клиента
      * @param buyProduct информация о товаре
@@ -167,27 +164,176 @@ public class ClientService {
 
         checkProducts(product, buyProduct);
 
-        Basket basket = new Basket(account, product, buyProduct.getCount());
-        basketDao.insert(basket);
+        Basket already = basketDao.get(account, product.getId());
+
+        if (already != null) {
+            // Если продукт уже добавлен в корзину, то просто прибавим его количество
+
+            already.setCount(already.getCount() + buyProduct.getCount());
+            basketDao.update(already);
+
+        } else {
+            // Если продукта в корзине нет, то добавляем его
+
+            Basket basket = new Basket(account, product, buyProduct.getCount());
+            basketDao.insert(basket);
+        }
 
         return basketDao.get(account);
 
     }
 
-    public void deleteFromBasket(String sessionId, Product product) {
+    /**
+     * Удаляет товар из корзины
+     * @param sessionId сессия клиента
+     * @param productId id продукта
+     * @throws ServiceException
+     */
+    public void deleteFromBasket(String sessionId, long productId) throws ServiceException {
+
+        Account account = getAccount(sessionId);
+        Basket basket = basketDao.get(account, productId);
+
+        if (basket == null)
+            throw new ServiceException(ServiceException.ErrorCode.PRODUCT_NOT_FOUND);
+
+        basketDao.delete(basket);
 
     }
 
-    public void editProductCount(String sessionId, Product product) {
+
+    /**
+     * Изменяет количество товара в корзине
+     * @param sessionId сессия клиент
+     * @param product информация о товаре
+     * @return содержание корзины
+     * @throws ServiceException
+     */
+    public List<Basket> editProductCount(String sessionId, BuyProductDto product) throws ServiceException {
+
+        Account account = getAccount(sessionId);
+        Basket basket = basketDao.get(account, product.getId());
+
+        if (basket == null)
+            throw new ServiceException(ServiceException.ErrorCode.PRODUCT_NOT_FOUND, "id");
+
+        checkProducts(basket.getProduct(), product);
+        basket.setCount(product.getCount());
+        basketDao.update(basket);
+
+        return basketDao.get(account);
+    }
+
+    /**
+     * Получает содержимое корзины клиента
+     * @param sessionId сессия клиента
+     * @return содержимое корзины
+     * @throws ServiceException
+     */
+    public List<Basket> getBasket(String sessionId) throws ServiceException {
+
+        Account account = getAccount(sessionId);
+
+        return basketDao.get(account);
 
     }
 
-    public void getBasket(String sessionId) {
 
-    }
+    /**
+     * Выкупает товар из корзины
+     * @param sessionId сессия клиента
+     * @param toBuy список товаров для покупки
+     *
+     * @return пара из двух коллекций. Первая коллекция содержит список купленных товаров, а
+     * вторая коллекция содержит список оставшихся в корзине товаров
+     *
+     * @throws ServiceException
+     */
+    public Pair<List<BuyProductDto>, List<Basket>> buyBasket(String sessionId, List<BuyProductDto> toBuy) throws ServiceException {
 
-    public void buyBasket(String sessionId) {
+        // Внимание: вносить изменения только с ТЗ в руках!
 
+        Account account = getAccount(sessionId);
+        List<Basket> basket = basketDao.get(account);
+
+        List<BuyProductDto> copyList = new ArrayList<>(toBuy);
+
+        // Если инфа у товара в списке неверная, то просто не обрабатываем его
+        for (BuyProductDto product : copyList) {
+
+            // Ищем продукт с таким id в корзине
+            Basket basketEntity = null;
+            for (Basket entity : basket) {
+                if (entity.getProduct().getId() == product.getId()) {
+                    basketEntity = entity;
+                    break;
+                }
+            }
+
+            // Если продукта в корзине нет, то и выкидываем его из запроса
+            if (basketEntity == null) {
+                toBuy.remove(product);
+                break;
+            }
+
+            // Теперь сверяем что данные с бд совпадают
+            // Еси нет, то выкидываем из список покупок
+            try {
+                checkProducts(basketEntity.getProduct(), product);
+            } catch (ServiceException e) {
+                toBuy.remove(product);
+            }
+
+            // Если количество не указано, то берём количество из корзины
+            // так же если количество больше чем в корзине
+            if (product.getCount() == null || product.getCount() > basketEntity.getCount())
+                product.setCount(basketEntity.getCount());
+
+            // Если количество товара на складе меньше чем мы хотим купить,
+            // то опять выкидываем из списка покупок
+            if (product.getCount() > basketEntity.getProduct().getCount())
+                toBuy.remove(product);
+
+        }
+
+        // Теперь в списке tobBuy всё валидное
+        // Теперь считаем сколько денег нужно для покупки всего
+        int sum = 0;
+        for (BuyProductDto product : toBuy) {
+            sum += product.getCount() + product.getPrice();
+        }
+
+        if (sum > account.getDeposit())
+            throw new ServiceException(ServiceException.ErrorCode.NOT_ENOUGH_MONEY);
+
+        // Теперь можно всё покупать
+        // Тут можно было бы использовать метод buyProduct, но это и так увеличит количество
+        // исключений и в без того "исключительном" коде
+
+        // Снимаем деньги
+        account.setDeposit(account.getDeposit() - sum);
+        clientDao.update(account);
+
+        for (BuyProductDto product : toBuy) {
+
+            // Уменьшаем количество товаров на складе
+            Product currentProduct = productDao.get(product.getId());
+            currentProduct.setCount(currentProduct.getCount() - product.getCount());
+            productDao.update(currentProduct);
+
+            // Удаляем нужное количество товара из корзины
+            // Или совсем из корзины
+            Basket basketEntity = basketDao.get(account, product.getId());
+            basketEntity.setCount(basketEntity.getCount() - product.getCount());
+            if (basketEntity.getCount() == 0)
+                basketDao.delete(basketEntity);
+            else
+                basketDao.update(basketEntity);
+
+            // Ну вроде бы всё...
+        }
+
+        return new Pair<>(toBuy, basketDao.get(account));
     }
 
     private void checkProducts(Product product, BuyProductDto buyProduct) throws ServiceException {

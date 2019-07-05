@@ -12,13 +12,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.util.Pair;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 import static junit.framework.TestCase.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
@@ -718,6 +720,279 @@ public class ClientServiceTest {
 
         assertEquals(basket.size(), result.size());
     }
+
+    @Test
+    public void testBuyBasket() throws ServiceException {
+
+        Account client = generateClient();
+        client.setDeposit(30_024);
+        when(mockSessionDao.get("token")).thenReturn(new Session("token", client));
+
+        // Подготавливем список продуктов
+        List<Product> products = new ArrayList<>();
+        for (int i = 0; i < 7; ++i) {
+            Product product = new Product("product" + i, 10, 1000);
+            product.setId((long)i);
+            products.add(product);
+            when(mockProductDao.get((long)i)).thenReturn(product);
+        }
+
+        // Каждый из продуктов добавляем в корзину пользователя
+        List<Basket> basket = new ArrayList<>();
+        for (int i = 0; i < 7; ++i) {
+            Basket basketEntity = new Basket(client, products.get(i), 10);
+            basket.add(basketEntity);
+            when(mockBasketDao.get(client, i)).thenReturn(basketEntity);
+        }
+        when(mockBasketDao.get(client)).thenReturn(basket);
+
+        // Четвёртого продукта должно будет не хватать на складе
+        basket.get(3).setCount(20);
+
+        // Теперь формируем список покупок
+        List<BuyProductDto> toBuy = new LinkedList<>(Arrays.asList(
+                // Данный продукт останется в запросе
+                new BuyProductDto(0, "product0", 1000, 9),
+
+                // --- Далее список товаров, которые должны будут исключится из списка покупок
+                // Продукт с неверным id
+                new BuyProductDto(11, "product", 1000, 10),
+                // Продукт с неверным именем
+                new BuyProductDto(1, "product0", 1000, 10),
+                // Продукт с неверной ценою
+                new BuyProductDto(2, "product2", 21, 10),
+                // Продукт, которого не достаточно на складе
+                new BuyProductDto(3, "product3", 1000, 20),
+
+                // --- Далее товары, которые останутся в списке покупок, но изменят своё количество
+                // Этого товара больше чем в корзине
+                new BuyProductDto(4, "product4", 1000, 15),
+                // Этот товар без количества совсем
+                new BuyProductDto(5, "product5", 1000)
+        ));
+
+        // Итого у нас будет куплено 3 наименования общим количеством 29 единиц за 1000 за штуку
+        // Того клиент потратит 29 000, а из БД изменятся всего три товара
+
+        Pair<List<BuyProductDto>, List<Basket>> result = clientService.buyBasket("token", toBuy);
+
+        // Проверим сначала вызовы и информацию о клиенте
+        assertEquals(1024, (int)client.getDeposit());
+        // Запись о клиенте должна была обновится
+        verify(mockAccountDao).update(client);
+        // И три записи о товаре должны были тоже изменится
+        verify(mockProductDao, times(3)).update(any());
+        // И должны были удалится две записи из корзины (потому что весь товар выкуплен)
+        verify(mockBasketDao, times(2)).delete(any());
+        // А одна запись в корзине всего лишь поменяет количество
+        verify(mockBasketDao).update(any());
+
+        List<BuyProductDto> bought = result.getFirst();
+
+        // Проверяем список купленных продуктов
+        // Там их трое
+        assertEquals(3, bought.size());
+    }
+
+    @Test(expected = ServiceException.class)
+    public void testBuyBasketNotEnoughMoney() throws ServiceException {
+
+        Account client = generateClient();
+        client.setDeposit(2000);
+        when(mockSessionDao.get("token")).thenReturn(new Session("token", client));
+
+        // Подготавливем список продуктов
+        List<Product> products = new ArrayList<>();
+        for (int i = 0; i < 7; ++i) {
+            Product product = new Product("product" + i, 10, 1000);
+            product.setId((long)i);
+            products.add(product);
+            when(mockProductDao.get((long)i)).thenReturn(product);
+        }
+
+        // Каждый из продуктов добавляем в корзину пользователя
+        List<Basket> basket = new ArrayList<>();
+        for (int i = 0; i < 7; ++i) {
+            Basket basketEntity = new Basket(client, products.get(i), 10);
+            basket.add(basketEntity);
+            when(mockBasketDao.get(client, i)).thenReturn(basketEntity);
+        }
+        when(mockBasketDao.get(client)).thenReturn(basket);
+
+        // Четвёртого продукта должно будет не хватать на складе
+        basket.get(3).setCount(20);
+
+        // Теперь формируем список покупок
+        List<BuyProductDto> toBuy = new LinkedList<>(Arrays.asList(
+                // Данный продукт останется в запросе
+                new BuyProductDto(0, "product0", 1000, 10),
+
+                // --- Далее список товаров, которые должны будут исключится из списка покупок
+                // Продукт с неверным id
+                new BuyProductDto(11, "product", 1000, 10),
+                // Продукт с неверным именем
+                new BuyProductDto(1, "product0", 1000, 10),
+                // Продукт с неверной ценою
+                new BuyProductDto(2, "product2", 21, 10),
+                // Продукт, которого не достаточно на складе
+                new BuyProductDto(3, "product3", 1000, 20),
+
+                // --- Далее товары, которые останутся в списке покупок, но изменят своё количество
+                // Этого товара больше чем в корзине
+                new BuyProductDto(4, "product4", 1000, 15),
+                // Этот товар без количества совсем
+                new BuyProductDto(5, "product5", 1000)
+        ));
+
+        try {
+            clientService.buyBasket("token", toBuy);
+
+        } catch (ServiceException e) {
+            assertEquals(ServiceException.ErrorCode.NOT_ENOUGH_MONEY, e.getErrorCode());
+
+            verify(mockAccountDao, never()).update(any());
+            verify(mockBasketDao, never()).update(any());
+            verify(mockBasketDao, never()).delete(any());
+            verify(mockProductDao, never()).update(any());
+            verify(mockProductDao, never()).delete(any());
+
+            throw e;
+        }
+
+    }
+
+    @Test
+    public void testAccountIsAdmin() {
+
+        when(mockSessionDao.get("token")).thenReturn(new Session("token",
+                AccountFactory.createAdmin("er", "erw", "ewrwe", "erwe", "wer")
+        ));
+
+        // Что-то какой-то ужасный тест
+        // Наверное можно поправитьс с помощью Java Reflection, но я пока не знаю как
+
+        try {
+            clientService.edit("token", null);
+            fail();
+        } catch (ServiceException e) {
+            assertEquals(ServiceException.ErrorCode.NOT_CLIENT, e.getErrorCode());
+        }
+
+        try {
+            clientService.putDeposit("token", 0);
+            fail();
+        } catch (ServiceException e) {
+            assertEquals(ServiceException.ErrorCode.NOT_CLIENT, e.getErrorCode());
+        }
+
+        try {
+            clientService.getDeposit("token");
+            fail();
+        } catch (ServiceException e) {
+            assertEquals(ServiceException.ErrorCode.NOT_CLIENT, e.getErrorCode());
+        }
+
+        try {
+            clientService.buyProduct("token", null);
+            fail();
+        } catch (ServiceException e) {
+            assertEquals(ServiceException.ErrorCode.NOT_CLIENT, e.getErrorCode());
+        }
+
+        try {
+            clientService.addToBasket("token", null);
+            fail();
+        } catch (ServiceException e) {
+            assertEquals(ServiceException.ErrorCode.NOT_CLIENT, e.getErrorCode());
+        }
+
+        try {
+            clientService.deleteFromBasket("token", 0);
+            fail();
+        } catch (ServiceException e) {
+            assertEquals(ServiceException.ErrorCode.NOT_CLIENT, e.getErrorCode());
+        }
+
+        try {
+            clientService.editProductCount("token", null);
+            fail();
+        } catch (ServiceException e) {
+            assertEquals(ServiceException.ErrorCode.NOT_CLIENT, e.getErrorCode());
+        }
+
+        try {
+            clientService.getBasket("token");
+            fail();
+        } catch (ServiceException e) {
+            assertEquals(ServiceException.ErrorCode.NOT_CLIENT, e.getErrorCode());
+        }
+    }
+
+    @Test
+    public void testWrongSessionId() {
+
+        when(mockSessionDao.get("token")).thenReturn(null);
+
+        // Что-то какой-то ужасный тест
+        // Наверное можно поправитьс с помощью Java Reflection, но я пока не знаю как
+
+        try {
+            clientService.edit("token", null);
+            fail();
+        } catch (ServiceException e) {
+            assertEquals(ServiceException.ErrorCode.NOT_LOGIN, e.getErrorCode());
+        }
+
+        try {
+            clientService.putDeposit("token", 0);
+            fail();
+        } catch (ServiceException e) {
+            assertEquals(ServiceException.ErrorCode.NOT_LOGIN, e.getErrorCode());
+        }
+
+        try {
+            clientService.getDeposit("token");
+            fail();
+        } catch (ServiceException e) {
+            assertEquals(ServiceException.ErrorCode.NOT_LOGIN, e.getErrorCode());
+        }
+
+        try {
+            clientService.buyProduct("token", null);
+            fail();
+        } catch (ServiceException e) {
+            assertEquals(ServiceException.ErrorCode.NOT_LOGIN, e.getErrorCode());
+        }
+
+        try {
+            clientService.addToBasket("token", null);
+            fail();
+        } catch (ServiceException e) {
+            assertEquals(ServiceException.ErrorCode.NOT_LOGIN, e.getErrorCode());
+        }
+
+        try {
+            clientService.deleteFromBasket("token", 0);
+            fail();
+        } catch (ServiceException e) {
+            assertEquals(ServiceException.ErrorCode.NOT_LOGIN, e.getErrorCode());
+        }
+
+        try {
+            clientService.editProductCount("token", null);
+            fail();
+        } catch (ServiceException e) {
+            assertEquals(ServiceException.ErrorCode.NOT_LOGIN, e.getErrorCode());
+        }
+
+        try {
+            clientService.getBasket("token");
+            fail();
+        } catch (ServiceException e) {
+            assertEquals(ServiceException.ErrorCode.NOT_LOGIN, e.getErrorCode());
+        }
+    }
+
 
     private Account generateClient() {
         return AccountFactory.createClient(

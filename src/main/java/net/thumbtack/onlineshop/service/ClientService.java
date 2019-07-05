@@ -1,6 +1,5 @@
 package net.thumbtack.onlineshop.service;
 
-import com.sun.tools.javac.util.Pair;
 import net.thumbtack.onlineshop.database.dao.AccountDao;
 import net.thumbtack.onlineshop.database.dao.BasketDao;
 import net.thumbtack.onlineshop.database.dao.ProductDao;
@@ -9,6 +8,7 @@ import net.thumbtack.onlineshop.database.models.*;
 import net.thumbtack.onlineshop.dto.BuyProductDto;
 import net.thumbtack.onlineshop.dto.ClientDto;
 import net.thumbtack.onlineshop.dto.ClientEditDto;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -273,7 +273,7 @@ public class ClientService {
             // Если продукта в корзине нет, то и выкидываем его из запроса
             if (basketEntity == null) {
                 toBuy.remove(product);
-                break;
+                continue;
             }
 
             // Теперь сверяем что данные с бд совпадают
@@ -282,6 +282,7 @@ public class ClientService {
                 checkProducts(basketEntity.getProduct(), product);
             } catch (ServiceException e) {
                 toBuy.remove(product);
+                continue;
             }
 
             // Если количество не указано, то берём количество из корзины
@@ -300,7 +301,7 @@ public class ClientService {
         // Теперь считаем сколько денег нужно для покупки всего
         int sum = 0;
         for (BuyProductDto product : toBuy) {
-            sum += product.getCount() + product.getPrice();
+            sum += product.getCount() * product.getPrice();
         }
 
         if (sum > account.getDeposit())
@@ -333,7 +334,7 @@ public class ClientService {
             // Ну вроде бы всё...
         }
 
-        return new Pair<>(toBuy, basketDao.get(account));
+        return Pair.of(toBuy, basketDao.get(account));
     }
 
     private void checkProducts(Product product, BuyProductDto buyProduct) throws ServiceException {

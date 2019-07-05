@@ -22,7 +22,6 @@ public class BuyProductDto {
         this.id = id;
         this.name = name;
         this.price = price;
-        this.count = 1;
     }
 
     public long getId() {

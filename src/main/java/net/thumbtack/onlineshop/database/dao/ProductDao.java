@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -45,7 +46,11 @@ public class ProductDao {
         criteria.select(from).where(builder.equal(from.get("id"), id));
 
         TypedQuery<Product> typed = manager.createQuery(criteria);
-        return typed.getSingleResult();
+        try {
+            return typed.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
     }
 
     public List<Product> getAll() {

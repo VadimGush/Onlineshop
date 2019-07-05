@@ -1,10 +1,12 @@
 package net.thumbtack.onlineshop.database.models;
 
+import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "product")
@@ -17,14 +19,14 @@ public class Product {
     @Column(unique = true, nullable = false)
     private String name;
 
-    @OneToMany(cascade = CascadeType.REMOVE)
-    private List<Category> categories;
-
     @Column(nullable = false, columnDefinition = "int default 1")
     private Integer count;
 
     @Column(nullable = false, columnDefinition = "int default 0")
     private Integer price;
+
+    @ManyToOne
+    private Product product;
 
     public Product() {
 
@@ -34,13 +36,6 @@ public class Product {
         this.name = name;
         this.count = count;
         this.price = price;
-    }
-
-    public Product(String name, Integer count, Integer price, List<Category> categories) {
-        this.name = name;
-        this.count = count;
-        this.price = price;
-        this.categories = categories;
     }
 
     public Integer getPrice() {
@@ -65,14 +60,6 @@ public class Product {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public List<Category> getCategories() {
-        return categories;
-    }
-
-    public void setCategories(List<Category> categories) {
-        this.categories = categories;
     }
 
     public Integer getCount() {

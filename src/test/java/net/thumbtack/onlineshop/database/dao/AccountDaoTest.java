@@ -8,13 +8,18 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
-import static org.junit.Assert.assertEquals;
+import java.util.Arrays;
+import java.util.List;
+
+import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class AccountDaoTest {
@@ -77,6 +82,121 @@ public class AccountDaoTest {
         assertEquals(account, result);
     }
 
+    @Test
+    public void testNullGet() {
+
+        CriteriaBuilder mockCriteriaBuilder = mock(CriteriaBuilder.class);
+        CriteriaQuery<Account> mockCriteriaQuery = (CriteriaQuery<Account>) mock(CriteriaQuery.class);
+        TypedQuery<Account> mockTypedQuery = (TypedQuery<Account>) mock(TypedQuery.class);
+        Root<Account> mockRoot = (Root<Account>) mock(Root.class);
+
+        when(mockEntityManager.getCriteriaBuilder()).thenReturn(mockCriteriaBuilder);
+        when(mockCriteriaBuilder.createQuery(Account.class)).thenReturn(mockCriteriaQuery);
+        when(mockCriteriaQuery.from(Account.class)).thenReturn(mockRoot);
+        when(mockEntityManager.createQuery(mockCriteriaQuery)).thenReturn(mockTypedQuery);
+        when(mockTypedQuery.getSingleResult()).thenThrow(new NoResultException());
+
+        assertNull(accountDao.get("login", "password"));
+
+        // Проверяем что был условный селект
+        verify(mockCriteriaQuery).from(Account.class);
+        verify(mockCriteriaQuery).select(any());
+        verify(mockCriteriaQuery).where(null, null, null);
+
+        // Проверяем что реально была проверка логина и пароля
+        verify(mockCriteriaBuilder).equal(null, "login");
+        verify(mockCriteriaBuilder).and();
+        verify(mockCriteriaBuilder).equal(null, "password");
+
+    }
+
+    @Test
+    public void testExists() {
+        Account account = generateAccount();
+
+        CriteriaBuilder mockCriteriaBuilder = mock(CriteriaBuilder.class);
+        CriteriaQuery<Account> mockCriteriaQuery = (CriteriaQuery<Account>) mock(CriteriaQuery.class);
+        TypedQuery<Account> mockTypedQuery = (TypedQuery<Account>) mock(TypedQuery.class);
+        Root<Account> mockRoot = (Root<Account>) mock(Root.class);
+
+        when(mockEntityManager.getCriteriaBuilder()).thenReturn(mockCriteriaBuilder);
+        when(mockCriteriaBuilder.createQuery(Account.class)).thenReturn(mockCriteriaQuery);
+        when(mockCriteriaQuery.from(Account.class)).thenReturn(mockRoot);
+        when(mockEntityManager.createQuery(mockCriteriaQuery)).thenReturn(mockTypedQuery);
+        when(mockTypedQuery.getSingleResult()).thenReturn(account);
+
+        assertTrue(accountDao.exists("login"));
+
+        // Проверяем что был условный селект
+        verify(mockCriteriaQuery).from(Account.class);
+        verify(mockCriteriaQuery).select(any());
+        verify(mockCriteriaQuery).where(nullable(Predicate.class));
+
+        // Проверяем что реально была проверка логина и пароля
+        verify(mockCriteriaBuilder).equal(null, "login");
+    }
+
+    @Test
+    public void testNotExists() {
+
+        CriteriaBuilder mockCriteriaBuilder = mock(CriteriaBuilder.class);
+        CriteriaQuery<Account> mockCriteriaQuery = (CriteriaQuery<Account>) mock(CriteriaQuery.class);
+        TypedQuery<Account> mockTypedQuery = (TypedQuery<Account>) mock(TypedQuery.class);
+        Root<Account> mockRoot = (Root<Account>) mock(Root.class);
+
+        when(mockEntityManager.getCriteriaBuilder()).thenReturn(mockCriteriaBuilder);
+        when(mockCriteriaBuilder.createQuery(Account.class)).thenReturn(mockCriteriaQuery);
+        when(mockCriteriaQuery.from(Account.class)).thenReturn(mockRoot);
+        when(mockEntityManager.createQuery(mockCriteriaQuery)).thenReturn(mockTypedQuery);
+        when(mockTypedQuery.getSingleResult()).thenThrow(new NoResultException());
+
+        assertFalse(accountDao.exists("login"));
+
+        // Проверяем что был условный селект
+        verify(mockCriteriaQuery).from(Account.class);
+        verify(mockCriteriaQuery).select(any());
+        verify(mockCriteriaQuery).where(nullable(Predicate.class));
+
+        // Проверяем что реально была проверка логина и пароля
+        verify(mockCriteriaBuilder).equal(null, "login");
+    }
+
+    @Test
+    public void testDelete() {
+        Account account = generateAccount();
+        when(mockEntityManager.merge(account)).thenReturn(account);
+
+        accountDao.delete(account);
+
+        verify(mockEntityManager).remove(account);
+        verify(mockEntityManager).merge(account);
+    }
+
+    @Test
+    public void testGetClients() {
+
+        List<Account> list = Arrays.asList(generateAccount(), generateAccount());
+
+        CriteriaBuilder mockCriteriaBuilder = mock(CriteriaBuilder.class);
+        CriteriaQuery<Account> mockCriteriaQuery = (CriteriaQuery<Account>) mock(CriteriaQuery.class);
+        TypedQuery<Account> mockTypedQuery = (TypedQuery<Account>) mock(TypedQuery.class);
+        Root<Account> mockRoot = (Root<Account>) mock(Root.class);
+
+        when(mockEntityManager.getCriteriaBuilder()).thenReturn(mockCriteriaBuilder);
+        when(mockCriteriaBuilder.createQuery(Account.class)).thenReturn(mockCriteriaQuery);
+        when(mockCriteriaQuery.from(Account.class)).thenReturn(mockRoot);
+        when(mockEntityManager.createQuery(mockCriteriaQuery)).thenReturn(mockTypedQuery);
+        when(mockTypedQuery.getResultList()).thenReturn(list);
+
+        List<Account> result = accountDao.getClients();
+
+        // Проверяем что был условный селект
+        verify(mockCriteriaQuery).from(Account.class);
+        verify(mockCriteriaQuery).select(any());
+        verify(mockCriteriaQuery).where(nullable(Predicate.class));
+
+        verify(mockCriteriaBuilder).equal(null, false);
+    }
 
     private Account generateAccount() {
         return AccountFactory.createAdmin(

@@ -31,12 +31,20 @@ public class SessionService {
         return session.getUUID();
     }
 
-    public String getAccount() {
-        return null;
+    public Account getAccount(String sessionId) throws ServiceException {
+        Session session = sessionDao.get(sessionId);
+
+        if (session == null)
+            throw new ServiceException(ServiceException.ErrorCode.NOT_LOGIN);
+
+        return session.getAccount();
     }
 
     public void logout(String sessionId) {
-        sessionDao.delete(sessionDao.get(sessionId));
+        Session session = sessionDao.get(sessionId);
+
+        if (session != null)
+            sessionDao.delete(session);
     }
 
 }

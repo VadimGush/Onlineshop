@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -36,11 +37,40 @@ public class CategoryDao {
         manager.remove(manager.merge(category));
     }
 
+    public boolean exists(String name) {
+        CriteriaBuilder builder = manager.getCriteriaBuilder();
+        CriteriaQuery<Category> criteria = builder.createQuery(Category.class);
+        Root<Category> from = criteria.from(Category.class);
+        criteria.select(from).where(builder.equal(from.get("name"), name));
+
+        TypedQuery<Category> typed = manager.createQuery(criteria);
+        try {
+            return true;
+        } catch (NoResultException e) {
+            return false;
+        }
+    }
+
+    public Category get(long id) {
+        CriteriaBuilder builder = manager.getCriteriaBuilder();
+        CriteriaQuery<Category> criteria = builder.createQuery(Category.class);
+        Root<Category> from = criteria.from(Category.class);
+        criteria.select(from).where(builder.equal(from.get("id"), id));
+
+        TypedQuery<Category> typed = manager.createQuery(criteria);
+        try {
+            return typed.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+
+    }
+
     public List<Category> getAll() {
         CriteriaBuilder builder = manager.getCriteriaBuilder();
         CriteriaQuery<Category> criteria = builder.createQuery(Category.class);
         Root<Category> from = criteria.from(Category.class);
-        CriteriaQuery<Category> all = criteria.select(from);
+        criteria.select(from);
 
         TypedQuery<Category> typed = manager.createQuery(criteria);
         return typed.getResultList();

@@ -12,7 +12,11 @@ public class ServiceException extends Exception {
         PRODUCT_NOT_FOUND       ("PRODUCT_NOT_FOUND", "Указанный товар не найден"),
         WRONG_PRODUCT_INFO      ("WRONG_PRODUCT_INFO", "Неверно указана информация о товаре"),
         NOT_ENOUGH_PRODUCT      ("NOT_ENOUGH_PRODUCT", "Недостаточно товара"),
-        NOT_ENOUGH_MONEY        ("NOT_ENOUGH_MONEY", "Недостаточно денег на счету");
+        NOT_ENOUGH_MONEY        ("NOT_ENOUGH_MONEY", "Недостаточно денег на счету"),
+        CATEGORY_NOT_FOUND      ("CATEGORY_NOT_FOUND", "Категория не найдена"),
+        SAME_CATEGORY_NAME      ("SAME_CATEGORY_NAME", "Категория с таким именем уже существует"),
+        SECOND_SUBCATEGORY      ("SECOND_SUBCATEGORY", "Родитель категории не может быть подкатегорией"),
+        CATEGORY_TO_SUBCATEGORY ("CATEGORY_TO_SUBCATEGORY", "Нельзя изменить категорию на подкатегорию");
 
         private String errorCode;
         private String message;

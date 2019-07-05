@@ -1,24 +1,34 @@
-package net.thumbtack.onlineshop.response;
+package net.thumbtack.onlineshop.dto;
 
-public class CategoryResponse {
+public class CategoryDto {
 
-    private int id;
+    private long id;
     private String name;
-    private int parentId;
+    private Long parentId;
     private String parentName;
 
-    public CategoryResponse(int id, String name, int parentId, String parentName) {
-        this.id = id;
-        this.name = name;
-        this.parentId = parentId;
-        this.parentName = parentName;
+    public CategoryDto() {
+
     }
 
-    public int getId() {
+    public CategoryDto(String name, long parentId) {
+        this.name = name;
+        this.parentId = parentId;
+    }
+
+    public CategoryDto(String name) {
+        this.name = name;
+    }
+
+    public CategoryDto(Long parentId) {
+        this.parentId = parentId;
+    }
+
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -30,11 +40,11 @@ public class CategoryResponse {
         this.name = name;
     }
 
-    public int getParentId() {
+    public Long getParentId() {
         return parentId;
     }
 
-    public void setParentId(int parentId) {
+    public void setParentId(Long parentId) {
         this.parentId = parentId;
     }
 

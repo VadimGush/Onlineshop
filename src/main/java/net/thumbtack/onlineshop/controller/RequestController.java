@@ -1,13 +1,8 @@
 package net.thumbtack.onlineshop.controller;
 
-import net.thumbtack.onlineshop.AppConfig;
-import net.thumbtack.onlineshop.response.ServerConfigurationResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
-import static org.springframework.web.bind.annotation.RequestMethod.*;
 
 /**
  * RequestController - отвечает за запросы связанные с управлением сервером и
@@ -25,8 +20,8 @@ public class RequestController {
 
     @GetMapping("settings")
     @ResponseStatus(HttpStatus.OK)
-    public ServerConfigurationResponse serverConfigurationResponse() {
-        return new ServerConfigurationResponse(maxNameLength, minPasswordLength);
+    public String serverConfigurationResponse() {
+        return "{}";
     }
 
     @PostMapping("debug/clear")

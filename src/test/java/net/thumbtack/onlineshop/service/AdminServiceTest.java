@@ -207,9 +207,9 @@ public class AdminServiceTest {
     }
 
     private Account generateClient() {
-       return AccountFactory.createClient(
+        return AccountFactory.createClient(
                 "rewrw", "sder", "werew", "ewrwe", "wrwe", "werwe", "werw"
-       );
+        );
     }
 
     private Account generateAdmin() {

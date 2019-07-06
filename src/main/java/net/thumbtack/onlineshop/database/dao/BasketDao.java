@@ -26,7 +26,6 @@ public class BasketDao {
         this.manager = manager;
     }
 
-
     public void insert(Basket basket) {
         manager.persist(basket);
     }
@@ -45,7 +44,8 @@ public class BasketDao {
         CriteriaQuery<Basket> criteria = builder.createQuery(Basket.class);
         Root<Basket> from = criteria.from(Basket.class);
 
-        criteria.select(from).where(
+        criteria.select(from);
+        criteria.where(
                 builder.equal(from.get("account"), account.getId()),
                 builder.and(),
                 builder.equal(from.get("product"), productId)
@@ -66,7 +66,8 @@ public class BasketDao {
         CriteriaQuery<Basket> criteria = builder.createQuery(Basket.class);
         Root<Basket> from = criteria.from(Basket.class);
 
-        criteria.select(from).where(
+        criteria.select(from);
+        criteria.where(
                 builder.equal(from.get("account"), account.getId())
         );
 

@@ -41,10 +41,13 @@ public class CategoryDao {
         CriteriaBuilder builder = manager.getCriteriaBuilder();
         CriteriaQuery<Category> criteria = builder.createQuery(Category.class);
         Root<Category> from = criteria.from(Category.class);
-        criteria.select(from).where(builder.equal(from.get("name"), name));
+
+        criteria.select(from);
+        criteria.where(builder.equal(from.get("name"), name));
 
         TypedQuery<Category> typed = manager.createQuery(criteria);
         try {
+            typed.getSingleResult();
             return true;
         } catch (NoResultException e) {
             return false;
@@ -55,7 +58,9 @@ public class CategoryDao {
         CriteriaBuilder builder = manager.getCriteriaBuilder();
         CriteriaQuery<Category> criteria = builder.createQuery(Category.class);
         Root<Category> from = criteria.from(Category.class);
-        criteria.select(from).where(builder.equal(from.get("id"), id));
+
+        criteria.select(from);
+        criteria.where(builder.equal(from.get("id"), id));
 
         TypedQuery<Category> typed = manager.createQuery(criteria);
         try {
@@ -70,6 +75,7 @@ public class CategoryDao {
         CriteriaBuilder builder = manager.getCriteriaBuilder();
         CriteriaQuery<Category> criteria = builder.createQuery(Category.class);
         Root<Category> from = criteria.from(Category.class);
+
         criteria.select(from);
 
         TypedQuery<Category> typed = manager.createQuery(criteria);

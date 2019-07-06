@@ -4,6 +4,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
 @Table(name = "basket")
@@ -64,5 +65,21 @@ public class Basket {
 
     public void setCount(Integer count) {
         this.count = count;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Basket)) return false;
+        Basket basket = (Basket) o;
+        return Objects.equals(id, basket.id) &&
+                Objects.equals(account, basket.account) &&
+                Objects.equals(product, basket.product) &&
+                Objects.equals(count, basket.count);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, account, product, count);
     }
 }

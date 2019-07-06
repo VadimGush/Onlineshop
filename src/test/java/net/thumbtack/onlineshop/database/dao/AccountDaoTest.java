@@ -73,6 +73,9 @@ public class AccountDaoTest {
         verify(mockCriteriaQuery).select(any());
         verify(mockCriteriaQuery).where(null, null, null);
 
+        verify(mockRoot).get("login");
+        verify(mockRoot).get("password");
+
         // Проверяем что реально была проверка логина и пароля
         verify(mockCriteriaBuilder).equal(null, "login");
         verify(mockCriteriaBuilder).and();
@@ -102,6 +105,9 @@ public class AccountDaoTest {
         verify(mockCriteriaQuery).from(Account.class);
         verify(mockCriteriaQuery).select(any());
         verify(mockCriteriaQuery).where(null, null, null);
+
+        verify(mockRoot).get("login");
+        verify(mockRoot).get("password");
 
         // Проверяем что реально была проверка логина и пароля
         verify(mockCriteriaBuilder).equal(null, "login");

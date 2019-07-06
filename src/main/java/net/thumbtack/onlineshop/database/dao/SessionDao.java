@@ -36,18 +36,17 @@ public class SessionDao {
         CriteriaBuilder builder = manager.getCriteriaBuilder();
         CriteriaQuery<Session> criteria = builder.createQuery(Session.class);
         Root<Session> from = criteria.from(Session.class);
+
         criteria.select(from);
-        criteria.where(
-                builder.equal(from.get("UUID"), UUID));
+        criteria.where(builder.equal(from.get("UUID"), UUID));
+
         TypedQuery<Session> typed = manager.createQuery(criteria);
-        Session session;
 
         try {
-            session = typed.getSingleResult();
+            return typed.getSingleResult();
         } catch (NoResultException e) {
             return null;
         }
 
-        return session;
     }
 }

@@ -6,6 +6,7 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -68,5 +69,22 @@ public class Product {
 
     public void setCount(Integer count) {
         this.count = count;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Product)) return false;
+        Product product1 = (Product) o;
+        return Objects.equals(id, product1.id) &&
+                Objects.equals(name, product1.name) &&
+                Objects.equals(count, product1.count) &&
+                Objects.equals(price, product1.price) &&
+                Objects.equals(product, product1.product);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, count, price, product);
     }
 }

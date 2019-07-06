@@ -1,6 +1,8 @@
 package net.thumbtack.onlineshop.database.dao;
 
+import net.thumbtack.onlineshop.database.models.Category;
 import net.thumbtack.onlineshop.database.models.Product;
+import net.thumbtack.onlineshop.database.models.ProductCategory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -25,9 +27,8 @@ public class ProductDao {
         this.manager = manager;
     }
 
-    public Product insert(Product product) {
+    public void insert(Product product) {
         manager.persist(product);
-        return manager.merge(product);
     }
 
     public void update(Product product) {
@@ -38,12 +39,35 @@ public class ProductDao {
         manager.remove(manager.merge(product));
     }
 
+    public void insertCategory(ProductCategory productCategory) {
+        manager.persist(productCategory);
+    }
+
+    public void deleteCategory(ProductCategory productCategory) {
+        manager.remove(manager.merge(productCategory));
+    }
+
+    public List<ProductCategory> getCategories(long productId) {
+        CriteriaBuilder builder = manager.getCriteriaBuilder();
+        CriteriaQuery<ProductCategory> criteria = builder.createQuery(ProductCategory.class);
+        Root<ProductCategory> from = criteria.from(ProductCategory.class);
+
+        criteria.select(from);
+        criteria.where(
+                builder.equal(from.get("product"), productId)
+        );
+
+        TypedQuery<ProductCategory> typed = manager.createQuery(criteria);
+        return typed.getResultList();
+    }
+
     public Product get(long id) {
         CriteriaBuilder builder = manager.getCriteriaBuilder();
         CriteriaQuery<Product> criteria = builder.createQuery(Product.class);
         Root<Product> from = criteria.from(Product.class);
 
-        criteria.select(from).where(builder.equal(from.get("id"), id));
+        criteria.select(from);
+        criteria.where(builder.equal(from.get("id"), id));
 
         TypedQuery<Product> typed = manager.createQuery(criteria);
         try {

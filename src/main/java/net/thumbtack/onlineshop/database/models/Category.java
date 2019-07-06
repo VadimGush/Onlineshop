@@ -1,6 +1,7 @@
 package net.thumbtack.onlineshop.database.models;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
 @Table(name = "category")
@@ -55,5 +56,20 @@ public class Category {
 
     public void setParent(Category parent) {
         this.parent = parent;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Category)) return false;
+        Category category = (Category) o;
+        return Objects.equals(id, category.id) &&
+                Objects.equals(name, category.name) &&
+                Objects.equals(parent, category.parent);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, parent);
     }
 }

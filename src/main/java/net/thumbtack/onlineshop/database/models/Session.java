@@ -4,6 +4,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
 @Table(name = "session")
@@ -53,4 +54,18 @@ public class Session {
         this.account = account;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Session)) return false;
+        Session session = (Session) o;
+        return Objects.equals(id, session.id) &&
+                Objects.equals(UUID, session.UUID) &&
+                Objects.equals(account, session.account);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, UUID, account);
+    }
 }

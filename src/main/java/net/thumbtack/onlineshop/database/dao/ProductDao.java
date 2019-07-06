@@ -1,19 +1,17 @@
 package net.thumbtack.onlineshop.database.dao;
 
-import net.thumbtack.onlineshop.database.models.Category;
 import net.thumbtack.onlineshop.database.models.Product;
 import net.thumbtack.onlineshop.database.models.ProductCategory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
+import java.util.Comparator;
 import java.util.List;
 
 @Transactional
@@ -85,6 +83,35 @@ public class ProductDao {
         criteria.select(from);
 
         TypedQuery<Product> typed = manager.createQuery(criteria);
+        return typed.getResultList();
+    }
+
+    public List<ProductCategory> getAllSorted() {
+        List<ProductCategory> result = getAllCategories();
+
+        // Теперь сортируем по именам продуктов
+        result.sort(Comparator.comparing((ProductCategory left) -> left.getProduct().getName()));
+
+        return result;
+    }
+
+    public List<ProductCategory> getAllSortedByCategory() {
+        List<ProductCategory> result = getAllCategories();
+
+        // Теперь полученный список надо отсортировать по имени категорий
+        result.sort(Comparator.comparing((ProductCategory left) -> left.getCategory().getName()));
+
+        return result;
+    }
+
+    private List<ProductCategory> getAllCategories() {
+        CriteriaBuilder builder = manager.getCriteriaBuilder();
+        CriteriaQuery<ProductCategory> criteria = builder.createQuery(ProductCategory.class);
+        Root<ProductCategory> from = criteria.from(ProductCategory.class);
+
+        criteria.select(from);
+
+        TypedQuery<ProductCategory> typed = manager.createQuery(criteria);
         return typed.getResultList();
     }
 

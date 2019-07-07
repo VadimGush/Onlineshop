@@ -65,24 +65,24 @@ public class ClientServiceTest {
         verify(mockAccountDao).insert(any());
 
         assertEquals(client.getFirstName(), result.getFirstName());
-        assertEquals(client.getSecondName(), result.getSecondName());
-        assertEquals(client.getThirdName(), result.getThirdName());
+        assertEquals(client.getLastName(), result.getLastName());
+        assertEquals(client.getPatronymic(), result.getPatronymic());
         assertEquals(client.getDeposit(), result.getDeposit());
         assertEquals(client.getEmail(), result.getEmail());
-        assertEquals(client.getPostAddress(), result.getPostAddress());
+        assertEquals(client.getAddress(), result.getAddress());
         assertEquals(client.getPhone(), result.getPhone());
         assertFalse(result.isAdmin());
 
         // Проверяем регистрацию без отчества
 
         client = generateClient();
-        client.setThirdName(null);
+        client.setPatronymic(null);
 
         result = clientService.register(new ClientDto(client));
 
         verify(mockAccountDao, times(2)).insert(any());
 
-        assertNull(result.getThirdName());
+        assertNull(result.getPatronymic());
     }
 
     @Test(expected = ServiceException.class)
@@ -119,9 +119,9 @@ public class ClientServiceTest {
         verify(mockAccountDao).update(client);
 
         assertEquals(edited.getFirstName(), result.getFirstName());
-        assertEquals(edited.getLastName(), result.getSecondName());
-        assertEquals(edited.getPatronymic(), result.getThirdName());
-        assertEquals(edited.getAddress(), result.getPostAddress());
+        assertEquals(edited.getLastName(), result.getLastName());
+        assertEquals(edited.getPatronymic(), result.getPatronymic());
+        assertEquals(edited.getAddress(), result.getAddress());
         assertEquals(edited.getEmail(), result.getEmail());
         assertEquals(edited.getNewPassword(), result.getPassword());
         assertEquals(edited.getPhone(), result.getPhone());

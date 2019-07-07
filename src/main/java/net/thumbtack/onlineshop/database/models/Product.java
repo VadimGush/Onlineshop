@@ -20,8 +20,8 @@ public class Product {
     @Column(nullable = false, columnDefinition = "int default 0")
     private Integer price;
 
-    @ManyToOne
-    private Product product;
+    @Column(nullable = false, columnDefinition = "boolean default 0")
+    private Boolean deleted = false;
 
     public Product() {
 
@@ -65,6 +65,14 @@ public class Product {
         this.count = count;
     }
 
+    public Boolean getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -73,12 +81,11 @@ public class Product {
         return Objects.equals(id, product1.id) &&
                 Objects.equals(name, product1.name) &&
                 Objects.equals(count, product1.count) &&
-                Objects.equals(price, product1.price) &&
-                Objects.equals(product, product1.product);
+                Objects.equals(price, product1.price);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, count, price, product);
+        return Objects.hash(id, name, count, price);
     }
 }

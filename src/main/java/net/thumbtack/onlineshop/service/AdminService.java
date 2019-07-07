@@ -54,10 +54,10 @@ public class AdminService {
             throw new ServiceException(ServiceException.ErrorCode.WRONG_PASSWORD, "oldPassword");
 
         account.setFirstName(admin.getFirstName());
-        account.setSecondName(admin.getLastName());
-        account.setThirdName(admin.getPatronymic());
+        account.setLastName(admin.getLastName());
+        account.setPatronymic(admin.getPatronymic());
         account.setPassword(admin.getNewPassword());
-        account.setProfession(admin.getPosition());
+        account.setPosition(admin.getPosition());
 
         accountDao.update(account);
         return account;

@@ -13,13 +13,13 @@ public class Account {
 
     private String firstName;
 
-    private String secondName;
+    private String lastName;
 
-    private String thirdName;
+    private String patronymic;
 
     private String email;
 
-    private String postAddress;
+    private String address;
 
     private String phone;
 
@@ -31,7 +31,7 @@ public class Account {
     @Column(columnDefinition = "int default 0")
     private Integer deposit;
 
-    private String profession;
+    private String position;
 
     private Boolean admin = false;
 
@@ -39,19 +39,19 @@ public class Account {
 
     protected Account(
             String firstName,
-            String secondName,
-            String thirdName,
+            String lastName,
+            String patronymic,
             String email,
-            String postAddress,
+            String address,
             String phone,
             String login,
             String password
     ) {
         this.firstName = firstName;
-        this.secondName = secondName;
-        this.thirdName = thirdName;
+        this.lastName = lastName;
+        this.patronymic = patronymic;
         this.email = email;
-        this.postAddress = postAddress;
+        this.address = address;
         this.phone = phone;
         this.login = login;
         this.password = password;
@@ -60,17 +60,17 @@ public class Account {
 
     protected Account(
             String firstName,
-            String secondName,
+            String lastName,
             String email,
-            String postAddress,
+            String address,
             String phone,
             String login,
             String password
     ) {
         this.firstName = firstName;
-        this.secondName = secondName;
+        this.lastName = lastName;
         this.email = email;
-        this.postAddress = postAddress;
+        this.address = address;
         this.phone = phone;
         this.login = login;
         this.password = password;
@@ -79,16 +79,16 @@ public class Account {
 
     protected Account(
             String firstName,
-            String secondName,
-            String thirdName,
-            String profession,
+            String lastName,
+            String patronymic,
+            String position,
             String login,
             String password
     ) {
         this.firstName = firstName;
-        this.secondName = secondName;
-        this.thirdName = thirdName;
-        this.profession = profession;
+        this.lastName = lastName;
+        this.patronymic = patronymic;
+        this.position = position;
         this.login = login;
         this.password = password;
         this.admin = true;
@@ -96,25 +96,25 @@ public class Account {
 
     protected Account(
             String firstName,
-            String secondName,
-            String profession,
+            String lastName,
+            String position,
             String login,
             String password
     ) {
         this.firstName = firstName;
-        this.secondName = secondName;
-        this.profession = profession;
+        this.lastName = lastName;
+        this.position = position;
         this.login = login;
         this.password = password;
         this.admin = true;
     }
 
-    public String getProfession() {
-        return profession;
+    public String getPosition() {
+        return position;
     }
 
-    public void setProfession(String profession) {
-        this.profession = profession;
+    public void setPosition(String position) {
+        this.position = position;
     }
 
     public Boolean isAdmin() {
@@ -145,20 +145,20 @@ public class Account {
         this.firstName = firstName;
     }
 
-    public String getSecondName() {
-        return secondName;
+    public String getLastName() {
+        return lastName;
     }
 
-    public void setSecondName(String secondName) {
-        this.secondName = secondName;
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
-    public String getThirdName() {
-        return thirdName;
+    public String getPatronymic() {
+        return patronymic;
     }
 
-    public void setThirdName(String thirdName) {
-        this.thirdName = thirdName;
+    public void setPatronymic(String patronymic) {
+        this.patronymic = patronymic;
     }
 
     public String getEmail() {
@@ -169,12 +169,12 @@ public class Account {
         this.email = email;
     }
 
-    public String getPostAddress() {
-        return postAddress;
+    public String getAddress() {
+        return address;
     }
 
-    public void setPostAddress(String postAddress) {
-        this.postAddress = postAddress;
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public String getPhone() {
@@ -208,20 +208,20 @@ public class Account {
         Account account = (Account) o;
         return Objects.equals(id, account.id) &&
                 Objects.equals(firstName, account.firstName) &&
-                Objects.equals(secondName, account.secondName) &&
-                Objects.equals(thirdName, account.thirdName) &&
+                Objects.equals(lastName, account.lastName) &&
+                Objects.equals(patronymic, account.patronymic) &&
                 Objects.equals(email, account.email) &&
-                Objects.equals(postAddress, account.postAddress) &&
+                Objects.equals(address, account.address) &&
                 Objects.equals(phone, account.phone) &&
                 Objects.equals(login, account.login) &&
                 Objects.equals(password, account.password) &&
                 Objects.equals(deposit, account.deposit) &&
-                Objects.equals(profession, account.profession) &&
+                Objects.equals(position, account.position) &&
                 Objects.equals(admin, account.admin);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, firstName, secondName, thirdName, email, postAddress, phone, login, password, deposit, profession, admin);
+        return Objects.hash(id, firstName, lastName, patronymic, email, address, phone, login, password, deposit, position, admin);
     }
 }

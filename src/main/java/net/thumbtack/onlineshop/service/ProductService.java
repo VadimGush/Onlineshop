@@ -59,10 +59,10 @@ public class ProductService {
         return null;
     }
 
-    public List<Product> getAll(String sessionId, List<Integer> categories, SortOrder order) throws ServiceException {
+    public List<ProductCategory> getAll(String sessionId, List<Integer> categories, SortOrder order) throws ServiceException {
         isLogin(sessionId);
 
-        return productDao.getAll();
+        return null;
     }
 
     private void isAdmin(String sessionId) throws ServiceException {

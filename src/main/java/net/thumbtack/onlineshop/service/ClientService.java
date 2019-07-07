@@ -74,10 +74,10 @@ public class ClientService {
             throw new ServiceException(ServiceException.ErrorCode.WRONG_PASSWORD, "oldPassword");
 
         account.setFirstName(client.getFirstName());
-        account.setSecondName(client.getLastName());
-        account.setThirdName(client.getPatronymic());
+        account.setLastName(client.getLastName());
+        account.setPatronymic(client.getPatronymic());
         account.setEmail(client.getEmail());
-        account.setPostAddress(client.getAddress());
+        account.setAddress(client.getAddress());
         account.setPhone(client.getPhone());
         account.setPassword(client.getNewPassword());
 

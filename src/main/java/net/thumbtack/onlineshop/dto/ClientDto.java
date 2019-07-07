@@ -37,10 +37,10 @@ public class ClientDto extends LoginDto {
         super(account.getLogin(), account.getPassword());
         this.id = account.getId() == null ? 0 : account.getId();
         this.firstName = account.getFirstName();
-        this.lastName = account.getSecondName();
-        this.patronymic = account.getThirdName();
+        this.lastName = account.getLastName();
+        this.patronymic = account.getPatronymic();
         this.email = account.getEmail();
-        this.address = account.getPostAddress();
+        this.address = account.getAddress();
         this.phone = account.getPhone();
     }
 

@@ -50,21 +50,21 @@ public class AdminServiceTest {
 
         assertTrue(result.isAdmin());
         assertEquals(admin.getFirstName(), result.getFirstName());
-        assertEquals(admin.getSecondName(), result.getSecondName());
-        assertEquals(admin.getThirdName(), result.getThirdName());
-        assertEquals(admin.getProfession(), result.getProfession());
+        assertEquals(admin.getLastName(), result.getLastName());
+        assertEquals(admin.getPatronymic(), result.getPatronymic());
+        assertEquals(admin.getPosition(), result.getPosition());
         assertEquals(admin.getLogin(), result.getLogin());
         assertEquals(admin.getPassword(), result.getPassword());
 
         // Проверяем регистрацию без отчества
 
         admin = generateAdmin();
-        admin.setThirdName(null);
+        admin.setPatronymic(null);
         result = adminService.register(new AdminDto(admin));
 
         verify(mockAccountDao, times(2)).insert(any());
 
-        assertNull(result.getThirdName());
+        assertNull(result.getPatronymic());
     }
 
     @Test(expected = ServiceException.class)
@@ -77,8 +77,8 @@ public class AdminServiceTest {
             when(mockAccountDao.exists("vadim")).thenReturn(true);
 
             adminService.register(new AdminDto(
-                    admin.getFirstName(), admin.getSecondName(), admin.getThirdName(),
-                    admin.getProfession(), admin.getLogin(), admin.getPassword()
+                    admin.getFirstName(), admin.getLastName(), admin.getPatronymic(),
+                    admin.getPosition(), admin.getLogin(), admin.getPassword()
             ));
 
         } catch (ServiceException e) {
@@ -104,9 +104,9 @@ public class AdminServiceTest {
         verify(mockAccountDao).update(any());
 
         assertEquals("name", result.getFirstName());
-        assertEquals("lastName", result.getSecondName());
-        assertEquals("patro", result.getThirdName());
-        assertEquals("pos", result.getProfession());
+        assertEquals("lastName", result.getLastName());
+        assertEquals("patro", result.getPatronymic());
+        assertEquals("pos", result.getPosition());
         assertEquals("33", result.getPassword());
     }
 

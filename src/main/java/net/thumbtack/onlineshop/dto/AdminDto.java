@@ -48,9 +48,9 @@ public class AdminDto extends LoginDto {
         super(account.getLogin(), account.getPassword());
         this.id = account.getId() == null ? 0 : account.getId();
         this.firstName = account.getFirstName();
-        this.lastName = account.getSecondName();
-        this.patronymic = account.getThirdName();
-        this.position = account.getProfession();
+        this.lastName = account.getLastName();
+        this.patronymic = account.getPatronymic();
+        this.position = account.getPosition();
     }
 
     public long id() {

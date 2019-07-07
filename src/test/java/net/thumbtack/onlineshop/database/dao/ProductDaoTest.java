@@ -9,6 +9,7 @@ import org.mockito.MockitoAnnotations;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -19,8 +20,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class ProductDaoTest {
@@ -61,8 +61,8 @@ public class ProductDaoTest {
 
         productDao.delete(product);
 
+        assertTrue(product.getDeleted());
         verify(mockEntityManager).merge(product);
-        verify(mockEntityManager).remove(product);
     }
 
     @Test
@@ -197,7 +197,7 @@ public class ProductDaoTest {
     }
 
     @Test
-    public void testAllSorted() {
+    public void testAllWithCategory() {
 
         List<ProductCategory> mockResult = (List<ProductCategory>) mock(List.class);
 
@@ -212,7 +212,7 @@ public class ProductDaoTest {
         when(mockEntityManager.createQuery(mockCriteriaQuery)).thenReturn(mockTypedQuery);
         when(mockTypedQuery.getResultList()).thenReturn(mockResult);
 
-        List<ProductCategory> result = productDao.getAllSorted();
+        List<ProductCategory> result = productDao.getAllWithCategory();
 
         assertEquals(mockResult, result);
 
@@ -220,36 +220,28 @@ public class ProductDaoTest {
         verify(mockCriteriaQuery).from(ProductCategory.class);
         verify(mockCriteriaQuery).select(mockRoot);
 
-        // И была сортировка
-        verify(mockResult).sort(any());
     }
 
     @Test
-    public void testAllSortedByCategories() {
+    public void testAllWithoutCategory() {
 
-        List<ProductCategory> mockResult = (List<ProductCategory>) mock(List.class);
+        List<Product> products = Arrays.asList(
+                new Product(), new Product()
+        );
+        Query mockQuery = mock(Query.class);
+        when(mockEntityManager.createNativeQuery(any(), eq(Product.class))).thenReturn(mockQuery);
+        when(mockQuery.getResultList()).thenReturn(products);
 
-        CriteriaBuilder mockCriteriaBuilder = mock(CriteriaBuilder.class);
-        CriteriaQuery<ProductCategory> mockCriteriaQuery = (CriteriaQuery<ProductCategory>) mock(CriteriaQuery.class);
-        TypedQuery<ProductCategory> mockTypedQuery = (TypedQuery<ProductCategory>) mock(TypedQuery.class);
-        Root<ProductCategory> mockRoot = (Root<ProductCategory>) mock(Root.class);
+        List<Product> result = productDao.getAllWithoutCategory();
 
-        when(mockEntityManager.getCriteriaBuilder()).thenReturn(mockCriteriaBuilder);
-        when(mockCriteriaBuilder.createQuery(ProductCategory.class)).thenReturn(mockCriteriaQuery);
-        when(mockCriteriaQuery.from(ProductCategory.class)).thenReturn(mockRoot);
-        when(mockEntityManager.createQuery(mockCriteriaQuery)).thenReturn(mockTypedQuery);
-        when(mockTypedQuery.getResultList()).thenReturn(mockResult);
+        verify(mockEntityManager).createNativeQuery(
+                "select a.* from product a left join productcategory b on" +
+                        " a.id = b.product_id where b.category_id is NULL and deleted = 0"
+        , Product.class);
 
-        List<ProductCategory> result = productDao.getAllSortedByCategory();
+        verify(mockQuery).getResultList();
 
-        assertEquals(mockResult, result);
-
-        // Был селект
-        verify(mockCriteriaQuery).from(ProductCategory.class);
-        verify(mockCriteriaQuery).select(mockRoot);
-
-        // И была сортировка
-        verify(mockResult).sort(any());
+        assertEquals(products, result);
     }
 
 }

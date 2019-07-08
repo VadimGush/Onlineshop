@@ -11,6 +11,10 @@ public class ClientEditDto {
     private String oldPassword;
     private String newPassword;
 
+    public ClientEditDto() {
+
+    }
+
     public ClientEditDto(String firstName, String lastName, String patronymic, String email, String address, String phone, String oldPassword, String newPassword) {
         this.firstName = firstName;
         this.lastName = lastName;

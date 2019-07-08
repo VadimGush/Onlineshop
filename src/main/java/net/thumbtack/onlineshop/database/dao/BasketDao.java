@@ -1,13 +1,12 @@
 package net.thumbtack.onlineshop.database.dao;
 
-import net.thumbtack.onlineshop.database.models.Basket;
 import net.thumbtack.onlineshop.database.models.Account;
+import net.thumbtack.onlineshop.database.models.Basket;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;

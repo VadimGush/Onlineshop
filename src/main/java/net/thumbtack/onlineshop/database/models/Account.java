@@ -8,19 +8,14 @@ import java.util.Objects;
 public class Account {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String firstName;
-
     private String lastName;
-
     private String patronymic;
-
     private String email;
-
     private String address;
-
     private String phone;
 
     @Column(unique = true)
@@ -37,6 +32,7 @@ public class Account {
 
     public Account() {}
 
+    // Конструктор для клиента
     protected Account(
             String firstName,
             String lastName,
@@ -47,17 +43,11 @@ public class Account {
             String login,
             String password
     ) {
-        this.firstName = firstName;
-        this.lastName = lastName;
+        this(firstName, lastName, email, address, phone, login, password);
         this.patronymic = patronymic;
-        this.email = email;
-        this.address = address;
-        this.phone = phone;
-        this.login = login;
-        this.password = password;
-        this.deposit = 0;
     }
 
+    // Конструктор для клиента
     protected Account(
             String firstName,
             String lastName,
@@ -77,6 +67,7 @@ public class Account {
         this.deposit = 0;
     }
 
+    // Конструктор для администратора
     protected Account(
             String firstName,
             String lastName,
@@ -85,15 +76,11 @@ public class Account {
             String login,
             String password
     ) {
-        this.firstName = firstName;
-        this.lastName = lastName;
+        this(firstName, lastName, position, login, password);
         this.patronymic = patronymic;
-        this.position = position;
-        this.login = login;
-        this.password = password;
-        this.admin = true;
     }
 
+    // Конструктор для администратора
     protected Account(
             String firstName,
             String lastName,

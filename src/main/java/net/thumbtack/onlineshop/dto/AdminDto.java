@@ -1,43 +1,41 @@
 package net.thumbtack.onlineshop.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import net.thumbtack.onlineshop.database.models.Account;
 
 public class AdminDto extends LoginDto {
 
     private long id;
-    private String firstName;
-    private String lastName;
-
-    @JsonProperty(required = true)
     private String patronymic;
 
+    private String firstName;
+    private String lastName;
     private String position;
 
+    public AdminDto() {
+
+    }
+
+    // Основной конструктор с обязательным полями
+    public AdminDto(String firstName, String lastName, String position) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.position = position;
+    }
+
+    // Регистрация администратора без отчества
+    public AdminDto(String firstName, String lastName, String position, String login, String password) {
+        this(firstName, lastName, position);
+        this.setLogin(login);
+        this.setPassword(password);
+    }
+
+    // Регистрация администратора с отчеством
     public AdminDto(String firstName, String lastName, String patronymic, String position, String login, String password) {
         this(firstName, lastName, position, login, password);
         this.patronymic = patronymic;
     }
 
-    public AdminDto(String firstName, String lastName, String position, String login, String password) {
-        super(login, password);
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.position = position;
-    }
-
-    public AdminDto(long id, String firstName, String lastName, String patronymic, String position) {
-        this(id, firstName, lastName, position);
-        this.patronymic = patronymic;
-    }
-
-    public AdminDto(long id, String firstName, String lastName, String position) {
-        this.id = id;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.position = position;
-    }
-
+    // Создание объекта из энтити БД
     public AdminDto(Account account) {
         super(account.getLogin(), account.getPassword());
         this.id = account.getId() == null ? 0 : account.getId();

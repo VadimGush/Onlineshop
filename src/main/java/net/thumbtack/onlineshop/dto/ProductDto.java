@@ -11,6 +11,11 @@ public class ProductDto {
     private int count = 0;
     private List<Integer> categories;
 
+    public ProductDto() {
+
+    }
+
+
     public ProductDto(String name, int price, int count) {
         this.name = name;
         this.price = price;
@@ -18,17 +23,7 @@ public class ProductDto {
     }
 
     public ProductDto(String name, int price, int count, List<Integer> categories) {
-        this.name = name;
-        this.price = price;
-        this.count = count;
-        this.categories = categories;
-    }
-
-    public ProductDto(long id, String name, int price, int count, List<Integer> categories) {
-        this.id = id;
-        this.name = name;
-        this.price = price;
-        this.count = count;
+        this(name, price, count);
         this.categories = categories;
     }
 

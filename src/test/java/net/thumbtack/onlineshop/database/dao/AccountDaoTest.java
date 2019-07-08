@@ -14,7 +14,6 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -118,18 +117,16 @@ public class AccountDaoTest {
 
     @Test
     public void testExists() {
-        Account account = generateAccount();
-
         CriteriaBuilder mockCriteriaBuilder = mock(CriteriaBuilder.class);
-        CriteriaQuery<Account> mockCriteriaQuery = (CriteriaQuery<Account>) mock(CriteriaQuery.class);
-        TypedQuery<Account> mockTypedQuery = (TypedQuery<Account>) mock(TypedQuery.class);
+        CriteriaQuery<Long> mockCriteriaQuery = (CriteriaQuery<Long>) mock(CriteriaQuery.class);
+        TypedQuery<Long> mockTypedQuery = (TypedQuery<Long>) mock(TypedQuery.class);
         Root<Account> mockRoot = (Root<Account>) mock(Root.class);
 
         when(mockEntityManager.getCriteriaBuilder()).thenReturn(mockCriteriaBuilder);
-        when(mockCriteriaBuilder.createQuery(Account.class)).thenReturn(mockCriteriaQuery);
+        when(mockCriteriaBuilder.createQuery(Long.class)).thenReturn(mockCriteriaQuery);
         when(mockCriteriaQuery.from(Account.class)).thenReturn(mockRoot);
         when(mockEntityManager.createQuery(mockCriteriaQuery)).thenReturn(mockTypedQuery);
-        when(mockTypedQuery.getSingleResult()).thenReturn(account);
+        when(mockTypedQuery.getSingleResult()).thenReturn(1L);
 
         assertTrue(accountDao.exists("login"));
 
@@ -138,7 +135,7 @@ public class AccountDaoTest {
         verify(mockCriteriaQuery).select(any());
         verify(mockCriteriaQuery).where(nullable(Predicate.class));
 
-        // Проверяем что реально была проверка логина и пароля
+        // Проверяем что реально была проверка логина
         verify(mockCriteriaBuilder).equal(null, "login");
     }
 
@@ -146,15 +143,15 @@ public class AccountDaoTest {
     public void testNotExists() {
 
         CriteriaBuilder mockCriteriaBuilder = mock(CriteriaBuilder.class);
-        CriteriaQuery<Account> mockCriteriaQuery = (CriteriaQuery<Account>) mock(CriteriaQuery.class);
-        TypedQuery<Account> mockTypedQuery = (TypedQuery<Account>) mock(TypedQuery.class);
+        CriteriaQuery<Long> mockCriteriaQuery = (CriteriaQuery<Long>) mock(CriteriaQuery.class);
+        TypedQuery<Long> mockTypedQuery = (TypedQuery<Long>) mock(TypedQuery.class);
         Root<Account> mockRoot = (Root<Account>) mock(Root.class);
 
         when(mockEntityManager.getCriteriaBuilder()).thenReturn(mockCriteriaBuilder);
-        when(mockCriteriaBuilder.createQuery(Account.class)).thenReturn(mockCriteriaQuery);
+        when(mockCriteriaBuilder.createQuery(Long.class)).thenReturn(mockCriteriaQuery);
         when(mockCriteriaQuery.from(Account.class)).thenReturn(mockRoot);
         when(mockEntityManager.createQuery(mockCriteriaQuery)).thenReturn(mockTypedQuery);
-        when(mockTypedQuery.getSingleResult()).thenThrow(new NoResultException());
+        when(mockTypedQuery.getSingleResult()).thenReturn(0L);
 
         assertFalse(accountDao.exists("login"));
 

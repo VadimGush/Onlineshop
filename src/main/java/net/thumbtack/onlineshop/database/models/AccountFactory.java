@@ -1,7 +1,5 @@
 package net.thumbtack.onlineshop.database.models;
 
-import org.springframework.stereotype.Component;
-
 public class AccountFactory {
 
     public static Account createAdmin(

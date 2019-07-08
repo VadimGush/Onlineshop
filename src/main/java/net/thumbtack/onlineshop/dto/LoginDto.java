@@ -1,13 +1,8 @@
 package net.thumbtack.onlineshop.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 public class LoginDto {
 
-    @JsonProperty(required = true)
     private String login;
-
-    @JsonProperty(required = true)
     private String password;
 
     public LoginDto() {

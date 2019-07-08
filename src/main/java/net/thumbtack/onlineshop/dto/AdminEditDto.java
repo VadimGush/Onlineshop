@@ -1,14 +1,15 @@
 package net.thumbtack.onlineshop.dto;
 
+
 public class AdminEditDto {
 
     private String firstName;
     private String lastName;
     private String patronymic;
     private String position;
+
     private String oldPassword;
     private String newPassword;
-
 
     public AdminEditDto() {
 

@@ -12,25 +12,8 @@ public class ClientDto extends LoginDto {
     private String address;
     private String phone;
 
-    public ClientDto(long id, String firstName, String lastName, String patronymic, String email, String address, String phone) {
-        this.id = id;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.patronymic = patronymic;
-        this.email = email;
-        this.address = address;
-        this.phone = phone;
-    }
+    public ClientDto() {
 
-    public ClientDto(String login, String password, long id, String firstName, String lastName, String patronymic, String email, String address, String phone) {
-        super(login, password);
-        this.id = id;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.patronymic = patronymic;
-        this.email = email;
-        this.address = address;
-        this.phone = phone;
     }
 
     public ClientDto(Account account) {
@@ -42,6 +25,14 @@ public class ClientDto extends LoginDto {
         this.email = account.getEmail();
         this.address = account.getAddress();
         this.phone = account.getPhone();
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public String getFirstName() {

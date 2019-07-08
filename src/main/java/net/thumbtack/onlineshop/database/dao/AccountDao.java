@@ -7,7 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -43,32 +42,24 @@ public class AccountDao {
                 builder.and(),
                 builder.equal(from.get("password"), password));
         TypedQuery<Account> typed = manager.createQuery(criteria);
-        Account account;
 
         try {
-            account = typed.getSingleResult();
+            return typed.getSingleResult();
         } catch (NoResultException e) {
             return null;
         }
-
-        return account;
     }
 
     public boolean exists(String login) {
         CriteriaBuilder builder = manager.getCriteriaBuilder();
-        CriteriaQuery<Account> criteria = builder.createQuery(Account.class);
+        CriteriaQuery<Long> criteria = builder.createQuery(Long.class);
         Root<Account> from = criteria.from(Account.class);
-        criteria.select(from);
+
+        criteria.select(builder.count(from));
         criteria.where(builder.equal(from.get("login"), login));
 
-        TypedQuery<Account> typed = manager.createQuery(criteria);
-
-        try {
-            typed.getSingleResult();
-            return true;
-        } catch (NoResultException e) {
-            return false;
-        }
+        TypedQuery<Long> typed = manager.createQuery(criteria);
+        return typed.getSingleResult() != 0;
     }
 
     public void delete(Account account) {

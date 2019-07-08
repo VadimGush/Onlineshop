@@ -3,8 +3,8 @@ package net.thumbtack.onlineshop.dto;
 public class BuyProductDto {
 
     private long id;
-    private String name;
     private int price;
+    private String name;
     private Integer count;
 
     public BuyProductDto() {

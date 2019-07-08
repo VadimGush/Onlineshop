@@ -13,7 +13,6 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -65,23 +64,21 @@ public class CategoryDaoTest {
     @Test
     public void testExists() {
 
-        Category category = new Category();
-
         CriteriaBuilder mockCriteriaBuilder = mock(CriteriaBuilder.class);
-        CriteriaQuery<Category> mockCriteriaQuery = (CriteriaQuery<Category>) mock(CriteriaQuery.class);
-        TypedQuery<Category> mockTypedQuery = (TypedQuery<Category>) mock(TypedQuery.class);
+        CriteriaQuery<Long> mockCriteriaQuery = (CriteriaQuery<Long>) mock(CriteriaQuery.class);
+        TypedQuery<Long> mockTypedQuery = (TypedQuery<Long>) mock(TypedQuery.class);
         Root<Category> mockRoot = (Root<Category>) mock(Root.class);
 
         when(mockEntityManager.getCriteriaBuilder()).thenReturn(mockCriteriaBuilder);
-        when(mockCriteriaBuilder.createQuery(Category.class)).thenReturn(mockCriteriaQuery);
+        when(mockCriteriaBuilder.createQuery(Long.class)).thenReturn(mockCriteriaQuery);
         when(mockCriteriaQuery.from(Category.class)).thenReturn(mockRoot);
         when(mockEntityManager.createQuery(mockCriteriaQuery)).thenReturn(mockTypedQuery);
-        when(mockTypedQuery.getSingleResult()).thenReturn(category);
+        when(mockTypedQuery.getSingleResult()).thenReturn(1L);
 
         assertTrue(categoryDao.exists("value"));
 
         verify(mockCriteriaQuery).from(Category.class);
-        verify(mockCriteriaQuery).select(mockRoot);
+        verify(mockCriteriaQuery).select(any());
         verify(mockCriteriaQuery).where(nullable(Predicate.class));
 
         verify(mockRoot).get("name");
@@ -93,20 +90,20 @@ public class CategoryDaoTest {
     public void testNotExists() {
 
         CriteriaBuilder mockCriteriaBuilder = mock(CriteriaBuilder.class);
-        CriteriaQuery<Category> mockCriteriaQuery = (CriteriaQuery<Category>) mock(CriteriaQuery.class);
-        TypedQuery<Category> mockTypedQuery = (TypedQuery<Category>) mock(TypedQuery.class);
+        CriteriaQuery<Long> mockCriteriaQuery = (CriteriaQuery<Long>) mock(CriteriaQuery.class);
+        TypedQuery<Long> mockTypedQuery = (TypedQuery<Long>) mock(TypedQuery.class);
         Root<Category> mockRoot = (Root<Category>) mock(Root.class);
 
         when(mockEntityManager.getCriteriaBuilder()).thenReturn(mockCriteriaBuilder);
-        when(mockCriteriaBuilder.createQuery(Category.class)).thenReturn(mockCriteriaQuery);
+        when(mockCriteriaBuilder.createQuery(Long.class)).thenReturn(mockCriteriaQuery);
         when(mockCriteriaQuery.from(Category.class)).thenReturn(mockRoot);
         when(mockEntityManager.createQuery(mockCriteriaQuery)).thenReturn(mockTypedQuery);
-        when(mockTypedQuery.getSingleResult()).thenThrow(new NoResultException());
+        when(mockTypedQuery.getSingleResult()).thenReturn(0L);
 
         assertFalse(categoryDao.exists("value"));
 
         verify(mockCriteriaQuery).from(Category.class);
-        verify(mockCriteriaQuery).select(mockRoot);
+        verify(mockCriteriaQuery).select(any());
         verify(mockCriteriaQuery).where(nullable(Predicate.class));
 
         verify(mockRoot).get("name");

@@ -4,6 +4,7 @@ import net.thumbtack.onlineshop.database.models.Product;
 import net.thumbtack.onlineshop.database.models.ProductCategory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
@@ -107,8 +108,6 @@ public class ProductDao {
      * @return список всех товаров, у которых нет не одной категории
      */
     public List<Product> getAllWithoutCategory() {
-
-        // Когда CriteriaQuery уже не справляется в дело идёт чистый SQL
 
         Query query = manager.createNativeQuery(
                 "select a.* from product a left join productcategory b on" +

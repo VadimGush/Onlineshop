@@ -6,7 +6,6 @@ import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -39,19 +38,15 @@ public class CategoryDao {
 
     public boolean exists(String name) {
         CriteriaBuilder builder = manager.getCriteriaBuilder();
-        CriteriaQuery<Category> criteria = builder.createQuery(Category.class);
+        CriteriaQuery<Long> criteria = builder.createQuery(Long.class);
         Root<Category> from = criteria.from(Category.class);
 
-        criteria.select(from);
+        criteria.select(builder.count(from));
         criteria.where(builder.equal(from.get("name"), name));
 
-        TypedQuery<Category> typed = manager.createQuery(criteria);
-        try {
-            typed.getSingleResult();
-            return true;
-        } catch (NoResultException e) {
-            return false;
-        }
+        TypedQuery<Long> typed = manager.createQuery(criteria);
+
+        return typed.getSingleResult() != 0;
     }
 
     public Category get(long id) {

@@ -6,7 +6,6 @@ import net.thumbtack.onlineshop.database.dao.SessionDao;
 import net.thumbtack.onlineshop.database.models.*;
 import net.thumbtack.onlineshop.dto.ProductDto;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;

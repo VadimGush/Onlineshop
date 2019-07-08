@@ -15,11 +15,8 @@ public class AdminDto extends LoginDto {
     private String position;
 
     public AdminDto(String firstName, String lastName, String patronymic, String position, String login, String password) {
-        super(login, password);
-        this.firstName = firstName;
-        this.lastName = lastName;
+        this(firstName, lastName, position, login, password);
         this.patronymic = patronymic;
-        this.position = position;
     }
 
     public AdminDto(String firstName, String lastName, String position, String login, String password) {
@@ -30,11 +27,8 @@ public class AdminDto extends LoginDto {
     }
 
     public AdminDto(long id, String firstName, String lastName, String patronymic, String position) {
-        this.id = id;
-        this.firstName = firstName;
-        this.lastName = lastName;
+        this(id, firstName, lastName, position);
         this.patronymic = patronymic;
-        this.position = position;
     }
 
     public AdminDto(long id, String firstName, String lastName, String position) {

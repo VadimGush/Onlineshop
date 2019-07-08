@@ -58,7 +58,7 @@ public class ProductServiceTest {
         // Продукт записан в БД
         verify(mockProductDao).insert(any());
         // Было получены записи о трёх категориях
-        verify(mockCategoryDao, times(3)).get(any());
+        verify(mockCategoryDao, times(3)).get(anyLong());
         // Было вставлено три категори продукта
         verify(mockProductDao, times(3)).insertCategory(any());
 
@@ -116,7 +116,7 @@ public class ProductServiceTest {
             assertEquals(ServiceException.ErrorCode.CATEGORY_NOT_FOUND, e.getErrorCode());
 
             // Было получены записи о трёх категориях
-            verify(mockCategoryDao, times(2)).get(any());
+            verify(mockCategoryDao, times(2)).get(anyLong());
 
             // Никаких вставок в БД не было
             verify(mockProductDao, never()).insertCategory(any());
@@ -220,7 +220,7 @@ public class ProductServiceTest {
 
     }
 
-    @Test
+    @Test(expected = ServiceException.class)
     public void testEditProductNotFound() throws ServiceException {
         setAdmin();
 

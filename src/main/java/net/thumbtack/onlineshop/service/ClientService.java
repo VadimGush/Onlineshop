@@ -292,9 +292,15 @@ public class ClientService {
 
             // Если количество товара на складе меньше чем мы хотим купить,
             // то опять выкидываем из списка покупок
-            if (product.getCount() > basketEntity.getProduct().getCount())
+            if (product.getCount() > basketEntity.getProduct().getCount()) {
                 toBuy.remove(product);
+                continue;
+            }
 
+            // TODO: Протестировать этот случай
+            // Если товар удалён из БД
+            if (basketEntity.getProduct().getDeleted())
+                toBuy.remove(product);
         }
 
         // Теперь в списке tobBuy всё валидное

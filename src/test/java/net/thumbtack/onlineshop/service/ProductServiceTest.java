@@ -452,11 +452,11 @@ public class ProductServiceTest {
 
         assertEquals("xen", results.get(0).getProduct().getName());
         assertEquals("arka", results.get(1).getProduct().getName());
-        assertEquals("amka", results.get(2).getProduct().getName());
+        assertEquals("warka", results.get(2).getProduct().getName());
 
-        assertEquals("aa", results.get(0).getCategory());
-        assertEquals("xx", results.get(1).getCategory());
-        assertEquals("xx", results.get(2).getCategory());
+        assertEquals("aa", results.get(0).getCategory().getName());
+        assertEquals("xx", results.get(1).getCategory().getName());
+        assertEquals("xx", results.get(2).getCategory().getName());
     }
 
     @Test

@@ -11,9 +11,7 @@ import net.thumbtack.onlineshop.dto.ProductDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class ProductService {
@@ -185,7 +183,88 @@ public class ProductService {
     public List<ProductCategory> getAll(String sessionId, List<Integer> categories, SortOrder order) throws ServiceException {
         isLogin(sessionId);
 
-        return null;
+        List<ProductCategory> result = new ArrayList<>();
+
+        if (order == null || order == SortOrder.PRODUCT) {
+            // Сортировка товаров по именам
+
+            if (categories == null) {
+
+                // Все товары
+                List<Product> products = productDao.getAll();
+                for (Product product : products)
+                    result.add(new ProductCategory(product, null));
+
+            } else if (categories.isEmpty()) {
+
+                // Все товары без категорий
+                List<Product> products = productDao.getAllWithoutCategory();
+                for (Product product : products)
+                    result.add(new ProductCategory(product, null));
+
+            } else {
+
+                // Все товары которые содержат данные категории
+                List<ProductCategory> products = productDao.getAllWithCategory();
+                Set<Product> resultSet = new HashSet<>();
+
+                for (int category : categories) {
+                    for (ProductCategory product : products) {
+                        if (product.getCategory().getId() == category)
+                            resultSet.add(product.getProduct());
+                    }
+                }
+
+                // Теперь переносим всё это в конечный результат
+                for (Product product : resultSet)
+                    result.add(new ProductCategory(product, null));
+
+            }
+
+            // Сортируем по именам товаров
+            result.sort(Comparator.comparing((ProductCategory left) -> left.getProduct().getName()));
+
+        } else if (order == SortOrder.CATEGORY) {
+            // Сортировка по именам категорий
+
+            if (categories == null) {
+
+                // Сначала добавляем в начало списка все товары без категорий
+                List<Product> products = productDao.getAllWithoutCategory();
+                for (Product product : products)
+                    result.add(new ProductCategory(product, null));
+                result.sort(Comparator.comparing((ProductCategory left) -> left.getProduct().getName()));
+
+                // Теперь получаем список товаров c категориями
+                List<ProductCategory> temp = productDao.getAllWithCategory();
+                temp.sort(Comparator.comparing((ProductCategory left) -> left.getCategory().getName() + left.getProduct().getName()));
+                result.addAll(temp);
+
+            } else if (categories.isEmpty()) {
+
+                // Все товары без категорий
+                // никаих сортировок здесь не проводим
+                List<Product> products = productDao.getAllWithoutCategory();
+                for (Product product : products)
+                    result.add(new ProductCategory(product, null));
+
+            } else {
+
+                // Получаем список товаров с категориями
+                List<ProductCategory> products = productDao.getAllWithCategory();
+                for (int category : categories) {
+                    for (ProductCategory product : products)
+                        if (product.getCategory().getId() == category)
+                            result.add(product);
+                }
+
+                // Теперь сортируем по именам категорий
+                result.sort(Comparator.comparing((ProductCategory left) -> left.getCategory().getName() + left.getProduct().getName()));
+            }
+
+        }
+
+        return result;
     }
 
     private void isAdmin(String sessionId) throws ServiceException {

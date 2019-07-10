@@ -26,7 +26,6 @@ public class ProductDto {
 
     }
 
-
     public ProductDto(String name, int price, int count) {
         this.name = name;
         this.price = price;
@@ -43,8 +42,10 @@ public class ProductDto {
         this.price = product.getPrice();
         this.count = product.getCount();
 
-        this.categories = new ArrayList<>();
-        categories.forEach((category) -> this.categories.add(category.getId()));
+        if (!categories.isEmpty()) {
+            this.categories = new ArrayList<>();
+            categories.forEach((category) -> this.categories.add(category.getCategory().getId()));
+        }
     }
 
     public Integer getPrice() {

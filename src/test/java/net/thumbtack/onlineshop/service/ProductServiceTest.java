@@ -351,23 +351,30 @@ public class ProductServiceTest {
 
         // Получение всех товаров с сортировкой по именам
 
+        Product product1 = new Product("beretta", 1, 1);
+        product1.setId(1L);
+        Product product2 = new Product("warhouse", 1, 1);
+        product2.setId(2L);
+        Product product3 = new Product("amish", 1, 1);
+        product3.setId(3L);
+
         List<Product> products = Arrays.asList(
-                new Product("beretta", 1, 1),
-                new Product("warhouse", 1, 1),
-                new Product("amish", 1, 1)
+                product1,
+                product2,
+                product3
         );
         when(mockProductDao.getAll()).thenReturn(products);
 
-        List<ProductCategory> results = productService.getAll("token", null, ProductService.SortOrder.PRODUCT);
+        List<ProductDto> results = productService.getAll("token", null, ProductService.SortOrder.PRODUCT);
 
         verify(mockProductDao).getAll();
 
-        assertEquals("amish", results.get(0).getProduct().getName());
-        assertEquals("beretta", results.get(1).getProduct().getName());
-        assertEquals("warhouse", results.get(2).getProduct().getName());
-        assertNull(results.get(0).getCategory());
-        assertNull(results.get(1).getCategory());
-        assertNull(results.get(2).getCategory());
+        assertEquals("amish", results.get(0).getName());
+        assertEquals("beretta", results.get(1).getName());
+        assertEquals("warhouse", results.get(2).getName());
+        assertNull(results.get(0).getCategories());
+        assertNull(results.get(1).getCategories());
+        assertNull(results.get(2).getCategories());
     }
 
     @Test
@@ -377,26 +384,33 @@ public class ProductServiceTest {
         // Получаем список всех товаров, не принадлежащих не одной категори
         // отсортированный по именами
 
+        Product product1 = new Product("beretta", 1, 1);
+        product1.setId(1L);
+        Product product2 = new Product("warhouse", 1, 1);
+        product2.setId(2L);
+        Product product3 = new Product("amish", 1, 1);
+        product3.setId(3L);
+
         List<Product> products = Arrays.asList(
-                new Product("beretta", 1, 1),
-                new Product("warhouse", 1, 1),
-                new Product("amish", 1, 1)
+                product1,
+                product2,
+                product3
         );
         when(mockProductDao.getAllWithoutCategory()).thenReturn(products);
 
-        List<ProductCategory> results =
+        List<ProductDto> results =
                 productService.getAll("token", Collections.emptyList(), ProductService.SortOrder.PRODUCT);
 
         verify(mockProductDao).getAllWithoutCategory();
         verify(mockProductDao, never()).getAll();
         verify(mockProductDao, never()).getAllWithCategory();
 
-        assertEquals("amish", results.get(0).getProduct().getName());
-        assertEquals("beretta", results.get(1).getProduct().getName());
-        assertEquals("warhouse", results.get(2).getProduct().getName());
-        assertNull(results.get(0).getCategory());
-        assertNull(results.get(1).getCategory());
-        assertNull(results.get(2).getCategory());
+        assertEquals("amish", results.get(0).getName());
+        assertEquals("beretta", results.get(1).getName());
+        assertEquals("warhouse", results.get(2).getName());
+        assertNull(results.get(0).getCategories());
+        assertNull(results.get(1).getCategories());
+        assertNull(results.get(2).getCategories());
     }
 
     @Test
@@ -411,24 +425,36 @@ public class ProductServiceTest {
         Category second = new Category("bb");
         second.setId(2L);
 
+        Product product1 = new Product("warka", 1, 1);
+        product1.setId(1L);
+        Product product2 = new Product("amka", 1, 1);
+        product2.setId(2L);
+        Product product3 = new Product("arka", 1, 1);
+        product3.setId(3L);
+
         List<ProductCategory> productCategory = Arrays.asList(
-                new ProductCategory(new Product("warka", 1, 1), first),
-                new ProductCategory(new Product("amka", 1, 1), second),
-                new ProductCategory(new Product("arka", 1, 1), first)
+                new ProductCategory(product1, first),
+                new ProductCategory(product2, second),
+                new ProductCategory(product3, first)
         );
+
+        for (ProductCategory category : productCategory) {
+            when(mockProductDao.getCategories(category.getProduct().getId()))
+                    .thenReturn(Collections.singletonList(category));
+        }
 
         when(mockProductDao.getAllWithCategory()).thenReturn(productCategory);
 
-        List<ProductCategory> results =
-                productService.getAll("token", Arrays.asList(1), ProductService.SortOrder.PRODUCT);
+        List<ProductDto> results =
+                productService.getAll("token", Collections.singletonList(1), ProductService.SortOrder.PRODUCT);
 
         verify(mockProductDao).getAllWithCategory();
 
-        assertEquals("arka", results.get(0).getProduct().getName());
-        assertEquals("warka", results.get(1).getProduct().getName());
+        assertEquals("arka", results.get(0).getName());
+        assertEquals("warka", results.get(1).getName());
 
-        assertNull(results.get(0).getCategory());
-        assertNull(results.get(1).getCategory());
+        assertEquals(1, (long)results.get(0).getCategories().get(0));
+        assertEquals(1, (long)results.get(1).getCategories().get(0));
     }
 
     @Test
@@ -445,26 +471,41 @@ public class ProductServiceTest {
         Category third = new Category("aa");
         third.setId(3L);
 
+        Product product1 = new Product("warka", 1, 1);
+        product1.setId(1L);
+        Product product2 = new Product("amka", 1, 1);
+        product2.setId(2L);
+        Product product3 = new Product("arka", 1, 1);
+        product3.setId(3L);
+        Product product4 = new Product("xen", 1, 1);
+        product4.setId(4L);
+
         List<ProductCategory> productCategory = Arrays.asList(
-                new ProductCategory(new Product("warka", 1, 1), first),
-                new ProductCategory(new Product("amka", 1, 1), second),
-                new ProductCategory(new Product("arka", 1, 1), first),
-                new ProductCategory(new Product("xen", 1, 1), third)
+                new ProductCategory(product1, first),
+                new ProductCategory(product2, second),
+                new ProductCategory(product3, first),
+                new ProductCategory(product4, third)
         );
+
+        for (ProductCategory category : productCategory) {
+            when(mockProductDao.getCategories(category.getProduct().getId()))
+                    .thenReturn(Collections.singletonList(category));
+        }
+
         when(mockProductDao.getAllWithCategory()).thenReturn(productCategory);
 
-        List<ProductCategory> results =
+        List<ProductDto> results =
                 productService.getAll("token", Arrays.asList(1, 3), ProductService.SortOrder.CATEGORY);
 
         verify(mockProductDao).getAllWithCategory();
 
-        assertEquals("xen", results.get(0).getProduct().getName());
-        assertEquals("arka", results.get(1).getProduct().getName());
-        assertEquals("warka", results.get(2).getProduct().getName());
+        assertEquals("xen", results.get(0).getName());
+        assertEquals("arka", results.get(1).getName());
+        assertEquals("warka", results.get(2).getName());
 
-        assertEquals("aa", results.get(0).getCategory().getName());
-        assertEquals("xx", results.get(1).getCategory().getName());
-        assertEquals("xx", results.get(2).getCategory().getName());
+        assertEquals(3, (long)results.get(0).getCategories().get(0));
+        assertEquals(1, (long)results.get(1).getCategories().get(0));
+        assertEquals(1, (long)results.get(2).getCategories().get(0));
     }
 
     @Test
@@ -474,26 +515,34 @@ public class ProductServiceTest {
         // Получаем список всех товаров, не принадлежащих не одной категории
         // (без сортировки)
 
+        Product product1 = new Product("beretta", 1, 1);
+        product1.setId(1L);
+        Product product2 = new Product("warhouse", 1, 1);
+        product2.setId(2L);
+        Product product3 = new Product("amish", 1, 1);
+        product3.setId(3L);
+
         List<Product> products = Arrays.asList(
-                new Product("beretta", 1, 1),
-                new Product("warhouse", 1, 1),
-                new Product("amish", 1, 1)
+                product1,
+                product2,
+                product3
         );
+
         when(mockProductDao.getAllWithoutCategory()).thenReturn(products);
 
-        List<ProductCategory> results =
+        List<ProductDto> results =
                 productService.getAll("token", Collections.emptyList(), ProductService.SortOrder.CATEGORY);
 
         verify(mockProductDao).getAllWithoutCategory();
         verify(mockProductDao, never()).getAll();
         verify(mockProductDao, never()).getAllWithCategory();
 
-        assertEquals("beretta", results.get(0).getProduct().getName());
-        assertEquals("warhouse", results.get(1).getProduct().getName());
-        assertEquals("amish", results.get(2).getProduct().getName());
-        assertNull(results.get(0).getCategory());
-        assertNull(results.get(1).getCategory());
-        assertNull(results.get(2).getCategory());
+        assertEquals("beretta", results.get(0).getName());
+        assertEquals("warhouse", results.get(1).getName());
+        assertEquals("amish", results.get(2).getName());
+        assertNull(results.get(0).getCategories());
+        assertNull(results.get(1).getCategories());
+        assertNull(results.get(2).getCategories());
     }
 
     @Test
@@ -502,41 +551,67 @@ public class ProductServiceTest {
 
         // Получаем список всех товаров, отстортированных по именам категорий
 
+        // ИНДУСИМ ПО ПОЛНОЙ
+        Product product1 = new Product("beretta", 1, 1);
+
+        product1.setId(1L);
+        Product product2 = new Product("warhouse", 1, 1);
+        product2.setId(2L);
+        Product product3 = new Product("amish", 1, 1);
+        product3.setId(3L);
+
+        Product product4 = new Product("b", 1, 1);
+        product4.setId(4L);
+        Product product5 = new Product("a", 1, 1);
+        product5.setId(5L);
+        Product product6 = new Product("ob", 1, 1);
+        product6.setId(6L);
+
+        Category category1 = new Category("zet");
+        category1.setId(1L);
+        Category category2 = new Category("ark");
+        category2.setId(2L);
+
         List<Product> products = Arrays.asList(
-                new Product("beretta", 1,1),
-                new Product("warhouse", 1, 1),
-                new Product("amish", 1, 1)
+                product1,
+                product2,
+                product3
         );
 
         List<ProductCategory> productCategory = Arrays.asList(
-                new ProductCategory(new Product("b", 1,1), new Category("zet")),
-                new ProductCategory(new Product("a", 1, 1), new Category("zet")),
-                new ProductCategory(new Product("ob", 1, 1), new Category("ark"))
+                new ProductCategory(product4, category1),
+                new ProductCategory(product5, category1),
+                new ProductCategory(product6, category2)
         );
+
+        for (ProductCategory category : productCategory) {
+            when(mockProductDao.getCategories(category.getProduct().getId()))
+                    .thenReturn(Collections.singletonList(category));
+        }
 
         when(mockProductDao.getAllWithoutCategory()).thenReturn(products);
         when(mockProductDao.getAllWithCategory()).thenReturn(productCategory);
 
-        List<ProductCategory> results =
+        List<ProductDto> results =
                 productService.getAll("token", null, ProductService.SortOrder.CATEGORY);
 
         verify(mockProductDao).getAllWithoutCategory();
         verify(mockProductDao).getAllWithCategory();
 
-        assertEquals("amish", results.get(0).getProduct().getName());
-        assertEquals("beretta", results.get(1).getProduct().getName());
-        assertEquals("warhouse", results.get(2).getProduct().getName());
-        assertNull(results.get(0).getCategory());
-        assertNull(results.get(1).getCategory());
-        assertNull(results.get(2).getCategory());
+        assertEquals("amish", results.get(0).getName());
+        assertEquals("beretta", results.get(1).getName());
+        assertEquals("warhouse", results.get(2).getName());
+        assertNull(results.get(0).getCategories());
+        assertNull(results.get(1).getCategories());
+        assertNull(results.get(2).getCategories());
 
-        assertEquals("ob", results.get(3).getProduct().getName());
-        assertEquals("a", results.get(4).getProduct().getName());
-        assertEquals("b", results.get(5).getProduct().getName());
+        assertEquals("ob", results.get(3).getName());
+        assertEquals("a", results.get(4).getName());
+        assertEquals("b", results.get(5).getName());
 
-        assertEquals("ark", results.get(3).getCategory().getName());
-        assertEquals("zet", results.get(4).getCategory().getName());
-        assertEquals("zet", results.get(5).getCategory().getName());
+        assertEquals(2, (long)results.get(3).getCategories().get(0));
+        assertEquals(1, (long)results.get(4).getCategories().get(0));
+        assertEquals(1, (long)results.get(5).getCategories().get(0));
     }
 
 

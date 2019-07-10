@@ -180,7 +180,15 @@ public class ProductService extends GeneralService {
         return productDao.getCategories(productId);
     }
 
-    public List<ProductCategory> getAll(String sessionId, List<Integer> categories, SortOrder order) throws ServiceException {
+    /**
+     * Получает список всех товаров отсортированных и отобранных по необходимым условиям
+     * @param sessionId сессия админа
+     * @param categories список категорий
+     * @param order порядок сортировки
+     * @return список товаров
+     * @throws ServiceException
+     */
+    public List<ProductDto> getAll(String sessionId, List<Integer> categories, SortOrder order) throws ServiceException {
         getAccount(sessionId);
 
         List<ProductCategory> result = new ArrayList<>();
@@ -264,7 +272,44 @@ public class ProductService extends GeneralService {
 
         }
 
-        return result;
+        // Теперь создаём список готовых DTO
+        List<ProductDto> response = new ArrayList<>();
+
+        /*
+        Код может показаться слегка сложноватым, но суть проста.
+
+        Иногда для товара нужно получить полный список категорий, иногда товар
+        в списке должен содержать только упоминание одной категории (если к примеру
+        мы используем сортировку по категориям (читай ТЗ)). Мы получаем из БД пары
+        ProductCategory. Товары, для которых необходимо получить полный список категорий
+        ProductCategory.getCategory() == null. Товары, в которых должна быть только одна категория
+        уже содержат её в паре.
+
+        Всё просто.
+         */
+        for (ProductCategory pc : result) {
+
+            // Если категории нет, то получаем полный список категорий
+            // из БД
+            if (pc.getCategory() == null)
+                response.add(
+                        new ProductDto(
+                                pc.getProduct(),
+                                productDao.getCategories(pc.getProduct().getId())
+                        )
+                );
+            // Если категория есть, то только её и вставляем в конечный объект
+            else
+                response.add(
+                        new ProductDto(
+                                pc.getProduct(),
+                                Collections.singletonList(pc)
+                        )
+                );
+
+        }
+
+        return response;
     }
 
 }

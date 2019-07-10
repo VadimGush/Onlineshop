@@ -9,6 +9,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("api")
@@ -34,32 +35,66 @@ public class ProductController {
 
         return new ProductDto(
                 resultProduct,
-                productService.getCategories(session, product.getId())
+                productService.getCategories(session, resultProduct.getId())
         );
     }
 
     @PutMapping("products/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public String editProduct(@PathVariable int id) {
-        return "{}";
+    public ProductDto editProduct(
+            @CookieValue("JAVASESSIONID") String session,
+            @RequestBody @Valid ProductDto product,
+            BindingResult result,
+            @PathVariable int id) throws Exception {
+
+        if (result.hasErrors())
+            throw new ValidationException(result);
+
+        Product resultProduct = productService.edit(session, product, id);
+
+        return new ProductDto(
+                resultProduct,
+                productService.getCategories(session, resultProduct.getId())
+        );
     }
 
     @DeleteMapping("products/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public String deleteProduct(@PathVariable int id) {
+    public String deleteProduct(
+            @CookieValue("JAVASESSIONID") String session,
+            @PathVariable int id) throws Exception {
+
+        productService.delete(session, id);
+
         return "{}";
     }
 
     @GetMapping("products/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public String getProduct(@PathVariable int id) {
-        return "{}";
+    public ProductDto getProduct(
+            @CookieValue("JAVASESSIONID") String session,
+            @PathVariable int id) throws Exception {
+
+        Product resultProduct = productService.get(session, id);
+
+        return new ProductDto(
+                resultProduct,
+                productService.getCategories(session, resultProduct.getId())
+        );
     }
 
     @GetMapping("products")
     @ResponseStatus(HttpStatus.OK)
-    public String getProducts() {
-        return "{}";
+    public List<ProductDto> getProducts(
+            @CookieValue("JAVASESSIONID") String session,
+            @RequestParam(name = "category") List<Integer> categories,
+            @RequestParam(name = "order") String orderString) throws Exception {
+        ProductService.SortOrder order = ProductService.SortOrder.PRODUCT;
+
+        if (orderString.equals("category"))
+            order = ProductService.SortOrder.CATEGORY;
+
+        return productService.getAll(session, categories, order);
     }
 
 }

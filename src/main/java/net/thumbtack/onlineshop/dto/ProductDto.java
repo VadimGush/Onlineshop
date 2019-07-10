@@ -1,15 +1,26 @@
 package net.thumbtack.onlineshop.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import net.thumbtack.onlineshop.controller.validation.RequiredName;
+import net.thumbtack.onlineshop.database.models.Product;
+import net.thumbtack.onlineshop.database.models.ProductCategory;
+
+import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.List;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProductDto {
 
     private long id;
 
+    @RequiredName
     private String name;
-    private int price;
+    @NotNull
+    private Integer price;
+
     private int count = 0;
-    private List<Integer> categories;
+    private List<Long> categories;
 
     public ProductDto() {
 
@@ -22,9 +33,26 @@ public class ProductDto {
         this.count = count;
     }
 
-    public ProductDto(String name, int price, int count, List<Integer> categories) {
+    public ProductDto(String name, int price, int count, List<Long> categories) {
         this(name, price, count);
         this.categories = categories;
+    }
+
+    public ProductDto(Product product, List<ProductCategory> categories) {
+        this.name = product.getName();
+        this.price = product.getPrice();
+        this.count = product.getCount();
+
+        this.categories = new ArrayList<>();
+        categories.forEach((category) -> this.categories.add(category.getId()));
+    }
+
+    public Integer getPrice() {
+        return price;
+    }
+
+    public void setPrice(Integer price) {
+        this.price = price;
     }
 
     public long getId() {
@@ -43,14 +71,6 @@ public class ProductDto {
         this.name = name;
     }
 
-    public int getPrice() {
-        return price;
-    }
-
-    public void setPrice(int price) {
-        this.price = price;
-    }
-
     public int getCount() {
         return count;
     }
@@ -59,11 +79,11 @@ public class ProductDto {
         this.count = count;
     }
 
-    public List<Integer> getCategories() {
+    public List<Long> getCategories() {
         return categories;
     }
 
-    public void setCategories(List<Integer> categories) {
+    public void setCategories(List<Long> categories) {
         this.categories = categories;
     }
 }

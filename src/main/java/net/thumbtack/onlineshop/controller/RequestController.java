@@ -30,17 +30,5 @@ public class RequestController {
         return "{}";
     }
 
-    @PostMapping("sessions")
-    @ResponseStatus(HttpStatus.OK)
-    public String login() {
-        return "{}";
-    }
-
-    @DeleteMapping("sessions")
-    @ResponseStatus(HttpStatus.OK)
-    public String logout() {
-        return "{}";
-    }
-
 
 }

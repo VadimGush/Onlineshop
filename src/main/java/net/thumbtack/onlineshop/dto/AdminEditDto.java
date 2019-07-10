@@ -1,14 +1,23 @@
 package net.thumbtack.onlineshop.dto;
 
 
+import net.thumbtack.onlineshop.controller.validation.OptionalName;
+import net.thumbtack.onlineshop.controller.validation.Password;
+import net.thumbtack.onlineshop.controller.validation.RequiredName;
+
 public class AdminEditDto {
 
+    @RequiredName
     private String firstName;
+    @RequiredName
     private String lastName;
+    @OptionalName
     private String patronymic;
+    @RequiredName
     private String position;
-
+    @Password
     private String oldPassword;
+    @Password
     private String newPassword;
 
     public AdminEditDto() {

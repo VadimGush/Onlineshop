@@ -6,8 +6,6 @@ import net.thumbtack.onlineshop.database.dao.ProductDao;
 import net.thumbtack.onlineshop.database.dao.SessionDao;
 import net.thumbtack.onlineshop.database.models.*;
 import net.thumbtack.onlineshop.dto.BuyProductDto;
-import net.thumbtack.onlineshop.dto.ClientDto;
-import net.thumbtack.onlineshop.dto.ClientEditDto;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -20,7 +18,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static junit.framework.TestCase.assertEquals;
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
@@ -49,107 +47,6 @@ public class ClientServiceTest {
                 mockSessionDao,
                 mockProductDao,
                 mockBasketDao);
-    }
-
-    @Test
-    public void testRegister() throws ServiceException {
-
-        // Проверяем регистрацию как обычно
-
-        Account client = generateClient();
-
-        when(mockAccountDao.exists(client.getLogin())).thenReturn(false);
-
-        Account result = clientService.register(new ClientDto(client));
-
-        verify(mockAccountDao).insert(any());
-
-        assertEquals(client.getFirstName(), result.getFirstName());
-        assertEquals(client.getLastName(), result.getLastName());
-        assertEquals(client.getPatronymic(), result.getPatronymic());
-        assertEquals(client.getDeposit(), result.getDeposit());
-        assertEquals(client.getEmail(), result.getEmail());
-        assertEquals(client.getAddress(), result.getAddress());
-        assertEquals(client.getPhone(), result.getPhone());
-        assertFalse(result.isAdmin());
-
-        // Проверяем регистрацию без отчества
-
-        client = generateClient();
-        client.setPatronymic(null);
-
-        result = clientService.register(new ClientDto(client));
-
-        verify(mockAccountDao, times(2)).insert(any());
-
-        assertNull(result.getPatronymic());
-    }
-
-    @Test(expected = ServiceException.class)
-    public void testRegisterWithSameLogin() throws ServiceException {
-        Account client = generateClient();
-
-        when(mockAccountDao.exists(client.getLogin())).thenReturn(true);
-
-        try {
-            clientService.register(new ClientDto(client));
-
-        } catch (ServiceException e) {
-            verify(mockAccountDao, never()).insert(client);
-            assertEquals(ServiceException.ErrorCode.LOGIN_ALREADY_IN_USE, e.getErrorCode());
-            throw e;
-        }
-    }
-
-    @Test
-    public void testEdit() throws ServiceException {
-
-        Account client = generateClient();
-
-        when(mockSessionDao.get("token")).thenReturn(new Session("token", client));
-
-        ClientEditDto edited = new ClientEditDto(
-                "new name", "new last name", "new patro",
-                "new email", "new address", "new phone", client.getPassword(),
-                "new password"
-        );
-
-        Account result = clientService.edit("token", edited);
-
-        verify(mockAccountDao).update(client);
-
-        assertEquals(edited.getFirstName(), result.getFirstName());
-        assertEquals(edited.getLastName(), result.getLastName());
-        assertEquals(edited.getPatronymic(), result.getPatronymic());
-        assertEquals(edited.getAddress(), result.getAddress());
-        assertEquals(edited.getEmail(), result.getEmail());
-        assertEquals(edited.getNewPassword(), result.getPassword());
-        assertEquals(edited.getPhone(), result.getPhone());
-        assertFalse(result.isAdmin());
-
-    }
-
-    @Test(expected = ServiceException.class)
-    public void testEditWrongPassword() throws ServiceException {
-
-        Account client = generateClient();
-
-        when(mockSessionDao.get("token")).thenReturn(new Session("token", client));
-
-        ClientEditDto edited = new ClientEditDto(
-                "new name", "new last name", "new patro",
-                "new email", "new address", "new phone", "wrong",
-                "new password"
-        );
-
-        try {
-            clientService.edit("token", edited);
-
-        } catch (ServiceException e) {
-            verify(mockAccountDao, never()).update(client);
-            assertEquals(ServiceException.ErrorCode.WRONG_PASSWORD, e.getErrorCode());
-            throw e;
-        }
     }
 
     @Test()
@@ -214,7 +111,6 @@ public class ClientServiceTest {
         assertEquals(2, (int)client.getDeposit());
 
     }
-
 
     @Test
     public void testBuyProduct2() throws ServiceException {
@@ -728,18 +624,22 @@ public class ClientServiceTest {
         client.setDeposit(30_024);
         when(mockSessionDao.get("token")).thenReturn(new Session("token", client));
 
+
         // Подготавливем список продуктов
         List<Product> products = new ArrayList<>();
-        for (int i = 0; i < 7; ++i) {
+        for (int i = 0; i < 8; ++i) {
             Product product = new Product("product" + i, 10, 1000);
             product.setId((long)i);
             products.add(product);
             when(mockProductDao.get((long)i)).thenReturn(product);
         }
 
+        // Один товар удалён из БД
+        products.get(7).setDeleted(true);
+
         // Каждый из продуктов добавляем в корзину пользователя
         List<Basket> basket = new ArrayList<>();
-        for (int i = 0; i < 7; ++i) {
+        for (int i = 0; i < 8; ++i) {
             Basket basketEntity = new Basket(client, products.get(i), 10);
             basket.add(basketEntity);
             when(mockBasketDao.get(client, i)).thenReturn(basketEntity);
@@ -768,7 +668,9 @@ public class ClientServiceTest {
                 // Этого товара больше чем в корзине
                 new BuyProductDto(4, "product4", 1000, 15),
                 // Этот товар без количества совсем
-                new BuyProductDto(5, "product5", 1000)
+                new BuyProductDto(5, "product5", 1000),
+                // Товар был удалён администратором
+                new BuyProductDto(7, "product7", 1000, 5)
         ));
 
         // Итого у нас будет куплено 3 наименования общим количеством 29 единиц за 1000 за штуку
@@ -872,13 +774,6 @@ public class ClientServiceTest {
         // Наверное можно поправитьс с помощью Java Reflection, но я пока не знаю как
 
         try {
-            clientService.edit("token", null);
-            fail();
-        } catch (ServiceException e) {
-            assertEquals(ServiceException.ErrorCode.NOT_CLIENT, e.getErrorCode());
-        }
-
-        try {
             clientService.putDeposit("token", 0);
             fail();
         } catch (ServiceException e) {
@@ -935,13 +830,6 @@ public class ClientServiceTest {
 
         // Что-то какой-то ужасный тест
         // Наверное можно поправитьс с помощью Java Reflection, но я пока не знаю как
-
-        try {
-            clientService.edit("token", null);
-            fail();
-        } catch (ServiceException e) {
-            assertEquals(ServiceException.ErrorCode.NOT_LOGIN, e.getErrorCode());
-        }
 
         try {
             clientService.putDeposit("token", 0);

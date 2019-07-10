@@ -1,14 +1,22 @@
 package net.thumbtack.onlineshop.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import net.thumbtack.onlineshop.controller.validation.OptionalName;
+import net.thumbtack.onlineshop.controller.validation.RequiredName;
 import net.thumbtack.onlineshop.database.models.Account;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class AdminDto extends LoginDto {
 
     private long id;
-    private String patronymic;
 
+    @RequiredName
     private String firstName;
+    @RequiredName
     private String lastName;
+    @OptionalName
+    private String patronymic;
+    @RequiredName
     private String position;
 
     public AdminDto() {
@@ -45,7 +53,7 @@ public class AdminDto extends LoginDto {
         this.position = account.getPosition();
     }
 
-    public long id() {
+    public long getId() {
         return id;
     }
 

@@ -50,7 +50,7 @@ public class ProductServiceTest {
         when(mockCategoryDao.get(3)).thenReturn(new Category());
 
         ProductDto request = new ProductDto("product", 10, 1000,
-                Arrays.asList(1, 2, 3));
+                Arrays.asList(1L, 2L, 3L));
 
         Product result = productService.add("token", request);
 
@@ -62,7 +62,7 @@ public class ProductServiceTest {
         verify(mockProductDao, times(3)).insertCategory(any());
 
         assertEquals(request.getName(), result.getName());
-        assertEquals(request.getPrice(), (int)result.getPrice());
+        assertEquals((int)request.getPrice(), (int)result.getPrice());
         assertEquals(request.getCount(), (int)result.getCount());
     }
 
@@ -78,7 +78,7 @@ public class ProductServiceTest {
         verify(mockProductDao).insert(any());
 
         assertEquals(request.getName(), result.getName());
-        assertEquals(request.getPrice(), (int)result.getPrice());
+        assertEquals((int)request.getPrice(), (int)result.getPrice());
         assertEquals(request.getCount(), (int)result.getCount());
     }
 
@@ -94,7 +94,7 @@ public class ProductServiceTest {
         verify(mockProductDao).insert(any());
 
         assertEquals(request.getName(), result.getName());
-        assertEquals(request.getPrice(), (int)result.getPrice());
+        assertEquals((int)request.getPrice(), (int)result.getPrice());
         assertEquals(request.getCount(), (int)result.getCount());
     }
 
@@ -107,7 +107,7 @@ public class ProductServiceTest {
         when(mockCategoryDao.get(3)).thenReturn(new Category());
 
         ProductDto request = new ProductDto("product", 10, 1000,
-                Arrays.asList(1, 2, 3));
+                Arrays.asList(1L, 2L, 3L));
 
         try {
             productService.add("token", request);
@@ -142,7 +142,7 @@ public class ProductServiceTest {
                 Arrays.asList(new ProductCategory(), new ProductCategory())
         );
 
-        ProductDto request = new ProductDto("new name", 2, 20, Arrays.asList(1, 2, 3));
+        ProductDto request = new ProductDto("new name", 2, 20, Arrays.asList(1L, 2L, 3L));
 
         Product result = productService.edit("token", request, 0);
 
@@ -160,7 +160,7 @@ public class ProductServiceTest {
         // И в конце проверяем что всё изменили правильно
         assertEquals(request.getName(), result.getName());
         assertEquals(request.getCount(), (int)result.getCount());
-        assertEquals(request.getPrice(), (int)result.getPrice());
+        assertEquals((int)request.getPrice(), (int)result.getPrice());
     }
 
     @Test
@@ -184,7 +184,7 @@ public class ProductServiceTest {
         // И в конце проверяем что всё изменили правильно
         assertEquals(request.getName(), result.getName());
         assertEquals(request.getCount(), (int)result.getCount());
-        assertEquals(request.getPrice(), (int)result.getPrice());
+        assertEquals((int)request.getPrice(), (int)result.getPrice());
     }
 
     @Test(expected = ServiceException.class)
@@ -204,7 +204,7 @@ public class ProductServiceTest {
                 Arrays.asList(new ProductCategory(), new ProductCategory())
         );
 
-        ProductDto request = new ProductDto("new name", 2, 20, Arrays.asList(1, 2, 3));
+        ProductDto request = new ProductDto("new name", 2, 20, Arrays.asList(1L, 2L, 3L));
 
         try {
             productService.edit("token", request, 0);
@@ -245,11 +245,19 @@ public class ProductServiceTest {
         setAdmin();
 
         Product product = new Product();
+
+        ProductCategory category1 = new ProductCategory(product, new Category("category1"));
+        ProductCategory category2 = new ProductCategory(product, new Category("category2"));
         when(mockProductDao.get(0)).thenReturn(product);
+        when(mockProductDao.getCategories(0)).thenReturn(
+                Arrays.asList(category1, category2)
+        );
 
         productService.delete("token", 0);
 
         verify(mockProductDao).delete(product);
+        verify(mockProductDao).deleteCategory(category1);
+        verify(mockProductDao).deleteCategory(category2);
     }
 
     @Test(expected = ServiceException.class)
@@ -259,7 +267,7 @@ public class ProductServiceTest {
         when(mockProductDao.get(0)).thenReturn(null);
 
         try {
-            productService.get("token", 0);
+            productService.delete("token", 0);
         } catch (ServiceException e) {
             assertEquals(ServiceException.ErrorCode.PRODUCT_NOT_FOUND, e.getErrorCode());
             verify(mockProductDao, never()).delete(any());
@@ -530,6 +538,7 @@ public class ProductServiceTest {
         assertEquals("zet", results.get(4).getCategory().getName());
         assertEquals("zet", results.get(5).getCategory().getName());
     }
+
 
     public void setAdmin() {
         Account admin = generateAdmin();

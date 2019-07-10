@@ -4,10 +4,10 @@ import net.thumbtack.onlineshop.database.dao.AccountDao;
 import net.thumbtack.onlineshop.database.dao.BasketDao;
 import net.thumbtack.onlineshop.database.dao.ProductDao;
 import net.thumbtack.onlineshop.database.dao.SessionDao;
-import net.thumbtack.onlineshop.database.models.*;
+import net.thumbtack.onlineshop.database.models.Account;
+import net.thumbtack.onlineshop.database.models.Basket;
+import net.thumbtack.onlineshop.database.models.Product;
 import net.thumbtack.onlineshop.dto.BuyProductDto;
-import net.thumbtack.onlineshop.dto.ClientDto;
-import net.thumbtack.onlineshop.dto.ClientEditDto;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
@@ -15,75 +15,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class ClientService {
+public class ClientService extends GeneralService {
 
-    private AccountDao clientDao;
-    private SessionDao sessionDao;
+    private AccountDao accountDao;
     private ProductDao productDao;
     private BasketDao basketDao;
 
     public ClientService(
-            AccountDao clientDao,
+            AccountDao accountDao,
             SessionDao sessionDao,
             ProductDao productDao,
             BasketDao basketDao) {
-        this.clientDao = clientDao;
-        this.sessionDao = sessionDao;
+        super(sessionDao);
+        this.accountDao = accountDao;
         this.productDao = productDao;
         this.basketDao = basketDao;
-    }
-
-    /**
-     * Регистрирует нового клиента
-     * @param client информация о клиенте
-     * @return созданный аккаунт клиента
-     * @throws ServiceException
-     */
-    public Account register(ClientDto client) throws ServiceException {
-
-        if (clientDao.exists(client.getLogin()))
-            throw new ServiceException(ServiceException.ErrorCode.LOGIN_ALREADY_IN_USE, "login");
-
-        Account registeredClient = AccountFactory.createClient(
-                client.getFirstName(),
-                client.getLastName(),
-                client.getPatronymic(),
-                client.getEmail(),
-                client.getAddress(),
-                client.getPhone(),
-                client.getLogin(),
-                client.getPassword()
-        );
-        clientDao.insert(registeredClient);
-        return registeredClient;
-
-    }
-
-    /**
-     * Изменяет информацию о клиенте
-     * @param sessionId сессия клиента
-     * @param client новая инфа клиента
-     * @return аккаунт изменённого клиента
-     * @throws ServiceException
-     */
-    public Account edit(String sessionId, ClientEditDto client) throws ServiceException {
-
-        Account account = getAccount(sessionId);
-
-        if (!account.getPassword().equals(client.getOldPassword()))
-            throw new ServiceException(ServiceException.ErrorCode.WRONG_PASSWORD, "oldPassword");
-
-        account.setFirstName(client.getFirstName());
-        account.setLastName(client.getLastName());
-        account.setPatronymic(client.getPatronymic());
-        account.setEmail(client.getEmail());
-        account.setAddress(client.getAddress());
-        account.setPhone(client.getPhone());
-        account.setPassword(client.getNewPassword());
-
-        clientDao.update(account);
-
-        return account;
     }
 
     /**
@@ -93,9 +39,9 @@ public class ClientService {
      */
     public Account putDeposit(String sessionId, int amount) throws ServiceException {
 
-        Account account = getAccount(sessionId);
+        Account account = getClient(sessionId);
         account.setDeposit(account.getDeposit() + amount);
-        clientDao.update(account);
+        accountDao.update(account);
 
         return account;
     }
@@ -107,7 +53,7 @@ public class ClientService {
      * @throws ServiceException
      */
     public Account getDeposit(String sessionId) throws ServiceException {
-        return getAccount(sessionId);
+        return getClient(sessionId);
     }
 
     /**
@@ -119,7 +65,7 @@ public class ClientService {
      */
     public BuyProductDto buyProduct(String sessionId, BuyProductDto buyProduct) throws ServiceException {
 
-        Account account = getAccount(sessionId);
+        Account account = getClient(sessionId);
         Product product = productDao.get(buyProduct.getId());
 
         checkProducts(product, buyProduct);
@@ -134,7 +80,7 @@ public class ClientService {
         productDao.update(product);
 
         account.setDeposit(account.getDeposit() - buyProduct.getCount() * buyProduct.getPrice());
-        clientDao.update(account);
+        accountDao.update(account);
 
         return buyProduct;
 
@@ -159,7 +105,7 @@ public class ClientService {
      */
     public List<Basket> addToBasket(String sessionId, BuyProductDto buyProduct) throws ServiceException {
 
-        Account account = getAccount(sessionId);
+        Account account = getClient(sessionId);
         Product product = productDao.get(buyProduct.getId());
 
         checkProducts(product, buyProduct);
@@ -191,7 +137,7 @@ public class ClientService {
      */
     public void deleteFromBasket(String sessionId, long productId) throws ServiceException {
 
-        Account account = getAccount(sessionId);
+        Account account = getClient(sessionId);
         Basket basket = basketDao.get(account, productId);
 
         if (basket == null)
@@ -200,7 +146,6 @@ public class ClientService {
         basketDao.delete(basket);
 
     }
-
 
     /**
      * Изменяет количество товара в корзине
@@ -211,7 +156,7 @@ public class ClientService {
      */
     public List<Basket> editProductCount(String sessionId, BuyProductDto product) throws ServiceException {
 
-        Account account = getAccount(sessionId);
+        Account account = getClient(sessionId);
         Basket basket = basketDao.get(account, product.getId());
 
         if (basket == null)
@@ -232,12 +177,11 @@ public class ClientService {
      */
     public List<Basket> getBasket(String sessionId) throws ServiceException {
 
-        Account account = getAccount(sessionId);
+        Account account = getClient(sessionId);
 
         return basketDao.get(account);
 
     }
-
 
     /**
      * Выкупает товар из корзины
@@ -253,7 +197,7 @@ public class ClientService {
 
         // Внимание: вносить изменения только с ТЗ в руках!
 
-        Account account = getAccount(sessionId);
+        Account account = getClient(sessionId);
         List<Basket> basket = basketDao.get(account);
 
         List<BuyProductDto> copyList = new ArrayList<>(toBuy);
@@ -297,7 +241,6 @@ public class ClientService {
                 continue;
             }
 
-            // TODO: Протестировать этот случай
             // Если товар удалён из БД
             if (basketEntity.getProduct().getDeleted())
                 toBuy.remove(product);
@@ -319,7 +262,7 @@ public class ClientService {
 
         // Снимаем деньги
         account.setDeposit(account.getDeposit() - sum);
-        clientDao.update(account);
+        accountDao.update(account);
 
         for (BuyProductDto product : toBuy) {
 
@@ -352,20 +295,6 @@ public class ClientService {
 
         if (product.getPrice() != buyProduct.getPrice())
             throw new ServiceException(ServiceException.ErrorCode.WRONG_PRODUCT_INFO, "price");
-    }
-
-    private Account getAccount(String sessionId) throws ServiceException {
-        Session session = sessionDao.get(sessionId);
-
-        if (session == null)
-            throw new ServiceException(ServiceException.ErrorCode.NOT_LOGIN, "JAVASESSIONID");
-
-        Account account = session.getAccount();
-
-        if (account.isAdmin())
-            throw new ServiceException(ServiceException.ErrorCode.NOT_CLIENT, "JAVASESSIONID");
-
-        return account;
     }
 
 }

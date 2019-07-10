@@ -1,9 +1,17 @@
 package net.thumbtack.onlineshop.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import net.thumbtack.onlineshop.controller.validation.RequiredName;
+import net.thumbtack.onlineshop.database.models.Category;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class CategoryDto {
 
     private long id;
+
+    @RequiredName
     private String name;
+
     private Long parentId;
     private String parentName;
 
@@ -14,6 +22,15 @@ public class CategoryDto {
     public CategoryDto(String name, long parentId) {
         this.name = name;
         this.parentId = parentId;
+    }
+
+    public CategoryDto(Category category) {
+        this.id = category.getId() == null ? 0 : category.getId();
+        this.name = category.getName();
+        if (category.getParent() != null) {
+            this.parentId = category.getParent().getId();
+            this.parentName = category.getParent().getName();
+        }
     }
 
     public CategoryDto(String name) {

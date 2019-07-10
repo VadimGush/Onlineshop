@@ -1,53 +1,41 @@
 package net.thumbtack.onlineshop.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import net.thumbtack.onlineshop.controller.validation.OptionalName;
-import net.thumbtack.onlineshop.controller.validation.Phone;
-import net.thumbtack.onlineshop.controller.validation.RequiredName;
 import net.thumbtack.onlineshop.database.models.Account;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ClientDto extends LoginDto {
+public class AccountDto {
 
-    private long id;
-
-    @RequiredName
     private String firstName;
-    @RequiredName
     private String lastName;
-    @OptionalName
     private String patronymic;
-    @Email
     private String email;
-    @NotBlank
     private String address;
-    @Phone
     private String phone;
+    private String position;
+    private Integer deposit;
 
-    public ClientDto() {
+    public AccountDto() {
 
     }
 
-    public ClientDto(Account account) {
-        super(account.getLogin(), account.getPassword());
-        this.id = account.getId() == null ? 0 : account.getId();
+    public AccountDto(Account account) {
         this.firstName = account.getFirstName();
         this.lastName = account.getLastName();
         this.patronymic = account.getPatronymic();
         this.email = account.getEmail();
         this.address = account.getAddress();
         this.phone = account.getPhone();
+        this.position = account.getPosition();
+        this.deposit = account.getDeposit();
     }
 
-    public long getId() {
-        return id;
+    public Integer getDeposit() {
+        return deposit;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public void setDeposit(Integer deposit) {
+        this.deposit = deposit;
     }
 
     public String getFirstName() {
@@ -98,4 +86,11 @@ public class ClientDto extends LoginDto {
         this.phone = phone;
     }
 
+    public String getPosition() {
+        return position;
+    }
+
+    public void setPosition(String position) {
+        this.position = position;
+    }
 }

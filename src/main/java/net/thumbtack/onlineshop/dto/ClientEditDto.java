@@ -1,14 +1,30 @@
 package net.thumbtack.onlineshop.dto;
 
+import net.thumbtack.onlineshop.controller.validation.OptionalName;
+import net.thumbtack.onlineshop.controller.validation.Password;
+import net.thumbtack.onlineshop.controller.validation.Phone;
+import net.thumbtack.onlineshop.controller.validation.RequiredName;
+
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+
 public class ClientEditDto {
 
+    @RequiredName
     private String firstName;
+    @RequiredName
     private String lastName;
+    @OptionalName
     private String patronymic;
+    @Email
     private String email;
+    @NotBlank
     private String address;
+    @Phone
     private String phone;
+    @Password
     private String oldPassword;
+    @Password
     private String newPassword;
 
     public ClientEditDto() {

@@ -6,7 +6,6 @@ import net.thumbtack.onlineshop.database.dao.SessionDao;
 import net.thumbtack.onlineshop.database.models.Category;
 import net.thumbtack.onlineshop.database.models.Product;
 import net.thumbtack.onlineshop.database.models.ProductCategory;
-import net.thumbtack.onlineshop.database.models.Session;
 import net.thumbtack.onlineshop.dto.ProductDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,7 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 @Service
-public class ProductService {
+public class ProductService extends GeneralService {
 
     private ProductDao productDao;
     private SessionDao sessionDao;
@@ -26,6 +25,7 @@ public class ProductService {
 
     @Autowired
     public ProductService(ProductDao productDao, SessionDao sessionDao, CategoryDao categoryDao) {
+        super(sessionDao);
         this.productDao = productDao;
         this.sessionDao = sessionDao;
         this.categoryDao = categoryDao;
@@ -39,7 +39,7 @@ public class ProductService {
      * @throws ServiceException
      */
     public Product add(String sessionId, ProductDto productDto) throws ServiceException {
-        isAdmin(sessionId);
+        getAdmin(sessionId);
 
         // Добавляем товар в БД
         Product product = new Product(
@@ -52,7 +52,7 @@ public class ProductService {
 
             List<Category> newCategories = new ArrayList<>();
 
-            for (int categoryId : productDto.getCategories()) {
+            for (long categoryId : productDto.getCategories()) {
                 Category category = categoryDao.get(categoryId);
                 if (category == null)
                     throw new ServiceException(ServiceException.ErrorCode.CATEGORY_NOT_FOUND, "categories");
@@ -82,7 +82,7 @@ public class ProductService {
      * @throws ServiceException
      */
     public Product edit(String sessionId, ProductDto productDto, long productId) throws ServiceException {
-        isAdmin(sessionId);
+        getAdmin(sessionId);
 
         Product product = productDao.get(productId);
 
@@ -133,7 +133,7 @@ public class ProductService {
      * @throws ServiceException
      */
     public void delete(String sessionId, long id) throws ServiceException {
-        isAdmin(sessionId);
+        getAdmin(sessionId);
 
         Product product = productDao.get(id);
 
@@ -157,7 +157,7 @@ public class ProductService {
      * @throws ServiceException
      */
     public Product get(String sessionId, long id) throws ServiceException {
-        isLogin(sessionId);
+        getAccount(sessionId);
 
         Product product = productDao.get(id);
 
@@ -175,13 +175,13 @@ public class ProductService {
      * @throws ServiceException
      */
     public List<ProductCategory> getCategories(String sessionId, long productId) throws ServiceException {
-        isLogin(sessionId);
+        getAccount(sessionId);
 
         return productDao.getCategories(productId);
     }
 
     public List<ProductCategory> getAll(String sessionId, List<Integer> categories, SortOrder order) throws ServiceException {
-        isLogin(sessionId);
+        getAccount(sessionId);
 
         List<ProductCategory> result = new ArrayList<>();
 
@@ -267,20 +267,4 @@ public class ProductService {
         return result;
     }
 
-    private void isAdmin(String sessionId) throws ServiceException {
-        Session session = sessionDao.get(sessionId);
-
-        if (session == null)
-            throw new ServiceException(ServiceException.ErrorCode.NOT_LOGIN);
-
-        if (!session.getAccount().isAdmin())
-            throw new ServiceException(ServiceException.ErrorCode.NOT_ADMIN);
-    }
-
-    private void isLogin(String sessionId) throws ServiceException {
-        Session session = sessionDao.get(sessionId);
-
-        if (session == null)
-            throw new ServiceException(ServiceException.ErrorCode.NOT_LOGIN);
-    }
 }

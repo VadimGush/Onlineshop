@@ -7,6 +7,8 @@ import net.thumbtack.onlineshop.database.models.AccountFactory;
 import net.thumbtack.onlineshop.database.models.Session;
 import net.thumbtack.onlineshop.dto.AdminDto;
 import net.thumbtack.onlineshop.dto.AdminEditDto;
+import net.thumbtack.onlineshop.dto.ClientDto;
+import net.thumbtack.onlineshop.dto.ClientEditDto;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -17,12 +19,12 @@ import java.util.List;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-public class AdminServiceTest {
+public class AccountServiceTest {
 
-    private AdminService adminService;
+    private AccountService accountService;
 
     @Mock
     private AccountDao mockAccountDao;
@@ -33,7 +35,7 @@ public class AdminServiceTest {
     @Before
     public void setUpClass() {
         MockitoAnnotations.initMocks(this);
-        adminService = new AdminService(mockAccountDao, mockSessionDao);
+        accountService = new AccountService(mockAccountDao, mockSessionDao);
     }
 
     @Test
@@ -44,7 +46,7 @@ public class AdminServiceTest {
 
         when(mockAccountDao.exists(admin.getLogin())).thenReturn(false);
 
-        Account result = adminService.register(new AdminDto(admin));
+        Account result = accountService.register(new AdminDto(admin));
 
         verify(mockAccountDao).insert(any());
 
@@ -60,7 +62,7 @@ public class AdminServiceTest {
 
         admin = generateAdmin();
         admin.setPatronymic(null);
-        result = adminService.register(new AdminDto(admin));
+        result = accountService.register(new AdminDto(admin));
 
         verify(mockAccountDao, times(2)).insert(any());
 
@@ -76,7 +78,7 @@ public class AdminServiceTest {
             // Login already in use
             when(mockAccountDao.exists("vadim")).thenReturn(true);
 
-            adminService.register(new AdminDto(
+            accountService.register(new AdminDto(
                     admin.getFirstName(), admin.getLastName(), admin.getPatronymic(),
                     admin.getPosition(), admin.getLogin(), admin.getPassword()
             ));
@@ -97,7 +99,7 @@ public class AdminServiceTest {
         );
         when(mockSessionDao.get("token")).thenReturn(new Session("token", admin));
 
-        Account result = adminService.edit("token", new AdminEditDto(
+        Account result = accountService.edit("token", new AdminEditDto(
                 "name", "lastName", "patro", "pos", "23", "33"
         ));
 
@@ -119,7 +121,7 @@ public class AdminServiceTest {
         when(mockSessionDao.get("token")).thenReturn(new Session("token", admin));
 
         try {
-            adminService.edit("token", new AdminEditDto(
+            accountService.edit("token", new AdminEditDto(
                     "name", "lastName", "patro", "pos", "43", "33"
             ));
 
@@ -140,7 +142,7 @@ public class AdminServiceTest {
         Account admin = generateAdmin();
         when(mockSessionDao.get("token")).thenReturn(new Session("token", admin));
 
-        List<Account> result = adminService.getAll("token");
+        List<Account> result = accountService.getAll("token");
         assertEquals(clients.size(), result.size());
 
         verify(mockAccountDao).getClients();
@@ -151,7 +153,7 @@ public class AdminServiceTest {
         when(mockSessionDao.get("token")).thenReturn(null);
 
         try {
-            adminService.edit("token", new AdminEditDto());
+            accountService.edit("token", new AdminEditDto());
 
         } catch (ServiceException e) {
             verify(mockAccountDao, never()).update(any());
@@ -166,7 +168,7 @@ public class AdminServiceTest {
         when(mockSessionDao.get("token")).thenReturn(new Session("token", generateClient()));
 
         try {
-            adminService.edit("token", new AdminEditDto());
+            accountService.edit("token", new AdminEditDto());
 
         } catch (ServiceException e) {
             verify(mockAccountDao, never()).update(any());
@@ -181,7 +183,7 @@ public class AdminServiceTest {
         when(mockSessionDao.get("token")).thenReturn(null);
 
         try {
-            adminService.getAll("token");
+            accountService.getAll("token");
 
         } catch (ServiceException e) {
             verify(mockAccountDao, never()).getClients();
@@ -196,12 +198,181 @@ public class AdminServiceTest {
         when(mockSessionDao.get("token")).thenReturn(new Session("token", generateClient()));
 
         try {
-            adminService.getAll("token");
+            accountService.getAll("token");
 
         } catch (ServiceException e) {
             verify(mockAccountDao, never()).update(any());
 
             assertEquals(ServiceException.ErrorCode.NOT_ADMIN, e.getErrorCode());
+            throw e;
+        }
+    }
+
+    @Test
+    public void testClientRegister() throws ServiceException {
+
+        // Проверяем регистрацию как обычно
+
+        Account client = generateClient();
+
+        when(mockAccountDao.exists(client.getLogin())).thenReturn(false);
+
+        Account result = accountService.register(new ClientDto(client));
+
+        verify(mockAccountDao).insert(any());
+
+        assertEquals(client.getFirstName(), result.getFirstName());
+        assertEquals(client.getLastName(), result.getLastName());
+        assertEquals(client.getPatronymic(), result.getPatronymic());
+        assertEquals(client.getDeposit(), result.getDeposit());
+        assertEquals(client.getEmail(), result.getEmail());
+        assertEquals(client.getAddress(), result.getAddress());
+        assertEquals(client.getPhone(), result.getPhone());
+        assertFalse(result.isAdmin());
+
+        // Проверяем регистрацию без отчества
+
+        client = generateClient();
+        client.setPatronymic(null);
+
+        result = accountService.register(new ClientDto(client));
+
+        verify(mockAccountDao, times(2)).insert(any());
+
+        assertNull(result.getPatronymic());
+    }
+
+    @Test(expected = ServiceException.class)
+    public void testClientRegisterWithSameLogin() throws ServiceException {
+        Account client = generateClient();
+
+        when(mockAccountDao.exists(client.getLogin())).thenReturn(true);
+
+        try {
+            accountService.register(new ClientDto(client));
+
+        } catch (ServiceException e) {
+            verify(mockAccountDao, never()).insert(client);
+            assertEquals(ServiceException.ErrorCode.LOGIN_ALREADY_IN_USE, e.getErrorCode());
+            throw e;
+        }
+    }
+
+    @Test
+    public void testClientEdit() throws ServiceException {
+
+        Account client = generateClient();
+
+        when(mockSessionDao.get("token")).thenReturn(new Session("token", client));
+
+        ClientEditDto edited = new ClientEditDto(
+                "new name", "new last name", "new patro",
+                "new email", "new address", "new phone", client.getPassword(),
+                "new password"
+        );
+
+        Account result = accountService.edit("token", edited);
+
+        verify(mockAccountDao).update(client);
+
+        assertEquals(edited.getFirstName(), result.getFirstName());
+        assertEquals(edited.getLastName(), result.getLastName());
+        assertEquals(edited.getPatronymic(), result.getPatronymic());
+        assertEquals(edited.getAddress(), result.getAddress());
+        assertEquals(edited.getEmail(), result.getEmail());
+        assertEquals(edited.getNewPassword(), result.getPassword());
+        assertEquals(edited.getPhone(), result.getPhone());
+        assertFalse(result.isAdmin());
+
+    }
+
+    @Test(expected = ServiceException.class)
+    public void testClientEditWrongPassword() throws ServiceException {
+
+        Account client = generateClient();
+
+        when(mockSessionDao.get("token")).thenReturn(new Session("token", client));
+
+        ClientEditDto edited = new ClientEditDto(
+                "new name", "new last name", "new patro",
+                "new email", "new address", "new phone", "wrong",
+                "new password"
+        );
+
+        try {
+            accountService.edit("token", edited);
+
+        } catch (ServiceException e) {
+            verify(mockAccountDao, never()).update(client);
+            assertEquals(ServiceException.ErrorCode.WRONG_PASSWORD, e.getErrorCode());
+            throw e;
+        }
+    }
+
+    @Test
+    public void testLogin() throws ServiceException {
+        Account account = AccountFactory.createAdmin(
+                "werew", "werwr", "werwe", "werew", "wer"
+        );
+        when(mockAccountDao.get("login", "password")).thenReturn(account);
+
+        String token = accountService.login("login", "password");
+        verify(mockSessionDao).insert(any());
+        assertNotNull(token);
+    }
+
+    @Test(expected = ServiceException.class)
+    public void testClientLoginWithWrongCred() throws ServiceException {
+
+        when(mockAccountDao.get("login", "password")).thenReturn(null);
+
+        try {
+            accountService.login("login", "password");
+        } catch (ServiceException e) {
+            verify(mockSessionDao, never()).insert(any());
+            assertEquals(ServiceException.ErrorCode.USER_NOT_FOUND, e.getErrorCode());
+            throw e;
+        }
+    }
+
+    @Test
+    public void testLogout() {
+        Session session = new Session();
+        when(mockSessionDao.get("token")).thenReturn(session);
+
+        accountService.logout("token");
+
+        verify(mockSessionDao).delete(session);
+    }
+
+    @Test
+    public void testLogoutWrongSession() {
+        when(mockSessionDao.get("token")).thenReturn(null);
+
+        accountService.logout("token");
+
+        verify(mockSessionDao, never()).delete(any());
+    }
+
+    @Test
+    public void testGetAccount() throws ServiceException {
+        Account account = AccountFactory.createAdmin(
+                "rwer", "werew", "werew", "werw", "werew"
+        );
+        when(mockSessionDao.get("token")).thenReturn(new Session("token", account));
+
+        Account result = accountService.getAccount("token");
+        assertEquals(result, account);
+    }
+
+    @Test(expected = ServiceException.class)
+    public void testGetAccountWrongSession() throws ServiceException {
+        when(mockSessionDao.get("token")).thenReturn(null);
+
+        try {
+            accountService.getAccount("token");
+        } catch (ServiceException e) {
+            assertEquals(ServiceException.ErrorCode.NOT_LOGIN, e.getErrorCode());
             throw e;
         }
     }

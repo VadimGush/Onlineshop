@@ -3,7 +3,6 @@ package net.thumbtack.onlineshop.service;
 import net.thumbtack.onlineshop.database.dao.CategoryDao;
 import net.thumbtack.onlineshop.database.dao.SessionDao;
 import net.thumbtack.onlineshop.database.models.Category;
-import net.thumbtack.onlineshop.database.models.Session;
 import net.thumbtack.onlineshop.dto.CategoryDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,14 +10,13 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class CategoriesService {
+public class CategoriesService extends GeneralService {
 
-    private SessionDao sessionDao;
     private CategoryDao categoryDao;
 
     @Autowired
     public CategoriesService(SessionDao sessionDao, CategoryDao categoryDao) {
-        this.sessionDao = sessionDao;
+        super(sessionDao);
         this.categoryDao = categoryDao;
     }
 
@@ -31,7 +29,7 @@ public class CategoriesService {
      */
     public Category addCategory(String sessionId, CategoryDto category) throws ServiceException {
 
-        isAdmin(sessionId);
+        getAdmin(sessionId);
 
         // Сначала проверим имя категории
         if (categoryDao.exists(category.getName()))
@@ -65,7 +63,7 @@ public class CategoriesService {
      */
     public Category getCategory(String sessionId, long id) throws ServiceException {
 
-        isAdmin(sessionId);
+        getAdmin(sessionId);
 
         Category category = categoryDao.get(id);
         if (category == null)
@@ -73,7 +71,6 @@ public class CategoriesService {
 
         return category;
     }
-
 
     /**
      * Изменяет информацию о категории
@@ -85,7 +82,7 @@ public class CategoriesService {
      */
     public Category editCategory(String sessionId, CategoryDto categoryDto, long id) throws ServiceException {
 
-        isAdmin(sessionId);
+        getAdmin(sessionId);
 
         Category category = categoryDao.get(id);
         if (category == null)
@@ -120,7 +117,7 @@ public class CategoriesService {
      */
     public void deleteCategory(String sessionId, long id) throws ServiceException {
 
-        isAdmin(sessionId);
+        getAdmin(sessionId);
 
         Category category = categoryDao.get(id);
         if (category == null)
@@ -138,21 +135,9 @@ public class CategoriesService {
      */
     public List<Category> getCategories(String sessionId) throws ServiceException {
 
-        isAdmin(sessionId);
+        getAdmin(sessionId);
 
         return categoryDao.getAll();
-    }
-
-    private void isAdmin(String sessionId) throws ServiceException {
-
-        Session session = sessionDao.get(sessionId);
-
-        if (session == null)
-            throw new ServiceException(ServiceException.ErrorCode.NOT_LOGIN, "JAVASESSIONID");
-
-        if (!session.getAccount().isAdmin())
-            throw new ServiceException(ServiceException.ErrorCode.NOT_ADMIN, "JAVASESSIONID");
-
     }
 
 

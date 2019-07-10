@@ -7,24 +7,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("api")
 public class ClientController {
 
-    @PostMapping("clients")
-    @ResponseStatus(HttpStatus.OK)
-    public String registerClient() {
-        return "{}";
-    }
-
-    @GetMapping("accounts")
-    @ResponseStatus(HttpStatus.OK)
-    public String getAccount() {
-        return "{}";
-    }
-
-    @PutMapping("clients")
-    @ResponseStatus(HttpStatus.OK)
-    public String editClient() {
-        return "{}";
-    }
-
     @PutMapping("deposits")
     @ResponseStatus(HttpStatus.OK)
     public String putDeposit() {

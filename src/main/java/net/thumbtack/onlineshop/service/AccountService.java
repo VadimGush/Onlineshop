@@ -5,13 +5,11 @@ import net.thumbtack.onlineshop.database.dao.SessionDao;
 import net.thumbtack.onlineshop.database.models.Account;
 import net.thumbtack.onlineshop.database.models.AccountFactory;
 import net.thumbtack.onlineshop.database.models.Session;
-import net.thumbtack.onlineshop.dto.AdminDto;
-import net.thumbtack.onlineshop.dto.AdminEditDto;
-import net.thumbtack.onlineshop.dto.ClientDto;
-import net.thumbtack.onlineshop.dto.ClientEditDto;
+import net.thumbtack.onlineshop.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -78,7 +76,7 @@ public class AccountService extends GeneralService {
      * @return аккаунт изменённого клиента
      * @throws ServiceException
      */
-    public Account edit(String sessionId, ClientEditDto client) throws ServiceException {
+    public AccountDto edit(String sessionId, ClientEditDto client) throws ServiceException {
 
         Account account = getClient(sessionId);
 
@@ -95,7 +93,7 @@ public class AccountService extends GeneralService {
 
         accountDao.update(account);
 
-        return account;
+        return new AccountDto(account);
     }
 
     /**
@@ -104,7 +102,7 @@ public class AccountService extends GeneralService {
      * @return аккаунт изменённого администратора
      * @throws ServiceException
      */
-    public Account edit(String sessionId, AdminEditDto admin) throws ServiceException {
+    public AccountDto edit(String sessionId, AdminEditDto admin) throws ServiceException {
 
         Account account = getAdmin(sessionId);
 
@@ -118,7 +116,7 @@ public class AccountService extends GeneralService {
         account.setPosition(admin.getPosition());
 
         accountDao.update(account);
-        return account;
+        return new AccountDto(account);
     }
 
     /**
@@ -126,11 +124,16 @@ public class AccountService extends GeneralService {
      * @return список всех клиентов
      * @throws ServiceException
      */
-    public List<Account> getAll(String sessionId) throws ServiceException {
+    public List<AccountDto> getAll(String sessionId) throws ServiceException {
 
         getAdmin(sessionId);
 
-        return accountDao.getClients();
+        List<Account> clients = accountDao.getClients();
+        List<AccountDto> result = new ArrayList<>();
+
+        clients.forEach((client) -> result.add(new AccountDto(client, true)));
+
+        return result;
     }
 
     /**
@@ -156,14 +159,13 @@ public class AccountService extends GeneralService {
      * @return аккаунт пользователя из БД
      * @throws ServiceException
      */
-    @Override
-    public Account getAccount(String sessionId) throws ServiceException {
+    public AccountDto get(String sessionId) throws ServiceException {
         Session session = sessionDao.get(sessionId);
 
         if (session == null)
             throw new ServiceException(ServiceException.ErrorCode.NOT_LOGIN);
 
-        return session.getAccount();
+        return new AccountDto(session.getAccount());
     }
 
     /**

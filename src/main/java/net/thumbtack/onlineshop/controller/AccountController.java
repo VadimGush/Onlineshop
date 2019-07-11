@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -58,16 +57,6 @@ public class AccountController {
         return setCookieAndReturn(accountService.register(admin), response);
     }
 
-    private AccountDto setCookieAndReturn(Account account, HttpServletResponse response) throws ServiceException {
-        response.addCookie(
-                new Cookie(
-                        "JAVASESSIONID",
-                        accountService.login(account.getLogin(), account.getPassword())
-                )
-        );
-
-        return new AccountDto(account);
-    }
 
     @PutMapping("admins")
     @ResponseStatus(HttpStatus.OK)
@@ -79,7 +68,7 @@ public class AccountController {
         if (result.hasErrors())
             throw new ValidationException(result);
 
-        return new AccountDto(accountService.edit(session, admin));
+        return accountService.edit(session, admin);
     }
 
     @PutMapping("clients")
@@ -92,7 +81,7 @@ public class AccountController {
         if (result.hasErrors())
             throw new ValidationException(result);
 
-        return new AccountDto(accountService.edit(session, client));
+        return accountService.edit(session, client);
     }
 
     @GetMapping("clients")
@@ -100,12 +89,7 @@ public class AccountController {
     public List<AccountDto> getClients(
             @CookieValue("JAVASESSIONID") String session) throws Exception {
 
-        List<Account> accounts = accountService.getAll(session);
-        List<AccountDto> result = new ArrayList<>();
-
-        accounts.forEach((account) -> result.add(new AccountDto(account)));
-
-        return result;
+        return accountService.getAll(session);
     }
 
     @GetMapping("accounts")
@@ -113,7 +97,7 @@ public class AccountController {
     public AccountDto getAccount(
             @CookieValue("JAVASESSIONID") String session) throws Exception {
 
-        return new AccountDto(accountService.getAccount(session));
+        return accountService.get(session);
     }
 
     @PostMapping("sessions")
@@ -142,7 +126,16 @@ public class AccountController {
         return "{}";
     }
 
+    private AccountDto setCookieAndReturn(Account account, HttpServletResponse response) throws ServiceException {
+        response.addCookie(
+                new Cookie(
+                        "JAVASESSIONID",
+                        accountService.login(account.getLogin(), account.getPassword())
+                )
+        );
 
+        return new AccountDto(account);
+    }
 
 
 }

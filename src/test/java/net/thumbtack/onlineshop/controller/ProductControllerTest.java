@@ -13,8 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static junit.framework.TestCase.assertEquals;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 public class ProductControllerTest {
 
@@ -56,7 +56,12 @@ public class ProductControllerTest {
         ProductDto product = new ProductDto();
         when(mockResult.hasErrors()).thenReturn(true);
 
-        controller.addProduct("token", product, mockResult);
+        try {
+            controller.addProduct("token", product, mockResult);
+        } catch (ValidationException e) {
+            verify(mockProductService, never()).add(any(), any());
+            throw e;
+        }
 
     }
 
@@ -82,7 +87,12 @@ public class ProductControllerTest {
         ProductDto product = new ProductDto();
         when(mockResult.hasErrors()).thenReturn(true);
 
-        controller.editProduct("token", product, mockResult, 0);
+        try {
+            controller.editProduct("token", product, mockResult, 0);
+        } catch (ValidationException e) {
+            verify(mockProductService, never()).edit(any(), any(), anyLong());
+            throw e;
+        }
 
     }
 

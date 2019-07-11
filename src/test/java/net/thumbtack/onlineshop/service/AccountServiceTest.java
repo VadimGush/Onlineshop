@@ -5,10 +5,7 @@ import net.thumbtack.onlineshop.database.dao.SessionDao;
 import net.thumbtack.onlineshop.database.models.Account;
 import net.thumbtack.onlineshop.database.models.AccountFactory;
 import net.thumbtack.onlineshop.database.models.Session;
-import net.thumbtack.onlineshop.dto.AdminDto;
-import net.thumbtack.onlineshop.dto.AdminEditDto;
-import net.thumbtack.onlineshop.dto.ClientDto;
-import net.thumbtack.onlineshop.dto.ClientEditDto;
+import net.thumbtack.onlineshop.dto.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -99,7 +96,7 @@ public class AccountServiceTest {
         );
         when(mockSessionDao.get("token")).thenReturn(new Session("token", admin));
 
-        Account result = accountService.edit("token", new AdminEditDto(
+        AccountDto result = accountService.edit("token", new AdminEditDto(
                 "name", "lastName", "patro", "pos", "23", "33"
         ));
 
@@ -109,7 +106,6 @@ public class AccountServiceTest {
         assertEquals("lastName", result.getLastName());
         assertEquals("patro", result.getPatronymic());
         assertEquals("pos", result.getPosition());
-        assertEquals("33", result.getPassword());
     }
 
     @Test(expected = ServiceException.class)
@@ -142,8 +138,13 @@ public class AccountServiceTest {
         Account admin = generateAdmin();
         when(mockSessionDao.get("token")).thenReturn(new Session("token", admin));
 
-        List<Account> result = accountService.getAll("token");
+        List<AccountDto> result = accountService.getAll("token");
         assertEquals(clients.size(), result.size());
+        // ТЗ пункт 3.7
+        assertEquals("client", result.get(0).getUserType());
+        assertEquals("client", result.get(1).getUserType());
+        assertNull(result.get(0).getDeposit());
+        assertNull(result.get(1).getDeposit());
 
         verify(mockAccountDao).getClients();
     }
@@ -271,7 +272,7 @@ public class AccountServiceTest {
                 "new password"
         );
 
-        Account result = accountService.edit("token", edited);
+        AccountDto result = accountService.edit("token", edited);
 
         verify(mockAccountDao).update(client);
 
@@ -280,10 +281,7 @@ public class AccountServiceTest {
         assertEquals(edited.getPatronymic(), result.getPatronymic());
         assertEquals(edited.getAddress(), result.getAddress());
         assertEquals(edited.getEmail(), result.getEmail());
-        assertEquals(edited.getNewPassword(), result.getPassword());
         assertEquals(edited.getPhone(), result.getPhone());
-        assertFalse(result.isAdmin());
-
     }
 
     @Test(expected = ServiceException.class)
@@ -361,8 +359,10 @@ public class AccountServiceTest {
         );
         when(mockSessionDao.get("token")).thenReturn(new Session("token", account));
 
-        Account result = accountService.getAccount("token");
-        assertEquals(result, account);
+        AccountDto result = accountService.get("token");
+        assertEquals(account.getFirstName(), result.getFirstName());
+        assertEquals(account.getLastName(), result.getLastName());
+        assertEquals(account.getPosition(), result.getPosition());
     }
 
     @Test(expected = ServiceException.class)
@@ -370,7 +370,7 @@ public class AccountServiceTest {
         when(mockSessionDao.get("token")).thenReturn(null);
 
         try {
-            accountService.getAccount("token");
+            accountService.get("token");
         } catch (ServiceException e) {
             assertEquals(ServiceException.ErrorCode.NOT_LOGIN, e.getErrorCode());
             throw e;

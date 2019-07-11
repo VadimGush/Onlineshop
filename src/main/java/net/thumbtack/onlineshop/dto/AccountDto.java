@@ -17,6 +17,7 @@ public class AccountDto {
     private String address;
     private String phone;
     private String position;
+    private String userType;
     private Integer deposit;
 
     public AccountDto() {
@@ -33,6 +34,31 @@ public class AccountDto {
         this.phone = account.getPhone();
         this.position = account.getPosition();
         this.deposit = account.getDeposit();
+    }
+
+    public AccountDto(Account account, boolean hide) {
+        this.id = account.getId();
+        this.firstName = account.getFirstName();
+        this.lastName = account.getLastName();
+        this.patronymic = account.getPatronymic();
+        this.email = account.getEmail();
+        this.address = account.getAddress();
+        this.phone = account.getPhone();
+        this.position = account.getPosition();
+
+        // ТЗ пункт 3.7
+        if (!hide)
+            this.deposit = account.getDeposit();
+        else
+            this.userType = "client";
+    }
+
+    public String getUserType() {
+        return userType;
+    }
+
+    public void setUserType(String userType) {
+        this.userType = userType;
     }
 
     public Long getId() {

@@ -5,7 +5,7 @@ import net.thumbtack.onlineshop.database.dao.BasketDao;
 import net.thumbtack.onlineshop.database.dao.ProductDao;
 import net.thumbtack.onlineshop.database.dao.SessionDao;
 import net.thumbtack.onlineshop.database.models.*;
-import net.thumbtack.onlineshop.dto.BuyProductDto;
+import net.thumbtack.onlineshop.dto.ProductDto;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -95,8 +95,8 @@ public class ClientServiceTest {
 
         when(mockProductDao.get(0)).thenReturn(product);
 
-        BuyProductDto request = new BuyProductDto(0, "product", 10, 5);
-        BuyProductDto result = clientService.buyProduct("token", request);
+        ProductDto request = new ProductDto(0L, "product", 10, 5);
+        ProductDto result = clientService.buyProduct("token", request);
 
         // Количество товара должно будет изменится
         verify(mockProductDao).update(product);
@@ -128,8 +128,8 @@ public class ClientServiceTest {
 
         when(mockProductDao.get(0)).thenReturn(product);
 
-        BuyProductDto request = new BuyProductDto(0, "product", 10, 2);
-        BuyProductDto result = clientService.buyProduct("token", request);
+        ProductDto request = new ProductDto(0L, "product", 10, 2);
+        ProductDto result = clientService.buyProduct("token", request);
 
         // Количество товара просто должно изменится
         verify(mockProductDao).update(product);
@@ -163,7 +163,7 @@ public class ClientServiceTest {
         when(mockProductDao.get(0)).thenReturn(product);
 
         try {
-            BuyProductDto request = new BuyProductDto(1, "product", 10, 2);
+            ProductDto request = new ProductDto(1L, "product", 10, 2);
             clientService.buyProduct("token", request);
         } catch (ServiceException e) {
             verify(mockProductDao, never()).delete(any());
@@ -189,7 +189,7 @@ public class ClientServiceTest {
         when(mockProductDao.get(0)).thenReturn(product);
 
         try {
-            BuyProductDto request = new BuyProductDto(1, "product", 10, 2);
+            ProductDto request = new ProductDto(1L, "product", 10, 2);
             clientService.addToBasket("token", request);
         } catch (ServiceException e) {
             verify(mockProductDao, never()).delete(any());
@@ -216,7 +216,7 @@ public class ClientServiceTest {
         when(mockProductDao.get(0)).thenReturn(product);
 
         try {
-            BuyProductDto request = new BuyProductDto(0, "product2", 10, 2);
+            ProductDto request = new ProductDto(0L, "product2", 10, 2);
             clientService.addToBasket("token", request);
         } catch (ServiceException e) {
             verify(mockProductDao, never()).delete(any());
@@ -243,7 +243,7 @@ public class ClientServiceTest {
         when(mockProductDao.get(0)).thenReturn(product);
 
         try {
-            BuyProductDto request = new BuyProductDto(0, "product", 9, 2);
+            ProductDto request = new ProductDto(0L, "product", 9, 2);
             clientService.addToBasket("token", request);
         } catch (ServiceException e) {
             verify(mockProductDao, never()).delete(any());
@@ -271,7 +271,7 @@ public class ClientServiceTest {
         when(mockProductDao.get(0)).thenReturn(product);
 
         try {
-            BuyProductDto request = new BuyProductDto(0, "product2", 10, 2);
+            ProductDto request = new ProductDto(0L, "product2", 10, 2);
             clientService.buyProduct("token", request);
         } catch (ServiceException e) {
             verify(mockProductDao, never()).delete(any());
@@ -298,7 +298,7 @@ public class ClientServiceTest {
         when(mockProductDao.get(0)).thenReturn(product);
 
         try {
-            BuyProductDto request = new BuyProductDto(0, "product", 12, 2);
+            ProductDto request = new ProductDto(0L, "product", 12, 2);
             clientService.buyProduct("token", request);
         } catch (ServiceException e) {
             verify(mockProductDao, never()).delete(any());
@@ -325,7 +325,7 @@ public class ClientServiceTest {
         when(mockProductDao.get(0)).thenReturn(product);
 
         try {
-            BuyProductDto request = new BuyProductDto(0, "product", 10, 6);
+            ProductDto request = new ProductDto(0L, "product", 10, 6);
             clientService.buyProduct("token", request);
         } catch (ServiceException e) {
             verify(mockProductDao, never()).delete(any());
@@ -354,7 +354,7 @@ public class ClientServiceTest {
         when(mockProductDao.get(0)).thenReturn(product);
 
         try {
-            BuyProductDto request = new BuyProductDto(0, "product", 10, 5);
+            ProductDto request = new ProductDto(0L, "product", 10, 5);
             clientService.buyProduct("token", request);
         } catch (ServiceException e) {
             verify(mockProductDao, never()).delete(any());
@@ -383,7 +383,7 @@ public class ClientServiceTest {
 
         // По требованиям он может добавить сколько угодно товара
         // на какую угодно сумму вне зависимости от его депозита
-        BuyProductDto request = new BuyProductDto(0, "product", 10, 50);
+        ProductDto request = new ProductDto(0L, "product", 10, 50);
 
         Basket basket = new Basket(client, product, request.getCount());
         when(mockBasketDao.get(client)).thenReturn(Arrays.asList(basket));
@@ -426,7 +426,7 @@ public class ClientServiceTest {
 
         // По требованиям он может добавить сколько угодно товара
         // на какую угодно сумму вне зависимости от его депозита
-        BuyProductDto request = new BuyProductDto(0, "product", 10, 50);
+        ProductDto request = new ProductDto(0L, "product", 10, 50);
 
         // Должен вернуть одну запись из корзины с прибавленным количеством
         when(mockBasketDao.get(client)).thenReturn(Arrays.asList(
@@ -509,8 +509,8 @@ public class ClientServiceTest {
                 new Basket(client, product, 10)
         ));
 
-        List<Basket> result = clientService.editProductCount("token", new BuyProductDto(
-                0, "product", 1, 10
+        List<Basket> result = clientService.editProductCount("token", new ProductDto(
+                0L, "product", 1, 10
         ));
 
         assertEquals(10, (int)basket.getCount());
@@ -537,8 +537,8 @@ public class ClientServiceTest {
         ));
 
         try {
-            clientService.editProductCount("token", new BuyProductDto(
-                    1, "product", 1, 10
+            clientService.editProductCount("token", new ProductDto(
+                    1L, "product", 1, 10
             ));
         } catch (ServiceException e) {
             assertEquals(ServiceException.ErrorCode.PRODUCT_NOT_FOUND, e.getErrorCode());
@@ -562,8 +562,8 @@ public class ClientServiceTest {
         ));
 
         try {
-            clientService.editProductCount("token", new BuyProductDto(
-                    0, "product2", 1, 10
+            clientService.editProductCount("token", new ProductDto(
+                    0L, "product2", 1, 10
             ));
         } catch (ServiceException e) {
             assertEquals(ServiceException.ErrorCode.WRONG_PRODUCT_INFO, e.getErrorCode());
@@ -588,8 +588,8 @@ public class ClientServiceTest {
         ));
 
         try {
-            clientService.editProductCount("token", new BuyProductDto(
-                    0, "product", 0, 10
+            clientService.editProductCount("token", new ProductDto(
+                    0L, "product", 0, 10
             ));
         } catch (ServiceException e) {
             assertEquals(ServiceException.ErrorCode.WRONG_PRODUCT_INFO, e.getErrorCode());
@@ -650,33 +650,33 @@ public class ClientServiceTest {
         basket.get(3).setCount(20);
 
         // Теперь формируем список покупок
-        List<BuyProductDto> toBuy = new LinkedList<>(Arrays.asList(
+        List<ProductDto> toBuy = new LinkedList<>(Arrays.asList(
                 // Данный продукт останется в запросе
-                new BuyProductDto(0, "product0", 1000, 9),
+                new ProductDto(0L, "product0", 1000, 9),
 
                 // --- Далее список товаров, которые должны будут исключится из списка покупок
                 // Продукт с неверным id
-                new BuyProductDto(11, "product", 1000, 10),
+                new ProductDto(11L, "product", 1000, 10),
                 // Продукт с неверным именем
-                new BuyProductDto(1, "product0", 1000, 10),
+                new ProductDto(1L, "product0", 1000, 10),
                 // Продукт с неверной ценою
-                new BuyProductDto(2, "product2", 21, 10),
+                new ProductDto(2L, "product2", 21, 10),
                 // Продукт, которого не достаточно на складе
-                new BuyProductDto(3, "product3", 1000, 20),
+                new ProductDto(3L, "product3", 1000, 20),
 
                 // --- Далее товары, которые останутся в списке покупок, но изменят своё количество
                 // Этого товара больше чем в корзине
-                new BuyProductDto(4, "product4", 1000, 15),
+                new ProductDto(4L, "product4", 1000, 15),
                 // Этот товар без количества совсем
-                new BuyProductDto(5, "product5", 1000),
+                new ProductDto(5L, "product5", 1000, null),
                 // Товар был удалён администратором
-                new BuyProductDto(7, "product7", 1000, 5)
+                new ProductDto(7L, "product7", 1000, 5)
         ));
 
         // Итого у нас будет куплено 3 наименования общим количеством 29 единиц за 1000 за штуку
         // Того клиент потратит 29 000, а из БД изменятся всего три товара
 
-        Pair<List<BuyProductDto>, List<Basket>> result = clientService.buyBasket("token", toBuy);
+        Pair<List<ProductDto>, List<Basket>> result = clientService.buyBasket("token", toBuy);
 
         // Проверим сначала вызовы и информацию о клиенте
         assertEquals(1024, (int)client.getDeposit());
@@ -689,7 +689,7 @@ public class ClientServiceTest {
         // А одна запись в корзине всего лишь поменяет количество
         verify(mockBasketDao).update(any());
 
-        List<BuyProductDto> bought = result.getFirst();
+        List<ProductDto> bought = result.getFirst();
 
         // Проверяем список купленных продуктов
         // Там их трое
@@ -725,25 +725,25 @@ public class ClientServiceTest {
         basket.get(3).setCount(20);
 
         // Теперь формируем список покупок
-        List<BuyProductDto> toBuy = new LinkedList<>(Arrays.asList(
+        List<ProductDto> toBuy = new LinkedList<>(Arrays.asList(
                 // Данный продукт останется в запросе
-                new BuyProductDto(0, "product0", 1000, 10),
+                new ProductDto(0L, "product0", 1000, 10),
 
                 // --- Далее список товаров, которые должны будут исключится из списка покупок
                 // Продукт с неверным id
-                new BuyProductDto(11, "product", 1000, 10),
+                new ProductDto(11L, "product", 1000, 10),
                 // Продукт с неверным именем
-                new BuyProductDto(1, "product0", 1000, 10),
+                new ProductDto(1L, "product0", 1000, 10),
                 // Продукт с неверной ценою
-                new BuyProductDto(2, "product2", 21, 10),
+                new ProductDto(2L, "product2", 21, 10),
                 // Продукт, которого не достаточно на складе
-                new BuyProductDto(3, "product3", 1000, 20),
+                new ProductDto(3L, "product3", 1000, 20),
 
                 // --- Далее товары, которые останутся в списке покупок, но изменят своё количество
                 // Этого товара больше чем в корзине
-                new BuyProductDto(4, "product4", 1000, 15),
+                new ProductDto(4L, "product4", 1000, 15),
                 // Этот товар без количества совсем
-                new BuyProductDto(5, "product5", 1000)
+                new ProductDto(5L, "product5", 1000, null)
         ));
 
         try {

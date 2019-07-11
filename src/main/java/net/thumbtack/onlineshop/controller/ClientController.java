@@ -2,7 +2,10 @@ package net.thumbtack.onlineshop.controller;
 
 import net.thumbtack.onlineshop.controller.validation.ValidationException;
 import net.thumbtack.onlineshop.database.models.Basket;
-import net.thumbtack.onlineshop.dto.*;
+import net.thumbtack.onlineshop.dto.AccountDto;
+import net.thumbtack.onlineshop.dto.DepositDto;
+import net.thumbtack.onlineshop.dto.ProductDto;
+import net.thumbtack.onlineshop.dto.ResultBasketDto;
 import net.thumbtack.onlineshop.service.AccountService;
 import net.thumbtack.onlineshop.service.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,26 +61,32 @@ public class ClientController {
 
     @PostMapping("purchases")
     @ResponseStatus(HttpStatus.OK)
-    public BuyProductDto buyProduct(
+    public ProductDto buyProduct(
             @CookieValue("JAVASESSIONID") String session,
-            @RequestBody @Valid BuyProductDto product,
+            @RequestBody @Valid ProductDto product,
             BindingResult result) throws Exception {
 
         if (result.hasErrors())
             throw new ValidationException(result);
+
+        if (product.getCount() == null)
+            product.setCount(1);
 
         return clientService.buyProduct(session, product);
     }
 
     @PostMapping("baskets")
     @ResponseStatus(HttpStatus.OK)
-    public List<BuyProductDto> addToBasket(
+    public List<ProductDto> addToBasket(
             @CookieValue("JAVASESSIONID") String session,
-            @RequestBody @Valid BuyProductDto product,
+            @RequestBody @Valid ProductDto product,
             BindingResult result) throws Exception {
 
         if (result.hasErrors())
             throw new ValidationException(result);
+
+        if (product.getCount() == null)
+            product.setCount(1);
 
         List<Basket> basket = clientService.addToBasket(session, product);
 
@@ -96,11 +105,12 @@ public class ClientController {
         return "{}";
     }
 
+    // TODO: Здесь поле количества должно быть обязательным
     @PutMapping("baskets")
     @ResponseStatus(HttpStatus.OK)
-    public List<BuyProductDto> editProductCount(
+    public List<ProductDto> editProductCount(
             @CookieValue("JAVASESSIONID") String session,
-            @RequestBody @Valid BuyProductDto product,
+            @RequestBody @Valid ProductDto product,
             BindingResult result) throws Exception {
 
         if (result.hasErrors())
@@ -113,7 +123,7 @@ public class ClientController {
 
     @GetMapping("baskets")
     @ResponseStatus(HttpStatus.OK)
-    public List<BuyProductDto> getBasket(
+    public List<ProductDto> getBasket(
             @CookieValue("JAVASESSIONID") String session) throws Exception {
 
         return getBasket(clientService.getBasket(session));
@@ -124,30 +134,21 @@ public class ClientController {
     @ResponseStatus(HttpStatus.OK)
     public ResultBasketDto buyBasket(
             @CookieValue("JAVASESSIONID") String session,
-            @RequestBody @Valid List<BuyProductDto> toBuy,
+            @RequestBody @Valid List<ProductDto> toBuy,
             BindingResult result) throws Exception {
 
         if (result.hasErrors())
             throw new ValidationException(result);
 
-        Pair<List<BuyProductDto>, List<Basket>> basket = clientService.buyBasket(session, toBuy);
+        Pair<List<ProductDto>, List<Basket>> basket = clientService.buyBasket(session, toBuy);
 
         return new ResultBasketDto(basket.getFirst(), basket.getSecond());
     }
 
-    private List<BuyProductDto> getBasket(List<Basket> basket) {
-        List<BuyProductDto> result = new ArrayList<>();
+    private List<ProductDto> getBasket(List<Basket> basket) {
+        List<ProductDto> result = new ArrayList<>();
 
-        for (Basket entity : basket) {
-            result.add(
-                    new BuyProductDto(
-                            entity.getProduct().getId(),
-                            entity.getProduct().getName(),
-                            entity.getProduct().getPrice(),
-                            entity.getCount()
-                    )
-            );
-        }
+        basket.forEach((entity) -> result.add(new ProductDto(entity)));
         return result;
     }
 

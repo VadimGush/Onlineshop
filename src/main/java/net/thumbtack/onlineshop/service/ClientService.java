@@ -7,7 +7,7 @@ import net.thumbtack.onlineshop.database.dao.SessionDao;
 import net.thumbtack.onlineshop.database.models.Account;
 import net.thumbtack.onlineshop.database.models.Basket;
 import net.thumbtack.onlineshop.database.models.Product;
-import net.thumbtack.onlineshop.dto.BuyProductDto;
+import net.thumbtack.onlineshop.dto.ProductDto;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
@@ -63,7 +63,7 @@ public class ClientService extends GeneralService {
      * @return информация о купленном товаре
      * @throws ServiceException
      */
-    public BuyProductDto buyProduct(String sessionId, BuyProductDto buyProduct) throws ServiceException {
+    public ProductDto buyProduct(String sessionId, ProductDto buyProduct) throws ServiceException {
 
         Account account = getClient(sessionId);
         Product product = productDao.get(buyProduct.getId());
@@ -103,7 +103,7 @@ public class ClientService extends GeneralService {
      * @return информация о купленном товаре
      * @throws ServiceException
      */
-    public List<Basket> addToBasket(String sessionId, BuyProductDto buyProduct) throws ServiceException {
+    public List<Basket> addToBasket(String sessionId, ProductDto buyProduct) throws ServiceException {
 
         Account account = getClient(sessionId);
         Product product = productDao.get(buyProduct.getId());
@@ -154,7 +154,7 @@ public class ClientService extends GeneralService {
      * @return содержание корзины
      * @throws ServiceException
      */
-    public List<Basket> editProductCount(String sessionId, BuyProductDto product) throws ServiceException {
+    public List<Basket> editProductCount(String sessionId, ProductDto product) throws ServiceException {
 
         Account account = getClient(sessionId);
         Basket basket = basketDao.get(account, product.getId());
@@ -193,17 +193,17 @@ public class ClientService extends GeneralService {
      *
      * @throws ServiceException
      */
-    public Pair<List<BuyProductDto>, List<Basket>> buyBasket(String sessionId, List<BuyProductDto> toBuy) throws ServiceException {
+    public Pair<List<ProductDto>, List<Basket>> buyBasket(String sessionId, List<ProductDto> toBuy) throws ServiceException {
 
         // Внимание: вносить изменения только с ТЗ в руках!
 
         Account account = getClient(sessionId);
         List<Basket> basket = basketDao.get(account);
 
-        List<BuyProductDto> copyList = new ArrayList<>(toBuy);
+        List<ProductDto> copyList = new ArrayList<>(toBuy);
 
         // Если инфа у товара в списке неверная, то просто не обрабатываем его
-        for (BuyProductDto product : copyList) {
+        for (ProductDto product : copyList) {
 
             // Ищем продукт с таким id в корзине
             Basket basketEntity = null;
@@ -249,7 +249,7 @@ public class ClientService extends GeneralService {
         // Теперь в списке tobBuy всё валидное
         // Теперь считаем сколько денег нужно для покупки всего
         int sum = 0;
-        for (BuyProductDto product : toBuy) {
+        for (ProductDto product : toBuy) {
             sum += product.getCount() * product.getPrice();
         }
 
@@ -264,7 +264,7 @@ public class ClientService extends GeneralService {
         account.setDeposit(account.getDeposit() - sum);
         accountDao.update(account);
 
-        for (BuyProductDto product : toBuy) {
+        for (ProductDto product : toBuy) {
 
             // Уменьшаем количество товаров на складе
             Product currentProduct = productDao.get(product.getId());
@@ -286,7 +286,7 @@ public class ClientService extends GeneralService {
         return Pair.of(toBuy, basketDao.get(account));
     }
 
-    private void checkProducts(Product product, BuyProductDto buyProduct) throws ServiceException {
+    private void checkProducts(Product product, ProductDto buyProduct) throws ServiceException {
         if (product == null)
             throw new ServiceException(ServiceException.ErrorCode.PRODUCT_NOT_FOUND, "id");
 

@@ -31,6 +31,9 @@ public class ProductController {
         if (result.hasErrors())
             throw new ValidationException(result);
 
+        if (product.getCount() == null)
+            product.setCount(0);
+
         Product resultProduct = productService.add(session, product);
 
         return new ProductDto(
@@ -39,6 +42,7 @@ public class ProductController {
         );
     }
 
+    // TODO: Здесь все поля необязательны
     @PutMapping("products/{id}")
     @ResponseStatus(HttpStatus.OK)
     public ProductDto editProduct(

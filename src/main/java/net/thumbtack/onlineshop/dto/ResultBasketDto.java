@@ -7,14 +7,14 @@ import java.util.List;
 
 public class ResultBasketDto {
 
-    private List<BuyProductDto> bought;
-    private List<BuyProductDto> remaining;
+    private List<ProductDto> bought;
+    private List<ProductDto> remaining;
 
     public ResultBasketDto() {
 
     }
 
-    public ResultBasketDto(List<BuyProductDto> bought, List<Basket> remaining) {
+    public ResultBasketDto(List<ProductDto> bought, List<Basket> remaining) {
 
         this.bought = new ArrayList<>();
         this.bought.addAll(bought);
@@ -22,7 +22,7 @@ public class ResultBasketDto {
         this.remaining = new ArrayList<>();
         for (Basket basket : remaining) {
             this.remaining.add(
-                    new BuyProductDto(
+                    new ProductDto(
                             basket.getProduct().getId(),
                             basket.getProduct().getName(),
                             basket.getProduct().getPrice(),
@@ -32,19 +32,19 @@ public class ResultBasketDto {
         }
     }
 
-    public List<BuyProductDto> getBought() {
+    public List<ProductDto> getBought() {
         return bought;
     }
 
-    public void setBought(List<BuyProductDto> bought) {
+    public void setBought(List<ProductDto> bought) {
         this.bought = bought;
     }
 
-    public List<BuyProductDto> getRemaining() {
+    public List<ProductDto> getRemaining() {
         return remaining;
     }
 
-    public void setRemaining(List<BuyProductDto> remaining) {
+    public void setRemaining(List<ProductDto> remaining) {
         this.remaining = remaining;
     }
 }

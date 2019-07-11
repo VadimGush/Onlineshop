@@ -2,6 +2,7 @@ package net.thumbtack.onlineshop.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import net.thumbtack.onlineshop.controller.validation.RequiredName;
+import net.thumbtack.onlineshop.database.models.Basket;
 import net.thumbtack.onlineshop.database.models.Product;
 import net.thumbtack.onlineshop.database.models.ProductCategory;
 
@@ -17,22 +18,41 @@ public class ProductDto {
     private String name;
     @NotNull
     private Integer price;
-    private Integer count = 0;
+
+    private Integer count;
+
     private List<Long> categories;
 
     public ProductDto() {
 
     }
 
-    public ProductDto(String name, int price, int count) {
+    public ProductDto(String name, Integer price, Integer count) {
         this.name = name;
         this.price = price;
         this.count = count;
     }
 
-    public ProductDto(String name, int price, int count, List<Long> categories) {
+    public ProductDto(String name, Integer price, Integer count, List<Long> categories) {
         this(name, price, count);
         this.categories = categories;
+    }
+
+    public ProductDto(Long id, String name, Integer price, Integer count) {
+        this(name, price, count);
+        this.id = id;
+    }
+
+    public ProductDto(Long id, String name, Integer price, Integer count, List<Long> categories) {
+        this(id, name, price, count);
+        this.categories = categories;
+    }
+
+    public ProductDto(Basket basket) {
+        this.id = basket.getProduct().getId();
+        this.name = basket.getProduct().getName();
+        this.price = basket.getProduct().getPrice();
+        this.count = basket.getCount();
     }
 
     public ProductDto(Product product, List<ProductCategory> categories) {

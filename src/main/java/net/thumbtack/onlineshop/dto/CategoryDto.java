@@ -7,11 +7,9 @@ import net.thumbtack.onlineshop.database.models.Category;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CategoryDto {
 
-    private long id;
-
+    private Long id;
     @RequiredName
     private String name;
-
     private Long parentId;
     private String parentName;
 
@@ -25,7 +23,7 @@ public class CategoryDto {
     }
 
     public CategoryDto(Category category) {
-        this.id = category.getId() == null ? 0 : category.getId();
+        this.id = category.getId();
         this.name = category.getName();
         if (category.getParent() != null) {
             this.parentId = category.getParent().getId();
@@ -41,11 +39,11 @@ public class CategoryDto {
         this.parentId = parentId;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

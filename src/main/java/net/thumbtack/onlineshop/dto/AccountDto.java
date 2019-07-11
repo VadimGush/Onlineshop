@@ -3,9 +3,13 @@ package net.thumbtack.onlineshop.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import net.thumbtack.onlineshop.database.models.Account;
 
+/**
+ * AccountDto - DTO только для сериализации на отправку клиенту
+ */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AccountDto {
 
+    private Long id;
     private String firstName;
     private String lastName;
     private String patronymic;
@@ -20,6 +24,7 @@ public class AccountDto {
     }
 
     public AccountDto(Account account) {
+        this.id = account.getId();
         this.firstName = account.getFirstName();
         this.lastName = account.getLastName();
         this.patronymic = account.getPatronymic();
@@ -28,6 +33,14 @@ public class AccountDto {
         this.phone = account.getPhone();
         this.position = account.getPosition();
         this.deposit = account.getDeposit();
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Integer getDeposit() {

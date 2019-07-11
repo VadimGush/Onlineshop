@@ -4,6 +4,7 @@ import net.thumbtack.onlineshop.controller.validation.ValidationException;
 import net.thumbtack.onlineshop.database.models.Account;
 import net.thumbtack.onlineshop.dto.*;
 import net.thumbtack.onlineshop.service.AccountService;
+import net.thumbtack.onlineshop.service.ServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
@@ -29,7 +30,7 @@ public class AccountController {
 
     @PostMapping("clients")
     @ResponseStatus(HttpStatus.OK)
-    public ClientDto registerClient(
+    public AccountDto registerClient(
             @RequestBody @Valid ClientDto client,
             BindingResult result,
             HttpServletResponse response) throws Exception {
@@ -38,17 +39,13 @@ public class AccountController {
             throw new ValidationException(result);
 
         client.setLogin(client.getLogin().toLowerCase());
-        Account account = accountService.register(client);
 
-        response.addCookie(new Cookie("JAVASESSIONID",
-                accountService.login(account.getLogin(), account.getPassword())));
-
-        return new ClientDto(account);
+        return setCookieAndReturn(accountService.register(client), response);
     }
 
     @PostMapping("admins")
     @ResponseStatus(HttpStatus.OK)
-    public AdminDto registerAdmin(
+    public AccountDto registerAdmin(
             @RequestBody @Valid AdminDto admin,
             BindingResult result,
             HttpServletResponse response) throws Exception {
@@ -57,17 +54,24 @@ public class AccountController {
             throw new ValidationException(result);
 
         admin.setLogin(admin.getLogin().toLowerCase());
-        Account account = accountService.register(admin);
 
-        response.addCookie(new Cookie("JAVASESSIONID",
-                accountService.login(account.getLogin(), account.getPassword())));
+        return setCookieAndReturn(accountService.register(admin), response);
+    }
 
-        return new AdminDto(account);
+    private AccountDto setCookieAndReturn(Account account, HttpServletResponse response) throws ServiceException {
+        response.addCookie(
+                new Cookie(
+                        "JAVASESSIONID",
+                        accountService.login(account.getLogin(), account.getPassword())
+                )
+        );
+
+        return new AccountDto(account);
     }
 
     @PutMapping("admins")
     @ResponseStatus(HttpStatus.OK)
-    public AdminDto editAdmin(
+    public AccountDto editAdmin(
             @CookieValue("JAVASESSIONID") String session,
             @RequestBody @Valid AdminEditDto admin,
             BindingResult result) throws Exception {
@@ -75,12 +79,12 @@ public class AccountController {
         if (result.hasErrors())
             throw new ValidationException(result);
 
-        return new AdminDto(accountService.edit(session, admin));
+        return new AccountDto(accountService.edit(session, admin));
     }
 
     @PutMapping("clients")
     @ResponseStatus(HttpStatus.OK)
-    public ClientDto editClient(
+    public AccountDto editClient(
             @CookieValue("JAVASESSIONID") String session,
             @RequestBody @Valid ClientEditDto client,
             BindingResult result) throws Exception {
@@ -88,7 +92,7 @@ public class AccountController {
         if (result.hasErrors())
             throw new ValidationException(result);
 
-        return new ClientDto(accountService.edit(session, client));
+        return new AccountDto(accountService.edit(session, client));
     }
 
     @GetMapping("clients")

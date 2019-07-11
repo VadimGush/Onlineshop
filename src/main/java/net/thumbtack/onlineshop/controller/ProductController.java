@@ -87,11 +87,11 @@ public class ProductController {
     @ResponseStatus(HttpStatus.OK)
     public List<ProductDto> getProducts(
             @CookieValue("JAVASESSIONID") String session,
-            @RequestParam(name = "category") List<Integer> categories,
-            @RequestParam(name = "order") String orderString) throws Exception {
+            @RequestParam(name = "category", required = false) List<Integer> categories,
+            @RequestParam(name = "order", required = false) String orderString) throws Exception {
         ProductService.SortOrder order = ProductService.SortOrder.PRODUCT;
 
-        if (orderString.equals("category"))
+        if (orderString != null && orderString.equals("category"))
             order = ProductService.SortOrder.CATEGORY;
 
         return productService.getAll(session, categories, order);

@@ -8,7 +8,7 @@ import net.thumbtack.onlineshop.database.models.Account;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AdminDto extends LoginDto {
 
-    private long id;
+    private Long id;
 
     @RequiredName
     private String firstName;
@@ -46,18 +46,18 @@ public class AdminDto extends LoginDto {
     // Создание объекта из энтити БД
     public AdminDto(Account account) {
         super(account.getLogin(), account.getPassword());
-        this.id = account.getId() == null ? 0 : account.getId();
+        this.id = account.getId();
         this.firstName = account.getFirstName();
         this.lastName = account.getLastName();
         this.patronymic = account.getPatronymic();
         this.position = account.getPosition();
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

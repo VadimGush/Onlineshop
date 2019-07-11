@@ -2,12 +2,17 @@ package net.thumbtack.onlineshop.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import javax.validation.constraints.NotNull;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BuyProductDto {
 
-    private long id;
-    private int price;
+    private Long id;
+    @NotNull
+    private Integer price;
+    @NotNull
     private String name;
+    @NotNull
     private Integer count;
 
     public BuyProductDto() {
@@ -27,14 +32,6 @@ public class BuyProductDto {
         this.price = price;
     }
 
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
     public String getName() {
         return name;
     }
@@ -43,11 +40,19 @@ public class BuyProductDto {
         this.name = name;
     }
 
-    public int getPrice() {
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Integer getPrice() {
         return price;
     }
 
-    public void setPrice(int price) {
+    public void setPrice(Integer price) {
         this.price = price;
     }
 
@@ -55,8 +60,7 @@ public class BuyProductDto {
         return count;
     }
 
-    public void setCount(int count) {
+    public void setCount(Integer count) {
         this.count = count;
     }
-
 }

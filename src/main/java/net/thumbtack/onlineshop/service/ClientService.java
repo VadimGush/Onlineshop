@@ -208,7 +208,7 @@ public class ClientService extends GeneralService {
             // Ищем продукт с таким id в корзине
             Basket basketEntity = null;
             for (Basket entity : basket) {
-                if (entity.getProduct().getId() == product.getId()) {
+                if (entity.getProduct().getId().equals(product.getId())) {
                     basketEntity = entity;
                     break;
                 }
@@ -293,7 +293,7 @@ public class ClientService extends GeneralService {
         if (!product.getName().equals(buyProduct.getName()))
             throw new ServiceException(ServiceException.ErrorCode.WRONG_PRODUCT_INFO, "name");
 
-        if (product.getPrice() != buyProduct.getPrice())
+        if (!product.getPrice().equals(buyProduct.getPrice()))
             throw new ServiceException(ServiceException.ErrorCode.WRONG_PRODUCT_INFO, "price");
     }
 

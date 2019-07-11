@@ -63,7 +63,7 @@ public class ProductServiceTest {
 
         assertEquals(request.getName(), result.getName());
         assertEquals((int)request.getPrice(), (int)result.getPrice());
-        assertEquals(request.getCount(), (int)result.getCount());
+        assertEquals((int)request.getCount(), (int)result.getCount());
     }
 
     @Test
@@ -79,7 +79,7 @@ public class ProductServiceTest {
 
         assertEquals(request.getName(), result.getName());
         assertEquals((int)request.getPrice(), (int)result.getPrice());
-        assertEquals(request.getCount(), (int)result.getCount());
+        assertEquals((int)request.getCount(), (int)result.getCount());
     }
 
     @Test
@@ -95,7 +95,7 @@ public class ProductServiceTest {
 
         assertEquals(request.getName(), result.getName());
         assertEquals((int)request.getPrice(), (int)result.getPrice());
-        assertEquals(request.getCount(), (int)result.getCount());
+        assertEquals((int)request.getCount(), (int)result.getCount());
     }
 
     @Test(expected = ServiceException.class)
@@ -159,7 +159,7 @@ public class ProductServiceTest {
 
         // И в конце проверяем что всё изменили правильно
         assertEquals(request.getName(), result.getName());
-        assertEquals(request.getCount(), (int)result.getCount());
+        assertEquals((int)request.getCount(), (int)result.getCount());
         assertEquals((int)request.getPrice(), (int)result.getPrice());
     }
 
@@ -183,7 +183,7 @@ public class ProductServiceTest {
 
         // И в конце проверяем что всё изменили правильно
         assertEquals(request.getName(), result.getName());
-        assertEquals(request.getCount(), (int)result.getCount());
+        assertEquals((int)request.getCount(), (int)result.getCount());
         assertEquals((int)request.getPrice(), (int)result.getPrice());
     }
 

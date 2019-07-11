@@ -12,14 +12,12 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProductDto {
 
-    private long id;
-
+    private Long id;
     @RequiredName
     private String name;
     @NotNull
     private Integer price;
-
-    private int count = 0;
+    private Integer count = 0;
     private List<Long> categories;
 
     public ProductDto() {
@@ -38,6 +36,7 @@ public class ProductDto {
     }
 
     public ProductDto(Product product, List<ProductCategory> categories) {
+        this.id = product.getId();
         this.name = product.getName();
         this.price = product.getPrice();
         this.count = product.getCount();
@@ -56,28 +55,12 @@ public class ProductDto {
         this.price = price;
     }
 
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public int getCount() {
-        return count;
-    }
-
-    public void setCount(int count) {
-        this.count = count;
     }
 
     public List<Long> getCategories() {
@@ -87,4 +70,21 @@ public class ProductDto {
     public void setCategories(List<Long> categories) {
         this.categories = categories;
     }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Integer getCount() {
+        return count;
+    }
+
+    public void setCount(Integer count) {
+        this.count = count;
+    }
+
 }

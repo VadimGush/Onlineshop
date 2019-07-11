@@ -402,7 +402,7 @@ public class ClientServiceTest {
 
         Product fromBasket = result.get(0).getProduct();
         assertEquals(request.getName(), fromBasket.getName());
-        assertEquals(request.getPrice(), (int)fromBasket.getPrice());
+        assertEquals((int)request.getPrice(), (int)fromBasket.getPrice());
         assertEquals((int)request.getCount(), (int)result.get(0).getCount());
 
         assertEquals(client, result.get(0).getAccount());
@@ -451,7 +451,7 @@ public class ClientServiceTest {
 
         Product fromBasket = result.get(0).getProduct();
         assertEquals(request.getName(), fromBasket.getName());
-        assertEquals(request.getPrice(), (int)fromBasket.getPrice());
+        assertEquals((int)request.getPrice(), (int)fromBasket.getPrice());
         assertEquals(53, (int)result.get(0).getCount());
 
         assertEquals(client, result.get(0).getAccount());

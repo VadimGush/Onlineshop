@@ -12,7 +12,7 @@ import javax.validation.constraints.NotBlank;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ClientDto extends LoginDto {
 
-    private long id;
+    private Long id;
 
     @RequiredName
     private String firstName;
@@ -33,7 +33,7 @@ public class ClientDto extends LoginDto {
 
     public ClientDto(Account account) {
         super(account.getLogin(), account.getPassword());
-        this.id = account.getId() == null ? 0 : account.getId();
+        this.id = account.getId();
         this.firstName = account.getFirstName();
         this.lastName = account.getLastName();
         this.patronymic = account.getPatronymic();
@@ -42,11 +42,11 @@ public class ClientDto extends LoginDto {
         this.phone = account.getPhone();
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

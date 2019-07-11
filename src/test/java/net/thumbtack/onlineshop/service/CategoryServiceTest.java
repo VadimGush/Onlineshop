@@ -16,7 +16,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import static junit.framework.TestCase.assertEquals;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -45,15 +46,15 @@ public class CategoryServiceTest {
 
         when(mockCategoryDao.exists("category")).thenReturn(false);
 
-        Category category = categoryService.addCategory("token", new CategoryDto(
+        CategoryDto category = categoryService.addCategory("token", new CategoryDto(
                 "category"
         ));
 
         verify(mockCategoryDao).insert(any());
 
         assertEquals("category", category.getName());
-        assertFalse(category.isSubcategory());
-        assertNull(category.getParent());
+        assertNull(category.getParentId());
+        assertNull(category.getParentName());
     }
 
     @Test(expected = ServiceException.class)
@@ -115,10 +116,10 @@ public class CategoryServiceTest {
         when(mockCategoryDao.get(0)).thenReturn(
                 new Category("category", new Category("parent"))
         );
-        Category result = categoryService.getCategory("token", 0);
+        CategoryDto result = categoryService.getCategory("token", 0);
 
         assertEquals("category", result.getName());
-        assertEquals("parent", result.getParent().getName());
+        assertEquals("parent", result.getParentName());
     }
 
     @Test(expected = ServiceException.class)
@@ -146,13 +147,13 @@ public class CategoryServiceTest {
         when(mockCategoryDao.get(0)).thenReturn(category);
         when(mockCategoryDao.get(1)).thenReturn(parent);
 
-        Category result = categoryService.editCategory("token", new CategoryDto(
+        CategoryDto result = categoryService.editCategory("token", new CategoryDto(
                 "new name", 1
         ), 0);
         verify(mockCategoryDao).update(any());
         verify(mockCategoryDao, never()).insert(any());
         assertEquals("new name", result.getName());
-        assertEquals("another parent", result.getParent().getName());
+        assertEquals("another parent", result.getParentName());
 
     }
 
@@ -164,11 +165,11 @@ public class CategoryServiceTest {
         Category category = new Category("category", new Category("parent"));
         when(mockCategoryDao.get(0)).thenReturn(category);
 
-        Category result = categoryService.editCategory("token", new CategoryDto("new name"), 0);
+        CategoryDto result = categoryService.editCategory("token", new CategoryDto("new name"), 0);
         verify(mockCategoryDao).update(any());
         verify(mockCategoryDao, never()).insert(any());
         assertEquals("new name", result.getName());
-        assertEquals("parent", result.getParent().getName());
+        assertEquals("parent", result.getParentName());
     }
 
     @Test
@@ -181,11 +182,11 @@ public class CategoryServiceTest {
         when(mockCategoryDao.get(0)).thenReturn(category);
         when(mockCategoryDao.get(1)).thenReturn(parent);
 
-        Category result = categoryService.editCategory("token", new CategoryDto(1L), 0);
+        CategoryDto result = categoryService.editCategory("token", new CategoryDto(1L), 0);
         verify(mockCategoryDao).update(any());
         verify(mockCategoryDao, never()).insert(any());
         assertEquals("category", result.getName());
-        assertEquals("another", result.getParent().getName());
+        assertEquals("another", result.getParentName());
 
     }
 
@@ -273,7 +274,7 @@ public class CategoryServiceTest {
         );
         when(mockCategoryDao.getAll()).thenReturn(categories);
 
-        List<Category> result = categoryService.getCategories("token");
+        List<CategoryDto> result = categoryService.getCategories("token");
 
         assertEquals(categories.size(), result.size());
     }

@@ -1,5 +1,6 @@
 package net.thumbtack.onlineshop.database.dao;
 
+import net.thumbtack.onlineshop.database.models.Category;
 import net.thumbtack.onlineshop.database.models.Product;
 import net.thumbtack.onlineshop.database.models.ProductCategory;
 import org.junit.Before;
@@ -15,6 +16,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -197,7 +199,13 @@ public class ProductDaoTest {
     @Test
     public void testAllWithCategory() {
 
-        List<ProductCategory> mockResult = (List<ProductCategory>) mock(List.class);
+        List<ProductCategory> categories = new ArrayList<>();
+        Product product1 = new Product();
+        product1.setDeleted(false);
+        Product product2 = new Product();
+        product2.setDeleted(true);
+        categories.add(new ProductCategory(product1, new Category("yes")));
+        categories.add(new ProductCategory(product2, new Category("no")));
 
         CriteriaBuilder mockCriteriaBuilder = mock(CriteriaBuilder.class);
         CriteriaQuery<ProductCategory> mockCriteriaQuery = (CriteriaQuery<ProductCategory>) mock(CriteriaQuery.class);
@@ -208,11 +216,12 @@ public class ProductDaoTest {
         when(mockCriteriaBuilder.createQuery(ProductCategory.class)).thenReturn(mockCriteriaQuery);
         when(mockCriteriaQuery.from(ProductCategory.class)).thenReturn(mockRoot);
         when(mockEntityManager.createQuery(mockCriteriaQuery)).thenReturn(mockTypedQuery);
-        when(mockTypedQuery.getResultList()).thenReturn(mockResult);
+        when(mockTypedQuery.getResultList()).thenReturn(categories);
 
         List<ProductCategory> result = productDao.getAllWithCategory();
 
-        assertEquals(mockResult, result);
+        assertEquals(1, result.size());
+        assertEquals("yes", result.get(0).getCategory().getName());
 
         // Был селект
         verify(mockCriteriaQuery).from(ProductCategory.class);

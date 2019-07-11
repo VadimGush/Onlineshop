@@ -1,7 +1,6 @@
 package net.thumbtack.onlineshop.controller;
 
 import net.thumbtack.onlineshop.controller.validation.ValidationException;
-import net.thumbtack.onlineshop.database.models.Category;
 import net.thumbtack.onlineshop.dto.CategoryDto;
 import net.thumbtack.onlineshop.service.CategoriesService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +9,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -26,7 +24,7 @@ public class CategoriesController {
 
     @PostMapping("categories")
     @ResponseStatus(HttpStatus.OK)
-    public CategoryDto addCategories(
+    public CategoryDto addCategory(
             @CookieValue("JAVASESSIONID") String session,
             @RequestBody @Valid CategoryDto category,
             BindingResult result) throws Exception {
@@ -34,21 +32,22 @@ public class CategoriesController {
         if (result.hasErrors())
             throw new ValidationException(result);
 
-        return new CategoryDto(categoryService.addCategory(session, category));
+        return categoryService.addCategory(session, category);
     }
 
     @GetMapping("categories/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public CategoryDto getCategoriesById(
+    public CategoryDto getCategoryById(
             @PathVariable int id,
             @CookieValue("JAVASESSIONID") String session) throws Exception {
 
-        return new CategoryDto(categoryService.getCategory(session, id));
+        return categoryService.getCategory(session, id);
     }
 
+    // TODO: Здесь может быть имя категории пустым
     @PutMapping("categories/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public CategoryDto editCategories(
+    public CategoryDto editCategory(
             @CookieValue("JAVASESSIONID") String session,
             @PathVariable int id,
             @RequestBody @Valid CategoryDto category,
@@ -57,14 +56,12 @@ public class CategoriesController {
         if (result.hasErrors())
             throw new ValidationException(result);
 
-        return new CategoryDto(
-                categoryService.editCategory(session, category, id)
-        );
+        return categoryService.editCategory(session, category, id);
     }
 
     @DeleteMapping("categories/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public String deleteCategories(
+    public String deleteCategory(
             @CookieValue("JAVASESSIONID") String session,
             @PathVariable int id) throws Exception {
 
@@ -79,11 +76,6 @@ public class CategoriesController {
     public List<CategoryDto> getCategories(
             @CookieValue("JAVASESSIONID") String session) throws Exception {
 
-        List<Category> categories = categoryService.getCategories(session);
-        List<CategoryDto> result = new ArrayList<>();
-
-        categories.forEach((category) -> result.add(new CategoryDto(category)));
-
-        return result;
+        return categoryService.getCategories(session);
     }
 }

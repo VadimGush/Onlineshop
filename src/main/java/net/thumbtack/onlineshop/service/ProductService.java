@@ -16,7 +16,6 @@ import java.util.*;
 public class ProductService extends GeneralService {
 
     private ProductDao productDao;
-    private SessionDao sessionDao;
     private CategoryDao categoryDao;
 
     public enum SortOrder {
@@ -27,7 +26,6 @@ public class ProductService extends GeneralService {
     public ProductService(ProductDao productDao, SessionDao sessionDao, CategoryDao categoryDao) {
         super(sessionDao);
         this.productDao = productDao;
-        this.sessionDao = sessionDao;
         this.categoryDao = categoryDao;
     }
 

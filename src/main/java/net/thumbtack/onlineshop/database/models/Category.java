@@ -1,5 +1,8 @@
 package net.thumbtack.onlineshop.database.models;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import javax.persistence.*;
 import java.util.Objects;
 
@@ -15,6 +18,7 @@ public class Category {
     private String name;
 
     @OneToOne
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Category parent;
 
     public Category() {

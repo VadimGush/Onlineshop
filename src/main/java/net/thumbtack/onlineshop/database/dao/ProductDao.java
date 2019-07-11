@@ -13,6 +13,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
 
 @Transactional
@@ -126,10 +127,19 @@ public class ProductDao {
         Root<ProductCategory> from = criteria.from(ProductCategory.class);
 
         criteria.select(from);
-        criteria.where(builder.equal(from.get("deleted"), true));
 
         TypedQuery<ProductCategory> typed = manager.createQuery(criteria);
-        return typed.getResultList();
+        List<ProductCategory> result = new ArrayList<>();
+
+        // Вместо создания сложного запроса, мы вручную удалим
+        // товары, которые были удалены. Это очень плохая практика, но как временное
+        // решение пока сойдёт
+        // TODO: Переделать на запрос!
+        typed.getResultList().stream()
+                .filter(productCategory -> !productCategory.getProduct().getDeleted())
+                .forEach(result::add);
+
+        return result;
     }
 
 }

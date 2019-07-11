@@ -7,6 +7,7 @@ import net.thumbtack.onlineshop.dto.CategoryDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -27,7 +28,7 @@ public class CategoriesService extends GeneralService {
      * @return добавленная категория
      * @throws ServiceException
      */
-    public Category addCategory(String sessionId, CategoryDto category) throws ServiceException {
+    public CategoryDto addCategory(String sessionId, CategoryDto category) throws ServiceException {
 
         getAdmin(sessionId);
 
@@ -51,7 +52,7 @@ public class CategoriesService extends GeneralService {
         Category newCategory = new Category(category.getName(), parent);
         categoryDao.insert(newCategory);
 
-        return newCategory;
+        return new CategoryDto(newCategory);
     }
 
     /**
@@ -61,7 +62,7 @@ public class CategoriesService extends GeneralService {
      * @return категория из БД
      * @throws ServiceException
      */
-    public Category getCategory(String sessionId, long id) throws ServiceException {
+    public CategoryDto getCategory(String sessionId, long id) throws ServiceException {
 
         getAdmin(sessionId);
 
@@ -69,7 +70,7 @@ public class CategoriesService extends GeneralService {
         if (category == null)
             throw new ServiceException(ServiceException.ErrorCode.CATEGORY_NOT_FOUND);
 
-        return category;
+        return new CategoryDto(category);
     }
 
     /**
@@ -80,7 +81,7 @@ public class CategoriesService extends GeneralService {
      * @return изменённая категория
      * @throws ServiceException
      */
-    public Category editCategory(String sessionId, CategoryDto categoryDto, long id) throws ServiceException {
+    public CategoryDto editCategory(String sessionId, CategoryDto categoryDto, long id) throws ServiceException {
 
         getAdmin(sessionId);
 
@@ -106,7 +107,7 @@ public class CategoriesService extends GeneralService {
 
         categoryDao.update(category);
 
-        return category;
+        return new CategoryDto(category);
     }
 
     /**
@@ -133,11 +134,14 @@ public class CategoriesService extends GeneralService {
      * @return список категорий
      * @throws ServiceException
      */
-    public List<Category> getCategories(String sessionId) throws ServiceException {
+    public List<CategoryDto> getCategories(String sessionId) throws ServiceException {
 
         getAdmin(sessionId);
 
-        return categoryDao.getAll();
+        List<CategoryDto> result = new ArrayList<>();
+        categoryDao.getAll()
+                .forEach(category -> result.add(new CategoryDto(category)));
+        return result;
     }
 
 

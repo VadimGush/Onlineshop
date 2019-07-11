@@ -38,7 +38,7 @@ public class ProductService extends GeneralService {
      * @return информация о зарегестрированном в БД товаре
      * @throws ServiceException
      */
-    public Product add(String sessionId, ProductDto productDto) throws ServiceException {
+    public ProductDto add(String sessionId, ProductDto productDto) throws ServiceException {
         getAdmin(sessionId);
 
         // Добавляем товар в БД
@@ -46,6 +46,8 @@ public class ProductService extends GeneralService {
                 productDto.getName(),
                 productDto.getCount(),
                 productDto.getPrice());
+
+        // TODO: А что будет если номера категорий будут повторяться?
 
         // Отдельно добавляем список категорий
         if (productDto.getCategories() != null) {
@@ -66,11 +68,11 @@ public class ProductService extends GeneralService {
             for (Category category : newCategories)
                 productDao.insertCategory(new ProductCategory(product, category));
 
-            return product;
         } else {
             productDao.insert(product);
-            return product;
         }
+
+        return new ProductDto(product, productDao.getCategories(product.getId()));
     }
 
     /**
@@ -81,7 +83,7 @@ public class ProductService extends GeneralService {
      * @return информация об изменённом в БД товаре
      * @throws ServiceException
      */
-    public Product edit(String sessionId, ProductDto productDto, long productId) throws ServiceException {
+    public ProductDto edit(String sessionId, ProductDto productDto, long productId) throws ServiceException {
         getAdmin(sessionId);
 
         Product product = productDao.get(productId);
@@ -123,7 +125,8 @@ public class ProductService extends GeneralService {
         // И только если с категориями не было проблем,
         // то обновляем товар
         productDao.update(product);
-        return product;
+
+        return new ProductDto(product, productDao.getCategories(product.getId()));
     }
 
     /**
@@ -156,7 +159,7 @@ public class ProductService extends GeneralService {
      * @return информация о товаре из БД
      * @throws ServiceException
      */
-    public Product get(String sessionId, long id) throws ServiceException {
+    public ProductDto get(String sessionId, long id) throws ServiceException {
         getAccount(sessionId);
 
         Product product = productDao.get(id);
@@ -164,7 +167,7 @@ public class ProductService extends GeneralService {
         if (product == null)
             throw new ServiceException(ServiceException.ErrorCode.PRODUCT_NOT_FOUND);
 
-        return product;
+        return new ProductDto(product, productDao.getCategories(product.getId()));
     }
 
     /**
@@ -175,6 +178,7 @@ public class ProductService extends GeneralService {
      * @throws ServiceException
      */
     public List<ProductCategory> getCategories(String sessionId, long productId) throws ServiceException {
+        // TODO: От этого метода вообще надо избавится
         getAccount(sessionId);
 
         return productDao.getCategories(productId);
@@ -189,6 +193,9 @@ public class ProductService extends GeneralService {
      * @throws ServiceException
      */
     public List<ProductDto> getAll(String sessionId, List<Integer> categories, SortOrder order) throws ServiceException {
+
+        // TODO: Избавится от дубликаций кода и упростить метод
+
         getAccount(sessionId);
 
         List<ProductCategory> result = new ArrayList<>();
@@ -200,15 +207,13 @@ public class ProductService extends GeneralService {
 
                 // Все товары
                 List<Product> products = productDao.getAll();
-                for (Product product : products)
-                    result.add(new ProductCategory(product, null));
+                products.forEach((p) -> result.add(new ProductCategory(p, null)));
 
             } else if (categories.isEmpty()) {
 
                 // Все товары без категорий
                 List<Product> products = productDao.getAllWithoutCategory();
-                for (Product product : products)
-                    result.add(new ProductCategory(product, null));
+                products.forEach((p) -> result.add(new ProductCategory(p, null)));
 
             } else {
 
@@ -224,9 +229,7 @@ public class ProductService extends GeneralService {
                 }
 
                 // Теперь переносим всё это в конечный результат
-                for (Product product : resultSet)
-                    result.add(new ProductCategory(product, null));
-
+                resultSet.forEach((p) -> result.add(new ProductCategory(p, null)));
             }
 
             // Сортируем по именам товаров
@@ -239,13 +242,18 @@ public class ProductService extends GeneralService {
 
                 // Сначала добавляем в начало списка все товары без категорий
                 List<Product> products = productDao.getAllWithoutCategory();
-                for (Product product : products)
-                    result.add(new ProductCategory(product, null));
+                products.forEach((p) -> result.add(new ProductCategory(p, null)));
+                // И сортируем по именам товаров
                 result.sort(Comparator.comparing((ProductCategory left) -> left.getProduct().getName()));
 
                 // Теперь получаем список товаров c категориями
                 List<ProductCategory> temp = productDao.getAllWithCategory();
-                temp.sort(Comparator.comparing((ProductCategory left) -> left.getCategory().getName() + left.getProduct().getName()));
+                // И сортируем по именам категорий (а внутри категорий, по именам товаров)
+                temp.sort(
+                        Comparator.comparing(
+                                (ProductCategory left) -> left.getCategory().getName() + left.getProduct().getName()
+                        )
+                );
                 result.addAll(temp);
 
             } else if (categories.isEmpty()) {
@@ -253,8 +261,7 @@ public class ProductService extends GeneralService {
                 // Все товары без категорий
                 // никаих сортировок здесь не проводим
                 List<Product> products = productDao.getAllWithoutCategory();
-                for (Product product : products)
-                    result.add(new ProductCategory(product, null));
+                products.forEach((p) -> result.add(new ProductCategory(p, null)));
 
             } else {
 
@@ -267,7 +274,11 @@ public class ProductService extends GeneralService {
                 }
 
                 // Теперь сортируем по именам категорий
-                result.sort(Comparator.comparing((ProductCategory left) -> left.getCategory().getName() + left.getProduct().getName()));
+                result.sort(
+                        Comparator.comparing(
+                                (ProductCategory left) -> left.getCategory().getName() + left.getProduct().getName()
+                        )
+                );
             }
 
         }
@@ -285,7 +296,7 @@ public class ProductService extends GeneralService {
         ProductCategory.getCategory() == null. Товары, в которых должна быть только одна категория
         уже содержат её в паре.
 
-        Всё просто.
+        Тривиально.
          */
         for (ProductCategory pc : result) {
 

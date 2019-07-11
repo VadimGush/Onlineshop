@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.stubbing.Answer;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -38,6 +39,17 @@ public class ProductServiceTest {
     public void setUpClass() {
         MockitoAnnotations.initMocks(this);
         productService = new ProductService(mockProductDao, mockSessionDao, mockCategoryDao);
+
+        Answer<Product> answer = (invocation) -> {
+            Product product = invocation.getArgument(0);
+            product.setId(0L);
+
+            return null;
+        };
+        // База данных должна обновлять id объектов, которые в неё вставляют
+        // но поскольку стандартный мок сам этого делать не умеет, то приходится писать реализацию
+        doAnswer(answer).when(mockProductDao).insert(any());
+        doAnswer(answer).when(mockProductDao).update(any());
     }
 
     @Test
@@ -52,7 +64,7 @@ public class ProductServiceTest {
         ProductDto request = new ProductDto("product", 10, 1000,
                 Arrays.asList(1L, 2L, 3L));
 
-        Product result = productService.add("token", request);
+        ProductDto result = productService.add("token", request);
 
         // Продукт записан в БД
         verify(mockProductDao).insert(any());
@@ -72,7 +84,7 @@ public class ProductServiceTest {
 
         ProductDto request = new ProductDto("product", 10,0);
 
-        Product result = productService.add("token", request);
+        ProductDto result = productService.add("token", request);
 
         // Продукт записан в БД
         verify(mockProductDao).insert(any());
@@ -88,7 +100,7 @@ public class ProductServiceTest {
 
         ProductDto request = new ProductDto("product", 10, 1000);
 
-        Product result = productService.add("token", request);
+        ProductDto result = productService.add("token", request);
 
         // Продукт записан в БД
         verify(mockProductDao).insert(any());
@@ -133,9 +145,11 @@ public class ProductServiceTest {
         when(mockProductDao.get(0)).thenReturn(new Product("name", 1, 10));
 
         // Все три категори найдены в БД
-        when(mockCategoryDao.get(1)).thenReturn(new Category());
-        when(mockCategoryDao.get(2)).thenReturn(new Category());
-        when(mockCategoryDao.get(3)).thenReturn(new Category());
+        for (long i = 1; i <= 3; ++i) {
+            Category category = new Category();
+            category.setId(i);
+            when(mockCategoryDao.get(i)).thenReturn(category);
+        }
 
         // Старый список категорий у продукта
         when(mockProductDao.getCategories(0)).thenReturn(
@@ -144,12 +158,12 @@ public class ProductServiceTest {
 
         ProductDto request = new ProductDto("new name", 2, 20, Arrays.asList(1L, 2L, 3L));
 
-        Product result = productService.edit("token", request, 0);
+        ProductDto result = productService.edit("token", request, 0);
 
         // Получил старый товар из БД
         verify(mockProductDao).get(0);
         // Получил список категорий для старого товара
-        verify(mockProductDao).getCategories(0);
+        verify(mockProductDao, times(2)).getCategories(0);
         // Удалил старые категории
         verify(mockProductDao, times(2)).deleteCategory(any());
         // Добавил три новые категории
@@ -172,7 +186,7 @@ public class ProductServiceTest {
 
         ProductDto request = new ProductDto("new name", 2, 20);
 
-        Product result = productService.edit("token", request, 0);
+        ProductDto result = productService.edit("token", request, 0);
 
         // Получил старый товар из БД
         verify(mockProductDao).get(0);
@@ -283,11 +297,14 @@ public class ProductServiceTest {
         product.setId(0L);
         when(mockProductDao.get(0)).thenReturn(product);
 
-        Product result = productService.get("token", 0);
+        ProductDto result = productService.get("token", 0);
 
         verify(mockProductDao).get(0);
 
-        assertEquals(product, result);
+        assertEquals(product.getId(), result.getId());
+        assertEquals(product.getName(), result.getName());
+        assertEquals(product.getPrice(), result.getPrice());
+        assertEquals(product.getCount(), result.getCount());
     }
 
     @Test(expected = ServiceException.class)

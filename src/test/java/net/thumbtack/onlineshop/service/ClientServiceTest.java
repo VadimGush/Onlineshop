@@ -65,20 +65,6 @@ public class ClientServiceTest {
 
     }
 
-    @Test()
-    public void testGetDeposit() throws ServiceException {
-
-        Account client = generateClient();
-        client.setDeposit(9);
-
-        when(mockSessionDao.get("token")).thenReturn(new Session("token", client));
-
-        Account result = clientService.getDeposit("token");
-
-        assertEquals((int)client.getDeposit(), (int)result.getDeposit());
-
-    }
-
     @Test
     public void testBuyProduct1() throws ServiceException {
 
@@ -781,13 +767,6 @@ public class ClientServiceTest {
         }
 
         try {
-            clientService.getDeposit("token");
-            fail();
-        } catch (ServiceException e) {
-            assertEquals(ServiceException.ErrorCode.NOT_CLIENT, e.getErrorCode());
-        }
-
-        try {
             clientService.buyProduct("token", null);
             fail();
         } catch (ServiceException e) {
@@ -833,13 +812,6 @@ public class ClientServiceTest {
 
         try {
             clientService.putDeposit("token", 0);
-            fail();
-        } catch (ServiceException e) {
-            assertEquals(ServiceException.ErrorCode.NOT_LOGIN, e.getErrorCode());
-        }
-
-        try {
-            clientService.getDeposit("token");
             fail();
         } catch (ServiceException e) {
             assertEquals(ServiceException.ErrorCode.NOT_LOGIN, e.getErrorCode());

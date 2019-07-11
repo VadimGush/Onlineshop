@@ -47,16 +47,6 @@ public class ClientService extends GeneralService {
     }
 
     /**
-     * Запросить количество денег на счету
-     * @param sessionId сессия клиента
-     * @return полная информация об аккаунте клиента
-     * @throws ServiceException
-     */
-    public Account getDeposit(String sessionId) throws ServiceException {
-        return getClient(sessionId);
-    }
-
-    /**
      * Купить некоторый товар
      * @param sessionId сессия клиента
      * @param buyProduct информиация о товаре

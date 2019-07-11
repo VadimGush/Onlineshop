@@ -43,9 +43,7 @@ public class ClientController {
 
         clientService.putDeposit(session, deposit.getDeposit());
 
-        return new AccountDto(
-                accountService.getAccount(session)
-        );
+        return new AccountDto(accountService.getAccount(session));
     }
 
     @GetMapping("deposits")
@@ -53,10 +51,7 @@ public class ClientController {
     public AccountDto getDeposit(
             @CookieValue("JAVASESSIONID") String session) throws Exception {
 
-        // TODO: Удалить из AccountService метод getDeposit
-        return new AccountDto(
-                accountService.getAccount(session)
-        );
+        return new AccountDto(accountService.getAccount(session));
     }
 
     @PostMapping("purchases")
@@ -116,7 +111,7 @@ public class ClientController {
         if (result.hasErrors())
             throw new ValidationException(result);
 
-        List<Basket> basket =  clientService.editProductCount(session, product);
+        List<Basket> basket = clientService.editProductCount(session, product);
 
         return getBasket(basket);
     }

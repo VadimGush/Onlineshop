@@ -1,7 +1,6 @@
 package net.thumbtack.onlineshop.controller;
 
 import net.thumbtack.onlineshop.controller.validation.ValidationException;
-import net.thumbtack.onlineshop.database.models.Product;
 import net.thumbtack.onlineshop.dto.ProductDto;
 import net.thumbtack.onlineshop.service.ProductService;
 import org.springframework.http.HttpStatus;
@@ -34,12 +33,7 @@ public class ProductController {
         if (product.getCount() == null)
             product.setCount(0);
 
-        Product resultProduct = productService.add(session, product);
-
-        return new ProductDto(
-                resultProduct,
-                productService.getCategories(session, resultProduct.getId())
-        );
+        return productService.add(session, product);
     }
 
     // TODO: Здесь все поля необязательны
@@ -54,12 +48,7 @@ public class ProductController {
         if (result.hasErrors())
             throw new ValidationException(result);
 
-        Product resultProduct = productService.edit(session, product, id);
-
-        return new ProductDto(
-                resultProduct,
-                productService.getCategories(session, resultProduct.getId())
-        );
+        return productService.edit(session, product, id);
     }
 
     @DeleteMapping("products/{id}")
@@ -79,12 +68,7 @@ public class ProductController {
             @CookieValue("JAVASESSIONID") String session,
             @PathVariable int id) throws Exception {
 
-        Product resultProduct = productService.get(session, id);
-
-        return new ProductDto(
-                resultProduct,
-                productService.getCategories(session, resultProduct.getId())
-        );
+        return productService.get(session, id);
     }
 
     @GetMapping("products")
@@ -93,6 +77,7 @@ public class ProductController {
             @CookieValue("JAVASESSIONID") String session,
             @RequestParam(name = "category", required = false) List<Integer> categories,
             @RequestParam(name = "order", required = false) String orderString) throws Exception {
+
         ProductService.SortOrder order = ProductService.SortOrder.PRODUCT;
 
         if (orderString != null && orderString.equals("category"))

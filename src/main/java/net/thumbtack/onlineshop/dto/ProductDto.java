@@ -61,9 +61,13 @@ public class ProductDto {
         this.price = product.getPrice();
         this.count = product.getCount();
 
-        if (!categories.isEmpty()) {
+        if (categories != null && !categories.isEmpty()) {
             this.categories = new ArrayList<>();
-            categories.forEach((category) -> this.categories.add(category.getCategory().getId()));
+
+            for (ProductCategory category : categories) {
+                if (category.getCategory() != null)
+                    this.categories.add(category.getCategory().getId());
+            }
         }
     }
 

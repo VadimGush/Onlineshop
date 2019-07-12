@@ -41,9 +41,7 @@ public class ClientController {
         if (result.hasErrors())
             throw new ValidationException(result);
 
-        clientService.putDeposit(session, deposit.getDeposit());
-
-        return new AccountDto(accountService.getAccount(session));
+        return clientService.putDeposit(session, deposit.getDeposit());
     }
 
     @GetMapping("deposits")
@@ -83,9 +81,7 @@ public class ClientController {
         if (product.getCount() == null)
             product.setCount(1);
 
-        List<Basket> basket = clientService.addToBasket(session, product);
-
-        return getBasket(basket);
+        return clientService.addToBasket(session, product);
     }
 
 
@@ -111,9 +107,7 @@ public class ClientController {
         if (result.hasErrors())
             throw new ValidationException(result);
 
-        List<Basket> basket = clientService.editProductCount(session, product);
-
-        return getBasket(basket);
+        return clientService.editProductCount(session, product);
     }
 
     @GetMapping("baskets")
@@ -121,8 +115,7 @@ public class ClientController {
     public List<ProductDto> getBasket(
             @CookieValue("JAVASESSIONID") String session) throws Exception {
 
-        return getBasket(clientService.getBasket(session));
-
+        return clientService.getBasket(session);
     }
 
     @PostMapping("purchases/baskets")
@@ -135,9 +128,7 @@ public class ClientController {
         if (result.hasErrors())
             throw new ValidationException(result);
 
-        Pair<List<ProductDto>, List<Basket>> basket = clientService.buyBasket(session, toBuy);
-
-        return new ResultBasketDto(basket.getFirst(), basket.getSecond());
+        return clientService.buyBasket(session, toBuy);
     }
 
     private List<ProductDto> getBasket(List<Basket> basket) {

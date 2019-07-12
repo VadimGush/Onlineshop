@@ -11,8 +11,6 @@ public class OnlineShopServer {
 
     public static void main(String... args) throws ServiceException {
         ApplicationContext context = SpringApplication.run(OnlineShopServer.class);
-
-        AccountDao accountDao = context.getBean(AccountDao.class);
     }
 
 

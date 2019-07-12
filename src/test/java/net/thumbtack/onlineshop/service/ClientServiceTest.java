@@ -5,7 +5,9 @@ import net.thumbtack.onlineshop.database.dao.BasketDao;
 import net.thumbtack.onlineshop.database.dao.ProductDao;
 import net.thumbtack.onlineshop.database.dao.SessionDao;
 import net.thumbtack.onlineshop.database.models.*;
+import net.thumbtack.onlineshop.dto.AccountDto;
 import net.thumbtack.onlineshop.dto.ProductDto;
+import net.thumbtack.onlineshop.dto.ResultBasketDto;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -57,7 +59,7 @@ public class ClientServiceTest {
 
         when(mockSessionDao.get("token")).thenReturn(new Session("token", client));
 
-        Account result = clientService.putDeposit("token", 12);
+        AccountDto result = clientService.putDeposit("token", 12);
 
         verify(mockAccountDao).update(client);
 
@@ -374,7 +376,7 @@ public class ClientServiceTest {
         Basket basket = new Basket(client, product, request.getCount());
         when(mockBasketDao.get(client)).thenReturn(Arrays.asList(basket));
 
-        List<Basket> result = clientService.addToBasket("token", request);
+        List<ProductDto> result = clientService.addToBasket("token", request);
 
         // Должна была быть вставка одно единственного товара в корзину
         verify(mockBasketDao).insert(any());
@@ -386,12 +388,11 @@ public class ClientServiceTest {
 
         assertEquals(1, result.size());
 
-        Product fromBasket = result.get(0).getProduct();
+        ProductDto fromBasket = result.get(0);
         assertEquals(request.getName(), fromBasket.getName());
         assertEquals((int)request.getPrice(), (int)fromBasket.getPrice());
         assertEquals((int)request.getCount(), (int)result.get(0).getCount());
 
-        assertEquals(client, result.get(0).getAccount());
     }
 
     @Test
@@ -419,7 +420,7 @@ public class ClientServiceTest {
                 new Basket(client, product, request.getCount() + basket.getCount())
         ));
 
-        List<Basket> result = clientService.addToBasket("token", request);
+        List<ProductDto> result = clientService.addToBasket("token", request);
 
         // Проверяем, что у полученного из БД записи корзины изменилось количество
         assertEquals(53, (int)basket.getCount());
@@ -435,12 +436,10 @@ public class ClientServiceTest {
 
         assertEquals(1, result.size());
 
-        Product fromBasket = result.get(0).getProduct();
+        ProductDto fromBasket = result.get(0);
         assertEquals(request.getName(), fromBasket.getName());
         assertEquals((int)request.getPrice(), (int)fromBasket.getPrice());
         assertEquals(53, (int)result.get(0).getCount());
-
-        assertEquals(client, result.get(0).getAccount());
     }
 
     @Test
@@ -495,7 +494,7 @@ public class ClientServiceTest {
                 new Basket(client, product, 10)
         ));
 
-        List<Basket> result = clientService.editProductCount("token", new ProductDto(
+        List<ProductDto> result = clientService.editProductCount("token", new ProductDto(
                 0L, "product", 1, 10
         ));
 
@@ -598,7 +597,7 @@ public class ClientServiceTest {
 
         when(mockBasketDao.get(client)).thenReturn(basket);
 
-        List<Basket> result = clientService.getBasket("token");
+        List<ProductDto> result = clientService.getBasket("token");
 
         assertEquals(basket.size(), result.size());
     }
@@ -662,7 +661,7 @@ public class ClientServiceTest {
         // Итого у нас будет куплено 3 наименования общим количеством 29 единиц за 1000 за штуку
         // Того клиент потратит 29 000, а из БД изменятся всего три товара
 
-        Pair<List<ProductDto>, List<Basket>> result = clientService.buyBasket("token", toBuy);
+        ResultBasketDto result = clientService.buyBasket("token", toBuy);
 
         // Проверим сначала вызовы и информацию о клиенте
         assertEquals(1024, (int)client.getDeposit());
@@ -675,7 +674,7 @@ public class ClientServiceTest {
         // А одна запись в корзине всего лишь поменяет количество
         verify(mockBasketDao).update(any());
 
-        List<ProductDto> bought = result.getFirst();
+        List<ProductDto> bought = result.getBought();
 
         // Проверяем список купленных продуктов
         // Там их трое

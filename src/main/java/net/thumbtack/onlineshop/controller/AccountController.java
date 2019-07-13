@@ -102,7 +102,7 @@ public class AccountController {
 
     @PostMapping("sessions")
     @ResponseStatus(HttpStatus.OK)
-    public String login(
+    public AccountDto login(
             @RequestBody @Valid LoginDto account,
             BindingResult result,
             HttpServletResponse response) throws Exception {
@@ -114,7 +114,7 @@ public class AccountController {
         String session = accountService.login(account.getLogin(), account.getPassword());
         response.addCookie(new Cookie("JAVASESSIONID", session));
 
-        return "{}";
+        return accountService.get(session);
     }
 
     @DeleteMapping("sessions")

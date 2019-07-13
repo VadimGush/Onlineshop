@@ -30,7 +30,7 @@ public class ExceptionHandlerController {
     public ErrorDto handleValidationException(ValidationException exception) {
         ErrorDto errors = new ErrorDto();
         for (FieldError e : exception.getErrors().getFieldErrors())
-            errors.addError(e.getCode(), e.getDefaultMessage(), e.getField());
+            errors.addError(e.getCode(), e.getField(), e.getDefaultMessage());
         return errors;
     }
 

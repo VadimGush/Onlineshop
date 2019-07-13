@@ -147,8 +147,27 @@ public class CategoriesService extends GeneralService {
         getAdmin(sessionId);
 
         List<CategoryDto> result = new ArrayList<>();
-        categoryDao.getAll()
-                .forEach(category -> result.add(new CategoryDto(category)));
+        categoryDao.getAll().forEach(category -> result.add(new CategoryDto(category)));
+
+        /*
+        Сортируем
+
+        Все родительские должны быть отсортированны по имени
+        Под каждой родительской должны быть дочерние тоже отсортированные по имени
+        Таким образом сортировку мы выполняем по строкам (name + parentName)
+         */
+        result.sort((left, right) -> {
+            String leftFull = left.getName();
+            if (left.getParentName() != null)
+                leftFull = left.getParentName() + left.getName();
+
+            String rightFull = right.getName();
+            if (right.getParentName() != null)
+                rightFull = right.getParentName() + right.getName();
+
+            return leftFull.compareTo(rightFull);
+        });
+
         return result;
     }
 

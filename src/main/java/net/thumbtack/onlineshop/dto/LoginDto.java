@@ -1,17 +1,14 @@
 package net.thumbtack.onlineshop.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import net.thumbtack.onlineshop.controller.validation.Login;
 import net.thumbtack.onlineshop.controller.validation.Password;
 
 public class LoginDto {
 
     @Login
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String login;
 
     @Password
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     public LoginDto() {

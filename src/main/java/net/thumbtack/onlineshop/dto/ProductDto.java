@@ -6,6 +6,7 @@ import net.thumbtack.onlineshop.database.models.Basket;
 import net.thumbtack.onlineshop.database.models.Product;
 import net.thumbtack.onlineshop.database.models.ProductCategory;
 
+import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +18,7 @@ public class ProductDto {
     @RequiredName
     private String name;
     @NotNull
+    @DecimalMin("0")
     private Integer price;
 
     private Integer count;

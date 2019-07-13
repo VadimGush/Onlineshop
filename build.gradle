@@ -6,6 +6,8 @@ buildscript {
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:2.1.6.RELEASE")
         classpath("org.hibernate:hibernate-gradle-plugin:5.4.3.Final")
+        classpath("org.hibernate:hibernate-testing:5.4.3.Final")
+        classpath("com.fasterxml.jackson.core:jackson-databind:2.9.8")
     }
 }
 
@@ -34,6 +36,7 @@ dependencies {
     compile "commons-validator:commons-validator:1.4.0"
     
     testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile "com.h2database:h2"
 }
 
 // От нас требуют pom.xml

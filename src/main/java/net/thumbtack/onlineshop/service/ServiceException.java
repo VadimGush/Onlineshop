@@ -3,21 +3,21 @@ package net.thumbtack.onlineshop.service;
 public class ServiceException extends Exception {
 
     public enum ErrorCode {
-        LOGIN_ALREADY_IN_USE    ("LOGIN_ALREADY_IN_USE", "Данный логин занят"),
-        USER_NOT_FOUND          ("USER_NOT_FOUND", "Пользователь с таким логином и паролем не найден"),
-        NOT_ADMIN               ("NOT_ADMIN", "Для вызова данного метода необходимо иметь права администратора"),
-        WRONG_PASSWORD          ("WRONG_PASSWORD", "Неверный пароль"),
-        NOT_LOGIN               ("NOT_LOGIN", "Необходимо войти в систему"),
-        NOT_CLIENT              ("NOT_CLIENT", "Для вызова данного метода необходимо быть клиентом"),
-        PRODUCT_NOT_FOUND       ("PRODUCT_NOT_FOUND", "Указанный товар не найден"),
-        WRONG_PRODUCT_INFO      ("WRONG_PRODUCT_INFO", "Неверно указана информация о товаре"),
-        NOT_ENOUGH_PRODUCT      ("NOT_ENOUGH_PRODUCT", "Недостаточно товара"),
-        NOT_ENOUGH_MONEY        ("NOT_ENOUGH_MONEY", "Недостаточно денег на счету"),
-        CATEGORY_NOT_FOUND      ("CATEGORY_NOT_FOUND", "Категория не найдена"),
-        SAME_CATEGORY_NAME      ("SAME_CATEGORY_NAME", "Категория с таким именем уже существует"),
-        SECOND_SUBCATEGORY      ("SECOND_SUBCATEGORY", "Родитель категории не может быть подкатегорией"),
-        CATEGORY_TO_SUBCATEGORY ("CATEGORY_TO_SUBCATEGORY", "Нельзя изменить категорию на подкатегорию"),
-        EDIT_CATEGORY_EMPTY     ("EDIT_CATEGORY_EMPTY", "Хотя бы одно поле должно быть заполнено");
+        LOGIN_ALREADY_IN_USE    ("LoginInUse", "Данный логин занят"),
+        USER_NOT_FOUND          ("UserNotFound", "Пользователь с таким логином и паролем не найден"),
+        NOT_ADMIN               ("NotAdmin", "Для вызова данного метода необходимо иметь права администратора"),
+        WRONG_PASSWORD          ("WrongPassword", "Неверный пароль"),
+        NOT_LOGIN               ("NotLogin", "Необходимо войти в систему"),
+        NOT_CLIENT              ("NotClient", "Для вызова данного метода необходимо быть клиентом"),
+        PRODUCT_NOT_FOUND       ("ProductNotFound", "Указанный товар не найден"),
+        WRONG_PRODUCT_INFO      ("WrongProductInfo", "Неверно указана информация о товаре"),
+        NOT_ENOUGH_PRODUCT      ("NotEnoughProduct", "Недостаточно товара"),
+        NOT_ENOUGH_MONEY        ("NotEnoughMoney", "Недостаточно денег на счету"),
+        CATEGORY_NOT_FOUND      ("CategoryNotFound", "Категория не найдена"),
+        SAME_CATEGORY_NAME      ("SameCategoryName", "Категория с таким именем уже существует"),
+        SECOND_SUBCATEGORY      ("SecondSubcategory", "Родитель категории не может быть подкатегорией"),
+        CATEGORY_TO_SUBCATEGORY ("CategoryToSubcategory", "Нельзя изменить категорию на подкатегорию"),
+        EDIT_CATEGORY_EMPTY     ("EditCategoryEmpty", "Хотя бы одно поле должно быть заполнено");
 
         private String errorCode;
         private String message;

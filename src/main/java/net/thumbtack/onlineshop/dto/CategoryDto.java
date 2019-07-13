@@ -3,13 +3,13 @@ package net.thumbtack.onlineshop.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import net.thumbtack.onlineshop.database.models.Category;
 
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CategoryDto {
 
     private Long id;
-    @NotNull
+    @NotBlank
     private String name;
     private Long parentId;
     private String parentName;

@@ -210,18 +210,25 @@ public class AccountControllerTest {
     @Test
     public void testLogin() throws Exception {
 
+        AccountDto expected = new AccountDto();
+        expected.setFirstName("vadim");
+        expected.setLastName("gush");
+
         LoginDto account = new LoginDto();
         account.setLogin("LOGIN");
         account.setPassword("pass");
         when(mockResult.hasErrors()).thenReturn(false);
         when(mockAccountService.login("login", "pass")).thenReturn("token");
+        when(mockAccountService.get("token")).thenReturn(expected);
 
-        String result = accountController.login(account, mockResult, mockResponse);
+        AccountDto result = accountController.login(account, mockResult, mockResponse);
 
         verify(mockAccountService).login("login", "pass");
         verify(mockResponse).addCookie(any());
         assertEquals("login", account.getLogin());
-        assertEquals("{}", result);
+
+        assertEquals(expected.getFirstName(), result.getFirstName());
+        assertEquals(expected.getLastName(), result.getLastName());
 
     }
 

@@ -7,6 +7,7 @@ import net.thumbtack.onlineshop.database.models.AccountFactory;
 import net.thumbtack.onlineshop.database.models.Category;
 import net.thumbtack.onlineshop.database.models.Session;
 import net.thumbtack.onlineshop.dto.CategoryDto;
+import net.thumbtack.onlineshop.dto.CategoryEditDto;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -147,8 +148,8 @@ public class CategoryServiceTest {
         when(mockCategoryDao.get(0)).thenReturn(category);
         when(mockCategoryDao.get(1)).thenReturn(parent);
 
-        CategoryDto result = categoryService.editCategory("token", new CategoryDto(
-                "new name", 1
+        CategoryDto result = categoryService.editCategory("token", new CategoryEditDto(
+                "new name", 1L
         ), 0);
         verify(mockCategoryDao).update(any());
         verify(mockCategoryDao, never()).insert(any());
@@ -165,7 +166,7 @@ public class CategoryServiceTest {
         Category category = new Category("category", new Category("parent"));
         when(mockCategoryDao.get(0)).thenReturn(category);
 
-        CategoryDto result = categoryService.editCategory("token", new CategoryDto("new name"), 0);
+        CategoryDto result = categoryService.editCategory("token", new CategoryEditDto("new name"), 0);
         verify(mockCategoryDao).update(any());
         verify(mockCategoryDao, never()).insert(any());
         assertEquals("new name", result.getName());
@@ -182,7 +183,7 @@ public class CategoryServiceTest {
         when(mockCategoryDao.get(0)).thenReturn(category);
         when(mockCategoryDao.get(1)).thenReturn(parent);
 
-        CategoryDto result = categoryService.editCategory("token", new CategoryDto(1L), 0);
+        CategoryDto result = categoryService.editCategory("token", new CategoryEditDto(1L), 0);
         verify(mockCategoryDao).update(any());
         verify(mockCategoryDao, never()).insert(any());
         assertEquals("category", result.getName());
@@ -197,7 +198,7 @@ public class CategoryServiceTest {
         when(mockCategoryDao.get(0)).thenReturn(null);
 
         try {
-            categoryService.editCategory("token", new CategoryDto("some shit"), 0);
+            categoryService.editCategory("token", new CategoryEditDto("some shit"), 0);
         } catch (ServiceException e) {
             assertEquals(ServiceException.ErrorCode.CATEGORY_NOT_FOUND, e.getErrorCode());
             throw e;
@@ -214,9 +215,25 @@ public class CategoryServiceTest {
         when(mockCategoryDao.get(1)).thenReturn(null);
 
         try {
-            categoryService.editCategory("token", new CategoryDto(1L), 0);
+            categoryService.editCategory("token", new CategoryEditDto(1L), 0);
         } catch (ServiceException e) {
             assertEquals(ServiceException.ErrorCode.CATEGORY_NOT_FOUND, e.getErrorCode());
+            throw e;
+        }
+    }
+
+    @Test(expected = ServiceException.class)
+    public void testEditCategoryParentCategoryEmpty() throws ServiceException {
+        setAdmin();
+
+        Category category = new Category("category", new Category("parent"));
+        when(mockCategoryDao.get(0)).thenReturn(category);
+        when(mockCategoryDao.get(1)).thenReturn(null);
+
+        try {
+            categoryService.editCategory("token", new CategoryEditDto(), 0);
+        } catch (ServiceException e) {
+            assertEquals(ServiceException.ErrorCode.EDIT_CATEGORY_EMPTY, e.getErrorCode());
             throw e;
         }
     }
@@ -231,7 +248,7 @@ public class CategoryServiceTest {
         when(mockCategoryDao.get(1)).thenReturn(parent);
 
         try {
-            categoryService.editCategory("token", new CategoryDto(1L), 0);
+            categoryService.editCategory("token", new CategoryEditDto(1L), 0);
         } catch (ServiceException e) {
             assertEquals(ServiceException.ErrorCode.CATEGORY_TO_SUBCATEGORY, e.getErrorCode());
             throw e;

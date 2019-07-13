@@ -5,6 +5,7 @@ import net.thumbtack.onlineshop.database.dao.ProductDao;
 import net.thumbtack.onlineshop.database.dao.SessionDao;
 import net.thumbtack.onlineshop.database.models.*;
 import net.thumbtack.onlineshop.dto.ProductDto;
+import net.thumbtack.onlineshop.dto.ProductEditDto;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -156,7 +157,7 @@ public class ProductServiceTest {
                 Arrays.asList(new ProductCategory(), new ProductCategory())
         );
 
-        ProductDto request = new ProductDto("new name", 2, 20, Arrays.asList(1L, 2L, 3L));
+        ProductEditDto request = new ProductEditDto("new name", 2, 20, Arrays.asList(1L, 2L, 3L));
 
         ProductDto result = productService.edit("token", request, 0);
 
@@ -184,7 +185,7 @@ public class ProductServiceTest {
         // Старый товар найден в БД
         when(mockProductDao.get(0)).thenReturn(new Product("name", 1, 10));
 
-        ProductDto request = new ProductDto("new name", 2, 20);
+        ProductEditDto request = new ProductEditDto("new name", 2, 20);
 
         ProductDto result = productService.edit("token", request, 0);
 
@@ -218,7 +219,7 @@ public class ProductServiceTest {
                 Arrays.asList(new ProductCategory(), new ProductCategory())
         );
 
-        ProductDto request = new ProductDto("new name", 2, 20, Arrays.asList(1L, 2L, 3L));
+        ProductEditDto request = new ProductEditDto("new name", 2, 20, Arrays.asList(1L, 2L, 3L));
 
         try {
             productService.edit("token", request, 0);
@@ -240,7 +241,7 @@ public class ProductServiceTest {
         // Старый товар найден в БД
         when(mockProductDao.get(0)).thenReturn(null);
 
-        ProductDto request = new ProductDto("new name", 2, 20);
+        ProductEditDto request = new ProductEditDto("new name", 2, 20);
 
         try {
             productService.edit("token", request, 0);

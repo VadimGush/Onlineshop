@@ -2,6 +2,7 @@ package net.thumbtack.onlineshop.controller;
 
 import net.thumbtack.onlineshop.controller.validation.ValidationException;
 import net.thumbtack.onlineshop.dto.CategoryDto;
+import net.thumbtack.onlineshop.dto.CategoryEditDto;
 import net.thumbtack.onlineshop.service.CategoriesService;
 import org.junit.Before;
 import org.junit.Test;
@@ -77,32 +78,16 @@ public class CategoriesControllerTest {
     @Test
     public void testEditCategory() throws Exception {
 
-        CategoryDto category = new CategoryDto();
+        CategoryEditDto category = new CategoryEditDto();
         CategoryDto expected = new CategoryDto();
 
-        when(mockResult.hasErrors()).thenReturn(false);
         when(mockCategoriesService.editCategory("token", category, 0))
                 .thenReturn(expected);
 
-        CategoryDto result = categoriesController.editCategory("token", 0, category, mockResult);
+        CategoryDto result = categoriesController.editCategory("token", 0, category);
 
         verify(mockCategoriesService).editCategory("token", category, 0);
         assertEquals(expected, result);
-    }
-
-    @Test(expected = ValidationException.class)
-    public void testEditCategoryValidation() throws Exception {
-
-        CategoryDto category = new CategoryDto();
-        when(mockResult.hasErrors()).thenReturn(true);
-
-        try {
-            categoriesController.editCategory("token", 0, category, mockResult);
-        } catch (ValidationException e) {
-            verify(mockCategoriesService, never()).editCategory(any(), any(), anyLong());
-            throw e;
-        }
-
     }
 
     @Test

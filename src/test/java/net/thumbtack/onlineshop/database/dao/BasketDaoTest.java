@@ -10,6 +10,7 @@ import org.mockito.MockitoAnnotations;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -158,6 +159,19 @@ public class BasketDaoTest {
         verify(mockCriteriaBuilder).equal(null, account.getId());
 
         assertEquals(result.size(), basket.size());
+    }
+
+    @Test
+    public void testClear() {
+
+        Query mockQuery = mock(Query.class);
+        when(mockEntityManager.createNativeQuery(any()))
+                .thenReturn(mockQuery);
+
+        basketDao.clear();
+
+        verify(mockEntityManager).createNativeQuery("delete from basket");
+        verify(mockQuery).executeUpdate();
     }
 
     private Account generateAccount() {

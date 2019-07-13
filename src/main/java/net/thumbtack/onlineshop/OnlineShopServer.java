@@ -1,6 +1,5 @@
 package net.thumbtack.onlineshop;
 
-import net.thumbtack.onlineshop.database.dao.AccountDao;
 import net.thumbtack.onlineshop.service.ServiceException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

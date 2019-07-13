@@ -18,7 +18,7 @@ import java.util.List;
 
 @Transactional
 @Repository
-public class ProductDao {
+public class ProductDao implements Dao {
 
     private EntityManager manager;
 
@@ -140,6 +140,13 @@ public class ProductDao {
                 .forEach(result::add);
 
         return result;
+    }
+
+    public void clear() {
+        manager.createNativeQuery("delete from productcategory")
+                .executeUpdate();
+        manager.createNativeQuery("delete from product")
+                .executeUpdate();
     }
 
 }

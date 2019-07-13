@@ -5,6 +5,7 @@ import net.thumbtack.onlineshop.database.models.Account;
 import net.thumbtack.onlineshop.dto.AccountDto;
 import net.thumbtack.onlineshop.dto.DepositDto;
 import net.thumbtack.onlineshop.dto.ProductDto;
+import net.thumbtack.onlineshop.dto.ResultBasketDto;
 import net.thumbtack.onlineshop.service.AccountService;
 import net.thumbtack.onlineshop.service.ClientService;
 import org.junit.Before;
@@ -136,7 +137,7 @@ public class ClientControllerTest {
 
     }
 
-    @Test
+    @Test(expected = ValidationException.class)
     public void testAddToBasketValidation() throws Exception {
 
         ProductDto product = new ProductDto();
@@ -168,6 +169,63 @@ public class ClientControllerTest {
         when(mockResult.hasErrors()).thenReturn(false);
         when(mockClientService.editProductCount("token", product))
                 .thenReturn(expected);
+
+        List<ProductDto> result = controller.editProductCount("token", product, mockResult);
+
+        verify(mockClientService).editProductCount("token", product);
+        assertEquals(expected, result);
+    }
+
+    @Test(expected = ValidationException.class)
+    public void testEditProductCountValidation() throws Exception {
+
+        when(mockResult.hasErrors()).thenReturn(true);
+
+        try {
+            controller.editProductCount("token", null, mockResult);
+        } catch (ValidationException e) {
+            verify(mockClientService, never()).editProductCount(any(), any());
+            throw e;
+        }
+    }
+
+    @Test
+    public void testGetBasket() throws Exception {
+        List<ProductDto> expected = new ArrayList<>();
+
+        when(mockClientService.getBasket("token")).thenReturn(expected);
+
+        List<ProductDto> result = controller.getBasket("token");
+
+        verify(mockClientService).getBasket("token");
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testBuyBasket() throws Exception {
+        List<ProductDto> buy = new ArrayList<>();
+        ResultBasketDto expected = new ResultBasketDto();
+        when(mockResult.hasErrors()).thenReturn(false);
+        when(mockClientService.buyBasket("token", buy))
+                .thenReturn(expected);
+
+        ResultBasketDto result = controller.buyBasket("token", buy, mockResult);
+
+        verify(mockClientService).buyBasket("token", buy);
+        assertEquals(expected, result);
+    }
+
+    @Test(expected = ValidationException.class)
+    public void testBuyBasketValidation() throws Exception {
+
+        when(mockResult.hasErrors()).thenReturn(true);
+
+        try {
+            controller.buyBasket("token", null, mockResult);
+        } catch (ValidationException e) {
+            verify(mockClientService, never()).buyBasket(any(), any());
+            throw e;
+        }
     }
 
 }

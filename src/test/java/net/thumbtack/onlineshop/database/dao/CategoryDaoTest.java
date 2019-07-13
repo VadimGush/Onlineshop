@@ -8,6 +8,7 @@ import org.mockito.MockitoAnnotations;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -191,4 +192,18 @@ public class CategoryDaoTest {
 
         assertEquals(list.size(), result.size());
     }
+
+    @Test
+    public void testClear() {
+
+        Query mockQuery = mock(Query.class);
+        when(mockEntityManager.createNativeQuery(any()))
+                .thenReturn(mockQuery);
+
+        categoryDao.clear();
+
+        verify(mockEntityManager).createNativeQuery("delete from category");
+        verify(mockQuery).executeUpdate();
+    }
+
 }

@@ -15,7 +15,7 @@ import java.util.List;
 
 @Transactional
 @Repository
-public class AccountDao {
+public class AccountDao implements Dao {
 
     private EntityManager manager;
 
@@ -78,4 +78,10 @@ public class AccountDao {
         TypedQuery<Account> typed = manager.createQuery(criteria);
         return typed.getResultList();
     }
+
+    public void clear() {
+        manager.createNativeQuery("delete from account")
+                .executeUpdate();
+    }
+
 }

@@ -8,6 +8,7 @@ import org.mockito.MockitoAnnotations;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -104,5 +105,18 @@ public class SessionDaoTest {
 
         verify(mockCriteriaBuilder).equal(null, "token");
 
+    }
+
+    @Test
+    public void testClear() {
+
+        Query mockQuery = mock(Query.class);
+        when(mockEntityManager.createNativeQuery(any()))
+                .thenReturn(mockQuery);
+
+        sessionDao.clear();
+
+        verify(mockEntityManager).createNativeQuery("delete from session");
+        verify(mockQuery).executeUpdate();
     }
 }

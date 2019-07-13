@@ -2,6 +2,7 @@ package net.thumbtack.onlineshop.controller;
 
 import net.thumbtack.onlineshop.controller.validation.ValidationException;
 import net.thumbtack.onlineshop.dto.CategoryDto;
+import net.thumbtack.onlineshop.dto.CategoryEditDto;
 import net.thumbtack.onlineshop.service.CategoriesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -44,17 +45,15 @@ public class CategoriesController {
         return categoryService.getCategory(session, id);
     }
 
-    // TODO: Здесь может быть имя категории пустым
     @PutMapping("categories/{id}")
     @ResponseStatus(HttpStatus.OK)
     public CategoryDto editCategory(
             @CookieValue("JAVASESSIONID") String session,
             @PathVariable int id,
-            @RequestBody @Valid CategoryDto category,
-            BindingResult result) throws Exception {
+            @RequestBody CategoryEditDto category) throws Exception {
 
-        if (result.hasErrors())
-            throw new ValidationException(result);
+        // Поскольку в DTO может отсутствовать всё что угодно
+        // то и валидацию проводить бессмысленно
 
         return categoryService.editCategory(session, category, id);
     }

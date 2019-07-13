@@ -4,6 +4,7 @@ import net.thumbtack.onlineshop.database.dao.CategoryDao;
 import net.thumbtack.onlineshop.database.dao.SessionDao;
 import net.thumbtack.onlineshop.database.models.Category;
 import net.thumbtack.onlineshop.dto.CategoryDto;
+import net.thumbtack.onlineshop.dto.CategoryEditDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -81,7 +82,7 @@ public class CategoriesService extends GeneralService {
      * @return изменённая категория
      * @throws ServiceException
      */
-    public CategoryDto editCategory(String sessionId, CategoryDto categoryDto, long id) throws ServiceException {
+    public CategoryDto editCategory(String sessionId, CategoryEditDto categoryDto, long id) throws ServiceException {
 
         getAdmin(sessionId);
 
@@ -89,8 +90,15 @@ public class CategoriesService extends GeneralService {
         if (category == null)
             throw new ServiceException(ServiceException.ErrorCode.CATEGORY_NOT_FOUND);
 
-        if (categoryDto.getName() != null)
+        if (categoryDto.getName() == null && categoryDto.getParentId() == null)
+            throw new ServiceException(ServiceException.ErrorCode.EDIT_CATEGORY_EMPTY);
+
+        if (categoryDto.getName() != null) {
+            if (categoryDao.exists(categoryDto.getName()))
+                throw new ServiceException(ServiceException.ErrorCode.SAME_CATEGORY_NAME, "name");
+
             category.setName(categoryDto.getName());
+        }
 
         if (categoryDto.getParentId() != null) {
 

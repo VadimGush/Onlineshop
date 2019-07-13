@@ -16,7 +16,8 @@ public class ServiceException extends Exception {
         CATEGORY_NOT_FOUND      ("CATEGORY_NOT_FOUND", "Категория не найдена"),
         SAME_CATEGORY_NAME      ("SAME_CATEGORY_NAME", "Категория с таким именем уже существует"),
         SECOND_SUBCATEGORY      ("SECOND_SUBCATEGORY", "Родитель категории не может быть подкатегорией"),
-        CATEGORY_TO_SUBCATEGORY ("CATEGORY_TO_SUBCATEGORY", "Нельзя изменить категорию на подкатегорию");
+        CATEGORY_TO_SUBCATEGORY ("CATEGORY_TO_SUBCATEGORY", "Нельзя изменить категорию на подкатегорию"),
+        EDIT_CATEGORY_EMPTY     ("EDIT_CATEGORY_EMPTY", "Хотя бы одно поле должно быть заполнено");
 
         private String errorCode;
         private String message;

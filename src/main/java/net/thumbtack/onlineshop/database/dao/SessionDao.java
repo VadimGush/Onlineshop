@@ -14,7 +14,7 @@ import javax.persistence.criteria.Root;
 
 @Transactional
 @Repository
-public class SessionDao {
+public class SessionDao implements Dao {
 
     private EntityManager manager;
 
@@ -47,5 +47,10 @@ public class SessionDao {
             return null;
         }
 
+    }
+
+    public void clear() {
+        manager.createNativeQuery("delete from session")
+                .executeUpdate();
     }
 }

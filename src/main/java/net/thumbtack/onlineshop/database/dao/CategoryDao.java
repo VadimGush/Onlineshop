@@ -15,7 +15,7 @@ import java.util.List;
 
 @Transactional
 @Repository
-public class CategoryDao {
+public class CategoryDao implements Dao {
 
     private EntityManager manager;
 
@@ -75,5 +75,10 @@ public class CategoryDao {
 
         TypedQuery<Category> typed = manager.createQuery(criteria);
         return typed.getResultList();
+    }
+
+    public void clear() {
+        manager.createNativeQuery("delete from category")
+                .executeUpdate();
     }
 }

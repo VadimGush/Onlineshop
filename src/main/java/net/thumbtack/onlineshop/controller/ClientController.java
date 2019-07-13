@@ -1,7 +1,6 @@
 package net.thumbtack.onlineshop.controller;
 
 import net.thumbtack.onlineshop.controller.validation.ValidationException;
-import net.thumbtack.onlineshop.database.models.Basket;
 import net.thumbtack.onlineshop.dto.AccountDto;
 import net.thumbtack.onlineshop.dto.DepositDto;
 import net.thumbtack.onlineshop.dto.ProductDto;
@@ -9,13 +8,11 @@ import net.thumbtack.onlineshop.dto.ResultBasketDto;
 import net.thumbtack.onlineshop.service.AccountService;
 import net.thumbtack.onlineshop.service.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -129,13 +126,6 @@ public class ClientController {
             throw new ValidationException(result);
 
         return clientService.buyBasket(session, toBuy);
-    }
-
-    private List<ProductDto> getBasket(List<Basket> basket) {
-        List<ProductDto> result = new ArrayList<>();
-
-        basket.forEach((entity) -> result.add(new ProductDto(entity)));
-        return result;
     }
 
 }

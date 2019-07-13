@@ -9,6 +9,7 @@ import org.mockito.MockitoAnnotations;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -193,12 +194,27 @@ public class AccountDaoTest {
 
         List<Account> result = accountDao.getClients();
 
+        assertEquals(list.size(), result.size());
+
         // Проверяем что был условный селект
         verify(mockCriteriaQuery).from(Account.class);
         verify(mockCriteriaQuery).select(any());
         verify(mockCriteriaQuery).where(nullable(Predicate.class));
 
         verify(mockCriteriaBuilder).equal(null, false);
+    }
+
+    @Test
+    public void testClear() {
+
+        Query mockQuery = mock(Query.class);
+        when(mockEntityManager.createNativeQuery(any()))
+                .thenReturn(mockQuery);
+
+        accountDao.clear();
+
+        verify(mockEntityManager).createNativeQuery("delete from account");
+        verify(mockQuery).executeUpdate();
     }
 
     private Account generateAccount() {

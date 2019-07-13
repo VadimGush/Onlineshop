@@ -251,5 +251,19 @@ public class ProductDaoTest {
         assertEquals(products, result);
     }
 
+    @Test
+    public void testClear() {
+
+        Query mockQuery = mock(Query.class);
+        when(mockEntityManager.createNativeQuery(any()))
+                .thenReturn(mockQuery);
+
+        productDao.clear();
+
+        verify(mockEntityManager).createNativeQuery("delete from productcategory");
+        verify(mockEntityManager).createNativeQuery("delete from product");
+        verify(mockQuery, times(2)).executeUpdate();
+    }
+
 }
 

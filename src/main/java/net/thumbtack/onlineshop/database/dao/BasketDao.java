@@ -16,7 +16,7 @@ import java.util.List;
 
 @Transactional
 @Repository
-public class BasketDao {
+public class BasketDao implements Dao {
 
     private EntityManager manager;
 
@@ -74,5 +74,10 @@ public class BasketDao {
 
         return typed.getResultList();
 
+    }
+
+    public void clear() {
+        manager.createNativeQuery("delete from basket")
+                .executeUpdate();
     }
 }

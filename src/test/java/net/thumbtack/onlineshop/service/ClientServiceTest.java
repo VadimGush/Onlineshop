@@ -13,10 +13,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.fail;
@@ -373,7 +370,7 @@ public class ClientServiceTest {
         ProductDto request = new ProductDto(0L, "product", 10, 50);
 
         Basket basket = new Basket(client, product, request.getCount());
-        when(mockBasketDao.get(client)).thenReturn(Arrays.asList(basket));
+        when(mockBasketDao.get(client)).thenReturn(Collections.singletonList(basket));
 
         List<ProductDto> result = clientService.addToBasket("token", request);
 
@@ -415,7 +412,7 @@ public class ClientServiceTest {
         ProductDto request = new ProductDto(0L, "product", 10, 50);
 
         // Должен вернуть одну запись из корзины с прибавленным количеством
-        when(mockBasketDao.get(client)).thenReturn(Arrays.asList(
+        when(mockBasketDao.get(client)).thenReturn(Collections.singletonList(
                 new Basket(client, product, request.getCount() + basket.getCount())
         ));
 
@@ -489,7 +486,7 @@ public class ClientServiceTest {
         Basket basket = new Basket(client, product, 3);
         when(mockBasketDao.get(client, 0)).thenReturn(basket);
 
-        when(mockBasketDao.get(client)).thenReturn(Arrays.asList(
+        when(mockBasketDao.get(client)).thenReturn(Collections.singletonList(
                 new Basket(client, product, 10)
         ));
 
@@ -516,7 +513,7 @@ public class ClientServiceTest {
         Basket basket = new Basket(client, product, 3);
         when(mockBasketDao.get(client, 0)).thenReturn(basket);
 
-        when(mockBasketDao.get(client)).thenReturn(Arrays.asList(
+        when(mockBasketDao.get(client)).thenReturn(Collections.singletonList(
                 new Basket(client, product, 10)
         ));
 
@@ -541,7 +538,7 @@ public class ClientServiceTest {
         Basket basket = new Basket(client, product, 3);
         when(mockBasketDao.get(client, 0)).thenReturn(basket);
 
-        when(mockBasketDao.get(client)).thenReturn(Arrays.asList(
+        when(mockBasketDao.get(client)).thenReturn(Collections.singletonList(
                 new Basket(client, product, 10)
         ));
 
@@ -567,7 +564,7 @@ public class ClientServiceTest {
         Basket basket = new Basket(client, product, 3);
         when(mockBasketDao.get(client, 0)).thenReturn(basket);
 
-        when(mockBasketDao.get(client)).thenReturn(Arrays.asList(
+        when(mockBasketDao.get(client)).thenReturn(Collections.singletonList(
                 new Basket(client, product, 10)
         ));
 
@@ -765,14 +762,14 @@ public class ClientServiceTest {
         }
 
         try {
-            clientService.buyProduct("token", null);
+            clientService.buyProduct("token", new ProductDto());
             fail();
         } catch (ServiceException e) {
             assertEquals(ServiceException.ErrorCode.NOT_CLIENT, e.getErrorCode());
         }
 
         try {
-            clientService.addToBasket("token", null);
+            clientService.addToBasket("token", new ProductDto());
             fail();
         } catch (ServiceException e) {
             assertEquals(ServiceException.ErrorCode.NOT_CLIENT, e.getErrorCode());
@@ -786,7 +783,7 @@ public class ClientServiceTest {
         }
 
         try {
-            clientService.editProductCount("token", null);
+            clientService.editProductCount("token", new ProductDto());
             fail();
         } catch (ServiceException e) {
             assertEquals(ServiceException.ErrorCode.NOT_CLIENT, e.getErrorCode());
@@ -816,14 +813,14 @@ public class ClientServiceTest {
         }
 
         try {
-            clientService.buyProduct("token", null);
+            clientService.buyProduct("token", new ProductDto());
             fail();
         } catch (ServiceException e) {
             assertEquals(ServiceException.ErrorCode.NOT_LOGIN, e.getErrorCode());
         }
 
         try {
-            clientService.addToBasket("token", null);
+            clientService.addToBasket("token", new ProductDto());
             fail();
         } catch (ServiceException e) {
             assertEquals(ServiceException.ErrorCode.NOT_LOGIN, e.getErrorCode());
@@ -837,7 +834,7 @@ public class ClientServiceTest {
         }
 
         try {
-            clientService.editProductCount("token", null);
+            clientService.editProductCount("token", new ProductDto());
             fail();
         } catch (ServiceException e) {
             assertEquals(ServiceException.ErrorCode.NOT_LOGIN, e.getErrorCode());

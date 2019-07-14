@@ -35,7 +35,6 @@ public class ProductService extends GeneralService {
      * @param sessionId сессия админа
      * @param productDto информация о товаре
      * @return информация о зарегестрированном в БД товаре
-     * @throws ServiceException
      */
     public ProductDto add(String sessionId, ProductDto productDto) throws ServiceException {
         getAdmin(sessionId);
@@ -80,7 +79,6 @@ public class ProductService extends GeneralService {
      * @param productDto новая информация о товаре
      * @param productId id товара
      * @return информация об изменённом в БД товаре
-     * @throws ServiceException
      */
     public ProductDto edit(String sessionId, ProductEditDto productDto, long productId) throws ServiceException {
         getAdmin(sessionId);
@@ -90,13 +88,13 @@ public class ProductService extends GeneralService {
         if (product == null)
             throw new ServiceException(ServiceException.ErrorCode.PRODUCT_NOT_FOUND, "id");
 
-        if (product.getName() != null)
+        if (productDto.getName() != null)
             product.setName(productDto.getName());
 
-        if (product.getCount() != null)
+        if (productDto.getCount() != null)
             product.setCount(productDto.getCount());
 
-        if (product.getPrice() != null)
+        if (productDto.getPrice() != null)
             product.setPrice(productDto.getPrice());
 
         if (productDto.getCategories() != null) {
@@ -137,7 +135,6 @@ public class ProductService extends GeneralService {
      * Удаляет товар из БД
      * @param sessionId сессия админа
      * @param id id товара
-     * @throws ServiceException
      */
     public void delete(String sessionId, long id) throws ServiceException {
         getAdmin(sessionId);
@@ -161,7 +158,6 @@ public class ProductService extends GeneralService {
      * @param sessionId сессия админа
      * @param id id товара
      * @return информация о товаре из БД
-     * @throws ServiceException
      */
     public ProductDto get(String sessionId, long id) throws ServiceException {
         getAccount(sessionId);
@@ -175,26 +171,11 @@ public class ProductService extends GeneralService {
     }
 
     /**
-     * Получает список категорий товара
-     * @param sessionId сессия админа
-     * @param productId id товара
-     * @return список категорий для данного товара
-     * @throws ServiceException
-     */
-    public List<ProductCategory> getCategories(String sessionId, long productId) throws ServiceException {
-        // TODO: От этого метода вообще надо избавится
-        getAccount(sessionId);
-
-        return productDao.getCategories(productId);
-    }
-
-    /**
      * Получает список всех товаров отсортированных и отобранных по необходимым условиям
      * @param sessionId сессия админа
      * @param categories список категорий
      * @param order порядок сортировки
      * @return список товаров
-     * @throws ServiceException
      */
     public List<ProductDto> getAll(String sessionId, List<Integer> categories, SortOrder order) throws ServiceException {
 
@@ -263,9 +244,10 @@ public class ProductService extends GeneralService {
             } else if (categories.isEmpty()) {
 
                 // Все товары без категорий
-                // никаих сортировок здесь не проводим
                 List<Product> products = productDao.getAllWithoutCategory();
                 products.forEach((p) -> result.add(new ProductCategory(p, null)));
+                // Сортируем по именам товаров
+                result.sort(Comparator.comparing((ProductCategory left) -> left.getProduct().getName()));
 
             } else {
 

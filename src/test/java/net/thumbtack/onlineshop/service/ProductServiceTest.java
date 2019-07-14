@@ -323,47 +323,6 @@ public class ProductServiceTest {
     }
 
     @Test
-    public void testGetCategories() throws ServiceException {
-        setAdmin();
-
-        Category category1 = new Category("category1");
-        Category category2 = new Category("category2");
-        Category category3 = new Category("category3");
-
-        Product product = new Product("product", 1, 10);
-        product.setId(1L);
-
-        List<ProductCategory> categories = Arrays.asList(
-                new ProductCategory(product, category1),
-                new ProductCategory(product, category2),
-                new ProductCategory(product, category3)
-        );
-
-        when(mockProductDao.getCategories(0)).thenReturn(categories);
-
-        List<ProductCategory> result = productService.getCategories("token", 0);
-
-        // Проверяем что реально был вызван соответствующий метод
-        verify(mockProductDao).getCategories(0);
-
-        assertEquals(categories.size(), result.size());
-    }
-
-    @Test
-    public void testGetCategoriesEmpty() throws ServiceException {
-        setAdmin();
-
-        when(mockProductDao.getCategories(0)).thenReturn(Collections.emptyList());
-
-        List<ProductCategory> result = productService.getCategories("token", 0);
-
-        // Проверяем что реально был вызван соответствующий метод
-        verify(mockProductDao).getCategories(0);
-
-        assertEquals(0, result.size());
-    }
-
-    @Test
     public void testGetAll() throws ServiceException {
         setAdmin();
 
@@ -555,9 +514,9 @@ public class ProductServiceTest {
         verify(mockProductDao, never()).getAll();
         verify(mockProductDao, never()).getAllWithCategory();
 
-        assertEquals("beretta", results.get(0).getName());
-        assertEquals("warhouse", results.get(1).getName());
-        assertEquals("amish", results.get(2).getName());
+        assertEquals("amish", results.get(0).getName());
+        assertEquals("beretta", results.get(1).getName());
+        assertEquals("warhouse", results.get(2).getName());
         assertNull(results.get(0).getCategories());
         assertNull(results.get(1).getCategories());
         assertNull(results.get(2).getCategories());
@@ -633,7 +592,7 @@ public class ProductServiceTest {
     }
 
 
-    public void setAdmin() {
+    private void setAdmin() {
         Account admin = generateAdmin();
         when(mockSessionDao.get("token")).thenReturn(new Session("token", admin));
     }
@@ -644,7 +603,7 @@ public class ProductServiceTest {
         when(mockSessionDao.get("token")).thenReturn(new Session("token", client));
 
         try {
-            productService.add("token", null);
+            productService.add("token", new ProductDto());
             fail();
         } catch (ServiceException e) {
             assertEquals(ServiceException.ErrorCode.NOT_ADMIN, e.getErrorCode());
@@ -671,7 +630,7 @@ public class ProductServiceTest {
         when(mockSessionDao.get("token")).thenReturn(null);
 
         try {
-            productService.add("token", null);
+            productService.add("token", new ProductDto());
             fail();
         } catch (ServiceException e) {
             assertEquals(ServiceException.ErrorCode.NOT_LOGIN, e.getErrorCode());
@@ -693,13 +652,6 @@ public class ProductServiceTest {
 
         try {
             productService.get("token", 0);
-            fail();
-        } catch (ServiceException e) {
-            assertEquals(ServiceException.ErrorCode.NOT_LOGIN, e.getErrorCode());
-        }
-
-        try {
-            productService.getCategories("token", 0);
             fail();
         } catch (ServiceException e) {
             assertEquals(ServiceException.ErrorCode.NOT_LOGIN, e.getErrorCode());

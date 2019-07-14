@@ -37,7 +37,6 @@ public class ProductController {
         return productService.add(session, product);
     }
 
-    // TODO: Здесь все поля необязательны
     @PutMapping("products/{id}")
     @ResponseStatus(HttpStatus.OK)
     public ProductDto editProduct(

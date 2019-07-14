@@ -1,9 +1,14 @@
 package net.thumbtack.onlineshop.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import net.thumbtack.onlineshop.controller.validation.OptionalNotBlank;
+
 import java.util.List;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProductEditDto {
 
+    @OptionalNotBlank
     private String name;
     private Integer price;
     private Integer count;

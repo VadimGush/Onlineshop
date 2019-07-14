@@ -1,7 +1,6 @@
 package net.thumbtack.onlineshop;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import net.thumbtack.onlineshop.dto.*;
 import net.thumbtack.onlineshop.service.ServerControlService;
 import org.junit.Before;
@@ -11,24 +10,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.util.Pair;
-import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import javax.servlet.http.Cookie;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
-        classes = OnlineShopServer.class)
+        classes = OnlineShopServerTest.class
+)
+@TestPropertySource("classpath:config-test.properties")
 @AutoConfigureMockMvc
 public class AdministratorIntegrationTest {
 
@@ -38,30 +38,27 @@ public class AdministratorIntegrationTest {
     @Autowired
     private ServerControlService serverControl;
 
-    private ObjectMapper mapper = new ObjectMapper();
+    private IntegrationUtils utils;
 
     @Before
     public void cleanDatabase() {
         serverControl.clear();
+        utils = new IntegrationUtils(mvc);
     }
 
     @Test
     public void testRegistration() throws Exception {
 
         // Регистриуем администратора
-        // Login: VADIM
         AdminDto admin = createAdmin();
 
-        MvcResult result = mvc.perform(
-                post("/api/admins")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(admin)))
+        MvcResult result = utils.post("/api/admins", null, admin)
+                .andExpect(status().isOk())
                 .andReturn();
 
-        assertEquals(200, result.getResponse().getStatus());
         assertNotNull(result.getResponse().getCookie("JAVASESSIONID"));
 
-        JsonNode node = mapper.readTree(result.getResponse().getContentAsString());
+        JsonNode node = utils.read(result);
         assertNotNull(node.get("id"));
         assertEquals(admin.getFirstName(), node.get("firstName").asText());
         assertEquals(admin.getLastName(), node.get("lastName").asText());
@@ -74,11 +71,100 @@ public class AdministratorIntegrationTest {
         admin = createAdmin();
         admin.setLogin("vadim");
 
-        mvc.perform(
-                post("/api/admins")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(admin)))
-                .andExpect(status().isBadRequest());
+        result = utils.post("/api/admins", null, admin)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrors(result, Collections.singletonList(
+                Pair.of("LoginInUse", "login")
+        ));
+    }
+
+    /**
+     * Проверка, что регистрация не пройдёт с пустыми или неверными полями
+     */
+    @Test
+    public void testFailedRegistration() throws Exception {
+
+        AdminDto admin = createAdmin();
+        admin.setFirstName("");
+        admin.setLastName("");
+        admin.setLogin("");
+        admin.setPosition("");
+        admin.setPassword("");
+
+        // Пытаемся зарегаться с пустыми полями
+        MvcResult result = utils.post("/api/admins", null, admin)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrors(result, Arrays.asList(
+                Pair.of("RequiredRussianName", "firstName"),
+                Pair.of("RequiredRussianName", "lastName"),
+                Pair.of("Login", "login"),
+                Pair.of("RequiredName", "position"),
+                Pair.of("Password", "password")
+        ));
+
+        // Пытаемся зарегистрироваться с маленьким паролем
+        // и слишком длинными именами
+        admin = createAdmin();
+        admin.setFirstName("eewrewrjlewkjrewrklwerjew");
+        admin.setLastName("eewrewrjlewkjrewrklwerjew");
+        admin.setPatronymic("eewrewrjlewkjrewrklwerjew");
+        admin.setPosition("eewrewrjlewkjrewrklwerjew");
+        admin.setLogin("eewrewrjlewkjrewrklwerjew");
+
+        admin.setPassword("wew");
+
+        result = utils.post("/api/admins", null, admin)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrors(result, Arrays.asList(
+                Pair.of("RequiredRussianName", "firstName"),
+                Pair.of("RequiredRussianName", "lastName"),
+                Pair.of("Login", "login"),
+                Pair.of("RequiredName", "position"),
+                Pair.of("OptionalRussianName", "patronymic"),
+                Pair.of("Password", "password")
+        ));
+
+        // Имя не может состоять из английских букв, цифр и знаков препинания
+        admin = createAdmin();
+        admin.setFirstName("Vadim");
+        admin.setLastName("234234");
+        admin.setPatronymic("Ar.- ");
+        admin.setPosition("programmer");
+        admin.setLogin("vadim234");
+        admin.setPassword("wererewrw");
+
+        result = utils.post("/api/admins", null, admin)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrors(result, Arrays.asList(
+                Pair.of("RequiredRussianName", "firstName"),
+                Pair.of("RequiredRussianName", "lastName"),
+                Pair.of("OptionalRussianName", "patronymic")
+        ));
+
+        // Логин не может содержать в себе знаки препинания или пробелы
+        admin = createAdmin();
+        admin.setLogin("vadim.");
+
+        result = utils.post("/api/admins", null, admin)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+        utils.assertError(result, Pair.of("Login", "login"));
+
+        admin = createAdmin();
+        admin.setLogin("vad im");
+
+        result = utils.post("/api/admins", null, admin)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+        utils.assertError(result, Pair.of("Login", "login"));
     }
 
     @Test
@@ -88,16 +174,12 @@ public class AdministratorIntegrationTest {
         AdminDto admin = createAdmin();
         admin.setPatronymic(null);
 
-        MvcResult result = mvc.perform(
-                post("/api/admins")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(admin)))
-                .andReturn();
+        MvcResult result = utils.post("/api/admins", null, admin)
+                .andExpect(status().isOk()).andReturn();
 
-        assertEquals(200, result.getResponse().getStatus());
         assertNotNull(result.getResponse().getCookie("JAVASESSIONID"));
 
-        JsonNode node = mapper.readTree(result.getResponse().getContentAsString());
+        JsonNode node = utils.read(result);
         assertNotNull(node.get("id"));
         assertEquals(admin.getFirstName(), node.get("firstName").asText());
         assertEquals(admin.getLastName(), node.get("lastName").asText());
@@ -113,31 +195,41 @@ public class AdministratorIntegrationTest {
         // Регистрируем администратора
         AdminDto admin = createAdmin();
 
-        MvcResult result = mvc.perform(
-                post("/api/admins")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(admin)))
+        MvcResult result = utils.post("/api/admins", null, admin)
                 .andExpect(status().isOk()).andReturn();
 
-        String session = result.getResponse().getCookie("JAVASESSIONID").getValue();
+        String session = utils.getSession(result);
 
         // И выходим из аккунта по прошлой сессии
-        mvc.perform(
-                delete("/api/sessions")
-                        .cookie(new Cookie("JAVASESSIONID", session)
-        )).andExpect(status().isOk()).andExpect(content().string("{}"));
+        utils.delete("/api/sessions", session)
+                .andExpect(status().isOk()).andExpect(content().string("{}"));
+
+        // Выход без сессии тоже работает
+        utils.delete("/api/sessions", null)
+                .andExpect(status().isOk()).andExpect(content().string("{}"));
+
+        // Неверный пароль
+        LoginDto login = new LoginDto("vadim", "werew8778");
+        result = utils.post("/api/sessions", null, login)
+                .andExpect(status().isBadRequest()).andReturn();
+
+        utils.assertErrorsCodes(result, Collections.singletonList("UserNotFound"));
+
+        // Неверный логин
+        login = new LoginDto("vadi", "Iddqd225");
+        result = utils.post("/api/sessions", null, login)
+                .andExpect(status().isBadRequest()).andReturn();
+
+        utils.assertErrorsCodes(result, Collections.singletonList("UserNotFound"));
 
         // Теперь повторяем логин
-        LoginDto login = new LoginDto("vadIm", "Iddqd225");
+        login = new LoginDto("vadIm", "Iddqd225");
 
-        result = mvc.perform(
-                post("/api/sessions")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(login))
-        ).andExpect(status().isOk()).andReturn();
+        result = utils.post("/api/sessions", null, login)
+                .andExpect(status().isOk()).andReturn();
 
         // Проверяем что login вернул информацию об аккаунте
-        JsonNode node = mapper.readTree(result.getResponse().getContentAsString());
+        JsonNode node = utils.read(result);
         assertNotNull(node.get("id"));
         assertEquals(admin.getFirstName(), node.get("firstName").asText());
         assertEquals(admin.getLastName(), node.get("lastName").asText());
@@ -147,12 +239,9 @@ public class AdministratorIntegrationTest {
         assertNull(node.get("password"));
 
         // С помощью полученной сессии мы должны успешно выполнить какой-нибудь запрос
-        session = result.getResponse().getCookie("JAVASESSIONID").getValue();
+        session = utils.getSession(result);
 
-        mvc.perform(
-                get("/api/clients")
-                        .cookie(new Cookie("JAVASESSIONID", session))
-        ).andExpect(status().isOk());
+        utils.get("/api/clients", session ).andExpect(status().isOk());
     }
 
     @Test
@@ -161,14 +250,11 @@ public class AdministratorIntegrationTest {
         String session = registerAdmin();
         AdminDto admin = createAdmin();
 
-        MvcResult result = mvc.perform(
-                get("/api/accounts")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session)))
+        MvcResult result = utils.get("/api/accounts", session)
                 .andExpect(status().isOk()).andReturn();
 
         // Проверяем что данные правильные
-        JsonNode node = mapper.readTree(result.getResponse().getContentAsString());
+        JsonNode node = utils.read(result);
         assertNotNull(node.get("id"));
         assertEquals(admin.getFirstName(), node.get("firstName").asText());
         assertEquals(admin.getLastName(), node.get("lastName").asText());
@@ -177,18 +263,26 @@ public class AdministratorIntegrationTest {
         assertNull(node.get("login"));
         assertNull(node.get("password"));
 
+        // Проверяем что с неверной сессией мы данные не получим
+        result = utils.get("/api/accounts", "erew")
+                .andExpect(status().isBadRequest()).andReturn();
+
+        utils.assertErrorsCodes(result, Collections.singletonList("NotLogin"));
     }
 
     @Test
     public void testGetClients() throws Exception {
 
+        // Проверяем что без логина не получится вызвать метод
+        MvcResult result = utils.get("/api/clients", "werew")
+                .andExpect(status().isBadRequest()).andReturn();
+
+        utils.assertErrorsCodes(result, Collections.singletonList("NotLogin"));
+
         String session = registerAdmin();
 
         // Получаем пустой список
-        mvc.perform(
-                get("/api/clients")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session)))
+        utils.get("/api/clients", session)
                 .andExpect(status().isOk()).andExpect(content().string("[]"));
 
         // Теперь зарегаем пару клиентов
@@ -196,16 +290,13 @@ public class AdministratorIntegrationTest {
         registerClient("client2");
 
         // Получаем уже не пустой список
-        MvcResult result = mvc.perform(
-                get("/api/clients")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session)))
+        result = utils.get("/api/clients", session)
                 .andExpect(status().isOk()).andReturn();
 
         // Проверяем этот список
         ClientDto client = createClient();
 
-        JsonNode node = mapper.readTree(result.getResponse().getContentAsString());
+        JsonNode node = utils.read(result);
         assertEquals(2, node.size());
 
         for (int i = 0; i < 2; ++i) {
@@ -238,37 +329,35 @@ public class AdministratorIntegrationTest {
         info.setOldPassword("erewr");
         info.setNewPassword("VadimGush225");
 
+        // Проверяем что редактирование без логина не пройдёт
+        MvcResult result = utils.put("/api/admins", "erwe", info)
+                .andExpect(status().isBadRequest()).andReturn();
+        
+        utils.assertErrorsCodes(result, Collections.singletonList("NotLogin"));
+
         // Сначала пытаемся изменить инфу с неверным старым паролем
-        mvc.perform(
-                put("/api/admins")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session))
-                        .content(mapper.writeValueAsString(info)))
-                .andExpect(status().isBadRequest());
+        result = utils.put("/api/admins", session, info)
+                .andExpect(status().isBadRequest()).andReturn();
+        
+        utils.assertErrors(result, Collections.singletonList(Pair.of("WrongPassword", "oldPassword")));
 
         // Потом пытаемся изменить инфу с пустым новым паролем
         info.setOldPassword("Iddqd225");
         info.setNewPassword("");
 
-        mvc.perform(
-                put("/api/admins")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session))
-                        .content(mapper.writeValueAsString(info)))
-                .andExpect(status().isBadRequest());
+        result = utils.put("/api/admins", session, info)
+                .andExpect(status().isBadRequest()).andReturn();
+        
+        utils.assertErrors(result, Collections.singletonList(Pair.of("Password", "newPassword")));
 
         // Теперь наконец-то изменяем нормально
         info.setNewPassword("VadimGush225");
 
-        MvcResult result = mvc.perform(
-                put("/api/admins")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session))
-                        .content(mapper.writeValueAsString(info)))
+        result = utils.put("/api/admins", session, info)
                 .andExpect(status().isOk()).andReturn();
 
         // Теперь проверяем что вернул верные данные
-        JsonNode node = mapper.readTree(result.getResponse().getContentAsString());
+        JsonNode node = utils.read(result);
         assertNotNull(node.get("id"));
         assertEquals(info.getFirstName(), node.get("firstName").asText());
         assertEquals(info.getLastName(), node.get("lastName").asText());
@@ -279,32 +368,103 @@ public class AdministratorIntegrationTest {
 
     }
 
+    /**
+     * На редактирование аккаунта те же ограничения, что и на регистрацию
+     */
+    @Test
+    public void testFailedEditAccount() throws Exception {
+
+        String session = registerAdmin();
+
+        AdminEditDto admin = new AdminEditDto();
+        admin.setFirstName("");
+        admin.setLastName("");
+        admin.setPosition("");
+        admin.setPatronymic("");
+        admin.setOldPassword("Iddqd225");
+        admin.setNewPassword("Iddqd225");
+
+        // Пытаемся зарегаться с пустыми полями
+        MvcResult result = utils.put("/api/admins", session, admin)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrors(result, Arrays.asList(
+                Pair.of("RequiredRussianName", "firstName"),
+                Pair.of("RequiredRussianName", "lastName"),
+                Pair.of("RequiredName", "position")
+        ));
+
+        // Пытаемся зарегистрироваться с маленьким паролем
+        // и слишком длинными именами
+        admin = new AdminEditDto();
+        admin.setFirstName("eewrewrjlewkjrewrklwerjew");
+        admin.setLastName("eewrewrjlewkjrewrklwerjew");
+        admin.setPatronymic("eewrewrjlewkjrewrklwerjew");
+        admin.setPosition("eewrewrjlewkjrewrklwerjew");
+        admin.setOldPassword("Iddqd225");
+        admin.setNewPassword("Iddqd225");
+
+        result = utils.put("/api/admins", session, admin)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrors(result, Arrays.asList(
+                Pair.of("RequiredRussianName", "firstName"),
+                Pair.of("RequiredRussianName", "lastName"),
+                Pair.of("RequiredName", "position"),
+                Pair.of("OptionalRussianName", "patronymic")
+        ));
+
+        // Имя не может состоять из английских букв, цифр и знаков препинания
+        admin = new AdminEditDto();
+        admin.setFirstName("Vadim");
+        admin.setLastName("234234");
+        admin.setPatronymic("Ar.- ");
+        admin.setPosition("programmer");
+        admin.setOldPassword("Iddqd225");
+        admin.setNewPassword("Iddqd225");
+
+        result = utils.put("/api/admins", session, admin)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrors(result, Arrays.asList(
+                Pair.of("RequiredRussianName", "firstName"),
+                Pair.of("RequiredRussianName", "lastName"),
+                Pair.of("OptionalRussianName", "patronymic")
+        ));
+
+    }
+
     @Test
     public void testAddCategory() throws Exception {
 
         String session = registerAdmin();
 
-        // Сначала попытаемся добавить категорию без имени
+        // Добавление категории без логина
         CategoryDto category = new CategoryDto();
+        category.setName("apple");
 
-        mvc.perform(
-                post("/api/categories")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session))
-                        .content(mapper.writeValueAsString(category)))
-                .andExpect(status().isBadRequest());
+        MvcResult result = utils.post("/api/categories", "rewr", category)
+                .andExpect(status().isBadRequest()).andReturn();
+        
+        utils.assertErrorsCodes(result, Collections.singletonList("NotLogin"));
+
+        // Сначала попытаемся добавить категорию без имени
+        category.setName(null);
+        result = utils.post("/api/categories", session, category)
+                .andExpect(status().isBadRequest()).andReturn();
+
+        utils.assertError(result, Pair.of("NotBlank", "name"));
 
         // Теперь добавим новую категорию нормально
         category.setName("apple");
 
-        MvcResult result = mvc.perform(
-                post("/api/categories")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session))
-                        .content(mapper.writeValueAsString(category)))
+        result = utils.post("/api/categories", session, category)
                 .andExpect(status().isOk()).andReturn();
 
-        JsonNode node = mapper.readTree(result.getResponse().getContentAsString());
+        JsonNode node = utils.read(result);
         assertNotNull(node.get("id"));
         assertTrue(node.get("id").isInt());
         assertEquals(category.getName(), node.get("name").asText());
@@ -315,24 +475,18 @@ public class AdministratorIntegrationTest {
         category.setName("iphone");
         category.setParentId(-1L);
 
-        mvc.perform(
-                post("/api/categories")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session))
-                        .content(mapper.writeValueAsString(category)))
-                .andExpect(status().isBadRequest());
+        result = utils.post("/api/categories", session, category)
+                .andExpect(status().isBadRequest()).andReturn();
+
+        utils.assertError(result, Pair.of("CategoryNotFound", "parentId"));
 
         // Теперь добавляем дочернюю как надо
         category.setParentId(parentId);
 
-        result = mvc.perform(
-                post("/api/categories")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session))
-                        .content(mapper.writeValueAsString(category)))
+        result = utils.post("/api/categories", session, category)
                 .andExpect(status().isOk()).andReturn();
 
-        node = mapper.readTree(result.getResponse().getContentAsString());
+        node = utils.read(result);
         assertNotNull(node.get("id"));
         assertEquals(category.getName(), node.get("name").asText());
         assertEquals(parentId, node.get("parentId").asLong());
@@ -342,12 +496,10 @@ public class AdministratorIntegrationTest {
         category.setName("apple");
         category.setParentId(null);
 
-        mvc.perform(
-                post("/api/categories")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session))
-                        .content(mapper.writeValueAsString(category)))
-                .andExpect(status().isBadRequest());
+        result = utils.post("/api/categories", session, category)
+                .andExpect(status().isBadRequest()).andReturn();
+
+        utils.assertError(result, Pair.of("SameCategoryName", "name"));
     }
 
     @Test
@@ -355,24 +507,26 @@ public class AdministratorIntegrationTest {
 
         String session = registerAdmin();
 
+        // Получение категорий без логина
+        MvcResult result = utils.get("/api/categories/1", "ere")
+                .andExpect(status().isBadRequest()).andReturn();
+
+        utils.assertErrorCode(result, "NotLogin");
+
         // Получение категории, которой нет в БД
-        mvc.perform(
-                get("/api/categories/1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session)))
-                .andExpect(status().isBadRequest());
+        result = utils.get("/api/categories/1", session)
+                .andExpect(status().isBadRequest()).andReturn();
+
+        utils.assertErrorCode(result, "CategoryNotFound");
 
         // Регаем категорию
         long id = registerCategory(session, "apple", null);
 
         // Получаем данные о родительской категории
-        MvcResult result = mvc.perform(
-                get("/api/categories/" + id)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session))
-        ).andExpect(status().isOk()).andReturn();
+        result = utils.get("/api/categories/" + id, session)
+                .andExpect(status().isOk()).andReturn();
 
-        JsonNode node = mapper.readTree(result.getResponse().getContentAsString());
+        JsonNode node = utils.read(result);
         assertNotNull(node.get("id"));
         assertTrue(node.get("id").isInt());
         assertEquals("apple", node.get("name").asText());
@@ -383,13 +537,10 @@ public class AdministratorIntegrationTest {
         long childId = registerCategory(session, "iphone", id);
 
         // Получаем инфу о дочерней
-        result = mvc.perform(
-                get("/api/categories/" + childId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session))
-        ).andExpect(status().isOk()).andReturn();
+        result = utils.get("/api/categories/" + childId, session)
+                .andExpect(status().isOk()).andReturn();
 
-        node = mapper.readTree(result.getResponse().getContentAsString());
+        node = utils.read(result);
         assertNotNull(node.get("id"));
         assertTrue(node.get("id").isInt());
         assertEquals("iphone", node.get("name").asText());
@@ -405,13 +556,19 @@ public class AdministratorIntegrationTest {
         CategoryEditDto info = new CategoryEditDto();
         info.setName("ikea");
 
+        // Редактирование категории без логина
+        MvcResult result = utils.put("/api/categories/1", "ewrwe", info)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrorCode(result, "NotLogin");
+
         // Редактирование категории, котороый нет в БД
-        mvc.perform(
-                put("/api/categories/1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session))
-                        .content(mapper.writeValueAsString(info)))
-                .andExpect(status().isBadRequest());
+        result = utils.put("/api/categories/1", session, info)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrorCode(result, "CategoryNotFound");
 
         // Регистрируем нормальную категорию
         long apple = registerCategory(session, "apple", null);
@@ -420,35 +577,42 @@ public class AdministratorIntegrationTest {
 
         info.setParentId(iphone);
         // Теперь пытаемся сделать категорию подкатегорией (что непозволительно)
-        mvc.perform(
-                put("/api/categories/" + apple)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session))
-                        .content(mapper.writeValueAsString(info)))
-                .andExpect(status().isBadRequest());
+
+        result = utils.put("/api/categories/" + apple, session, info)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrorCode(result, "CategoryToSubcategory");
+
+        // Пытаемся изменить имя категории на уже существующее
+
+        info.setName("msi");
+        info.setParentId(null);
+        result = utils.put("/api/categories/" + apple, session, info)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertError(result, Pair.of("SameCategoryName", "name"));
 
         // Теперь делаем оба поля пустыми
         info.setParentId(null);
         info.setName(null);
 
-        mvc.perform(
-                put("/api/categories/" + apple)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session))
-                        .content(mapper.writeValueAsString(info)))
-                .andExpect(status().isBadRequest());
+        result = utils.put("/api/categories/" + apple, session, info)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrorCode(result, "EditCategoryEmpty");
 
         // Теперь переместим одну подкатегорию к другому родителю
         info.setParentId(msi);
 
-        MvcResult result = mvc.perform(
-                put("/api/categories/" + iphone)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session))
-                        .content(mapper.writeValueAsString(info)))
-                .andExpect(status().isOk()).andReturn();
 
-        JsonNode node = mapper.readTree(result.getResponse().getContentAsString());
+        result = utils.put("/api/categories/" + iphone, session, info)
+                .andExpect(status().isOk())
+                .andReturn();
+
+        JsonNode node = utils.read(result);
         assertEquals(iphone, node.get("id").asLong());
         assertEquals("iphone", node.get("name").asText());
         assertEquals("msi", node.get("parentName").asText());
@@ -458,18 +622,57 @@ public class AdministratorIntegrationTest {
         info.setParentId(null);
         info.setName("new");
 
-        result = mvc.perform(
-                put("/api/categories/" + apple)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session))
-                        .content(mapper.writeValueAsString(info)))
-                .andExpect(status().isOk()).andReturn();
+        result = utils.put("/api/categories/" + apple, session, info)
+                .andExpect(status().isOk())
+                .andReturn();
 
-        node = mapper.readTree(result.getResponse().getContentAsString());
+        node = utils.read(result);
         assertEquals(apple, node.get("id").asLong());
         assertEquals("new", node.get("name").asText());
         assertNull(node.get("parentName"));
         assertNull(node.get("parentId"));
+
+    }
+
+    /**
+     * Проверяем что изменение категории не влияет на товары, которые принадлежат
+     * этой самой категории
+     *
+     * А удалённая категория просто исчезает из списка категорий товара
+     */
+    @Test
+    public void testEditCategoryAndCheckProduct() throws Exception {
+
+        String session = registerAdmin();
+        long category = registerCategory(session, "category", null);
+        long product = registerProduct(session, "product", Collections.singletonList(category));
+
+        // Теперь изменяем информацию о категории
+
+        CategoryEditDto info = new CategoryEditDto();
+        info.setName("ikea");
+
+        // Редактирование категории без логина
+        utils.put("/api/categories/" + category, session, info)
+                .andExpect(status().isOk());
+
+        // Проверяем что товар всё так же принадлежит данной категории
+        MvcResult result = utils.get("/api/products/" + product, session)
+                .andExpect(status().isOk())
+                .andReturn();
+        JsonNode node = utils.read(result);
+        assertEquals(category, node.get("categories").get(0).asLong());
+
+        // Удаляем категорию
+        utils.delete("/api/categories/" + category, session)
+                .andExpect(status().isOk());
+
+        // Проверяем что у товара теперь просто пустой список категорий
+        result = utils.get("/api/products/" + product, session)
+                .andExpect(status().isOk())
+                .andReturn();
+        node = utils.read(result);
+        assertNull(node.get("categories"));
 
     }
 
@@ -478,76 +681,84 @@ public class AdministratorIntegrationTest {
 
         String session = registerAdmin();
 
+        // Удаление без логина
+        MvcResult result = utils.delete("/api/categories/1", "ewrwe")
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrorCode(result, "NotLogin");
+
         // Удаление несуществующей
-        mvc.perform(
-                delete("/api/categories/1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session)))
-                .andExpect(status().isBadRequest());
+        result = utils.delete("/api/categories/1", session)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrorCode(result, "CategoryNotFound");
 
         // Создаём категорию и удаляем её сразу
         long category = registerCategory(session, "category", null);
 
-        mvc.perform(
-                delete("/api/categories/" + category)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session)))
-                .andExpect(status().isOk()).andExpect(content().string("{}"));
+        utils.delete("/api/categories/" + category, session)
+                .andExpect(status().isOk())
+                .andExpect(content().string("{}"));
 
         // После удаления проверяем что список категорий и вправду пустой
-        mvc.perform(
-                get("/api/categories")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session)))
-                .andExpect(status().isOk()).andExpect(content().string("[]"));
+        utils.get("/api/categories", session)
+                .andExpect(status().isOk())
+                .andExpect(content().string("[]"));
 
         // Теперь создаём дочернюю и удаляем её
         long parent = registerCategory(session, "apple", null);
         long child = registerCategory(session, "iphone", null);
 
-        mvc.perform(
-                delete("/api/categories/" + child)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session)))
-                .andExpect(status().isOk()).andExpect(content().string("{}"));
+        utils.delete("/api/categories/" + child, session)
+                .andExpect(status().isOk())
+                .andExpect(content().string("{}"));
 
         // Получаем список категорий и проверяем что родительская категория на месте
-        MvcResult result = mvc.perform(
-                get("/api/categories")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session)))
-                .andExpect(status().isOk()).andReturn();
+        result = utils.get("/api/categories", session)
+                .andExpect(status().isOk())
+                .andReturn();
 
-        JsonNode node = mapper.readTree(result.getResponse().getContentAsString());
+        JsonNode node = utils.read(result);
         assertEquals(1, node.size());
 
         // Теперь добавляем подкатегорию и удалим родительскую
         registerCategory(session, "ipod", parent);
-        mvc.perform(
-                delete("/api/categories/" + parent)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session)))
-                .andExpect(status().isOk()).andExpect(content().string("{}"));
+        utils.delete("/api/categories/" + parent, session)
+                .andExpect(status().isOk())
+                .andExpect(content().string("{}"));
 
         // Проверяем что список категорий пустой
-        mvc.perform(
-                get("/api/categories")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session)))
-                .andExpect(status().isOk()).andExpect(content().string("[]"));
+        utils.get("/api/categories", session)
+                .andExpect(status().isOk())
+                .andExpect(content().string("[]"));
     }
 
+    /**
+     * Получение списка категорий
+     */
     @Test
     public void testGetCategories() throws Exception {
 
         String session = registerAdmin();
+
+        // Получение списка категорий без логина
+        MvcResult result = utils.get("/api/categories", "ewrew")
+                .andExpect(status().isBadRequest())
+                .andReturn();
+        utils.assertErrorCode(result, "NotLogin");
+
         /*
         Ожидаем такой порядок:
+
+        Категория    |     Подкатегория
+        -------------------------------
         apple
-        apple - iphone
-        apple - ipod
+        apple           iphone
+        apple           ipod
         msi
-        msi - lenovo
+        msi             lenovo
          */
 
         long msi = registerCategory(session, "msi", null);
@@ -556,13 +767,11 @@ public class AdministratorIntegrationTest {
         long ipod = registerCategory(session, "ipod", apple);
         long iphone = registerCategory(session, "iphone", apple);
 
-        MvcResult result = mvc.perform(
-                get("/api/categories")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session)))
-                .andExpect(status().isOk()).andReturn();
+        result = utils.get("/api/categories", session)
+                .andExpect(status().isOk())
+                .andReturn();
 
-        JsonNode node = mapper.readTree(result.getResponse().getContentAsString());
+        JsonNode node = utils.read(result);
 
         assertEquals(apple, node.get(0).get("id").asLong());
         assertEquals("apple", node.get(0).get("name").asText());
@@ -586,23 +795,21 @@ public class AdministratorIntegrationTest {
         assertEquals(msi, node.get(4).get("parentId").asLong());
     }
 
+    /**
+     * Добавление товара
+     */
     @Test
     public void testAddProduct() throws Exception {
 
         String session = registerAdmin();
-
         ProductDto product = new ProductDto();
 
         // Проверяем что нельзя добавить продукт без имени и цены
+        MvcResult result = utils.post("/api/products", session, product)
+                .andExpect(status().isBadRequest())
+                .andReturn();
 
-        MvcResult result = mvc.perform(
-                post("/api/products")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session))
-                        .content(mapper.writeValueAsString(product)))
-                .andExpect(status().isBadRequest()).andReturn();
-
-        assertErrors(result, Arrays.asList(
+        utils.assertErrors(result, Arrays.asList(
                 Pair.of("NotNull", "price"),
                 Pair.of("RequiredName", "name")
         ));
@@ -610,14 +817,11 @@ public class AdministratorIntegrationTest {
         // Проверяем что нельзя добавить отрицательную цену
         product.setPrice(-1);
 
-        result = mvc.perform(
-                post("/api/products")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session))
-                        .content(mapper.writeValueAsString(product)))
-                .andExpect(status().isBadRequest()).andReturn();
+        result = utils.post("/api/products", session, product)
+                .andExpect(status().isBadRequest())
+                .andReturn();
 
-        assertErrors(result, Arrays.asList(
+        utils.assertErrors(result, Arrays.asList(
                 Pair.of("DecimalMin", "price"),
                 Pair.of("RequiredName", "name")
         ));
@@ -625,31 +829,30 @@ public class AdministratorIntegrationTest {
         // Теперь всё нормально, но категории нет
         product.setName("table");
         product.setPrice(1000);
-        product.setCategories(Arrays.asList(1L));
+        product.setCategories(Collections.singletonList(1L));
 
-        result = mvc.perform(
-                post("/api/products")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session))
-                        .content(mapper.writeValueAsString(product)))
-                .andExpect(status().isBadRequest()).andReturn();
+        result = utils.post("/api/products", session, product)
+                .andExpect(status().isBadRequest())
+                .andReturn();
 
-        assertErrors(result, Arrays.asList(
-                Pair.of("CategoryNotFound", "categories")
-        ));
+        utils.assertError(result, Pair.of("CategoryNotFound", "categories"));
+
+        // Добавление товара без логина
+        result = utils.post("/api/products", "erwer", product)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrorCode(result, "NotLogin");
 
         // Добавим товар без категори
         // И с количеством по умолчанию ноль
         product.setCategories(null);
 
-        result = mvc.perform(
-                post("/api/products")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session))
-                        .content(mapper.writeValueAsString(product)))
-                .andExpect(status().isOk()).andReturn();
+        result = utils.post("/api/products", session , product)
+                .andExpect(status().isOk())
+                .andReturn();
 
-        JsonNode node = mapper.readTree(result.getResponse().getContentAsString());
+        JsonNode node = utils.read(result);
         assertNotNull(node.get("id"));
         assertEquals(product.getName(), node.get("name").asText());
         assertEquals((long)product.getPrice(), node.get("price").asLong());
@@ -658,16 +861,13 @@ public class AdministratorIntegrationTest {
 
         // Теперь добавим товар с тем же именем и плюс с категорией
         long category = registerCategory(session, "category", null);
-        product.setCategories(Arrays.asList(category));
+        product.setCategories(Collections.singletonList(category));
 
-        result = mvc.perform(
-                post("/api/products")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session))
-                        .content(mapper.writeValueAsString(product)))
-                .andExpect(status().isOk()).andReturn();
+        result = utils.post("/api/products", session, product)
+                .andExpect(status().isOk())
+                .andReturn();
 
-        node = mapper.readTree(result.getResponse().getContentAsString());
+        node = utils.read(result);
         assertNotNull(node.get("id"));
         assertEquals(product.getName(), node.get("name").asText());
         assertEquals((long)product.getPrice(), node.get("price").asLong());
@@ -675,24 +875,28 @@ public class AdministratorIntegrationTest {
         assertEquals(category, node.get("categories").get(0).asLong());
     }
 
+    /**
+     * Изменение данных товара
+     */
     @Test
     public void testEditProduct() throws Exception {
 
         String session = registerAdmin();
-
-        // Изменение несуществующего товара
         ProductEditDto product = new ProductEditDto();
 
-        MvcResult result = mvc.perform(
-                put("/api/products/3")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session))
-                        .content(mapper.writeValueAsString(product)))
-                .andExpect(status().isBadRequest()).andReturn();
+        // Изменение товара без логина
+        MvcResult result = utils.put("/api/products/3", "erwe", product)
+                .andExpect(status().isBadRequest())
+                .andReturn();
 
-        assertErrorsCodes(result, Arrays.asList(
-               "ProductNotFound"
-        ));
+        utils.assertErrorCode(result, "NotLogin");
+
+        // Изменение несуществующего товара
+        result = utils.put("/api/products/3", session, product)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrorCode(result, "ProductNotFound");
 
         // Теперь создадим товар с категорией
         long category = registerCategory(session, "category", null);
@@ -700,93 +904,368 @@ public class AdministratorIntegrationTest {
         newProduct.setName("cup");
         newProduct.setPrice(10_000);
         newProduct.setCount(15);
-        newProduct.setCategories(Arrays.asList(category));
-        result = mvc.perform(
-                post("/api/products")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session))
-                        .content(mapper.writeValueAsString(newProduct)))
-                .andExpect(status().isOk()).andReturn();
+        newProduct.setCategories(Collections.singletonList(category));
 
-        long productId = mapper.readTree(result.getResponse().getContentAsString()).get("id").asLong();
+        result = utils.post("/api/products", session, newProduct)
+                .andExpect(status().isOk())
+                .andReturn();
+
+        long productId = utils.read(result).get("id").asLong();
 
         // И изменим несколько его полей
         product.setName("new name");
         product.setCount(20);
         product.setPrice(5_000);
 
-        result = mvc.perform(
-                put("/api/products/" + productId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session))
-                        .content(mapper.writeValueAsString(product)))
-                .andExpect(status().isBadRequest()).andReturn();
+        result = utils.put("/api/products/" + productId, session, product)
+                .andExpect(status().isOk())
+                .andReturn();
 
-        JsonNode node = mapper.readTree(result.getResponse().getContentAsString());
+        JsonNode node = utils.read(result);
         assertEquals(productId, node.get("id").asLong());
         assertEquals("new name", node.get("name").asText());
         assertEquals(20, node.get("count").asInt());
         assertEquals(5_000, node.get("price").asInt());
         assertEquals(1, node.get("categories").size());
 
+        // Проверим что нельзя изменить с несуществующей категорией
+        product.setCategories(Collections.singletonList(-1L));
+        result = utils.put("/api/products/" + productId, session, product)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+        utils.assertError(result, Pair.of("CategoryNotFound", "categories"));
+
+        // Теперь заменим список категорий
+        category = registerCategory(session, "other category", null);
+        product.setName(null);
+        product.setCount(null);
+        product.setPrice(null);
+        product.setCategories(Collections.singletonList(category));
+
+        result = utils.put("/api/products/" + productId, session, product)
+                .andExpect(status().isOk())
+                .andReturn();
+
+        node = utils.read(result);
+        // Проверяем что данные не изменились
+        assertEquals(productId, node.get("id").asLong());
+        assertEquals("new name", node.get("name").asText());
+        assertEquals(20, node.get("count").asInt());
+        assertEquals(5_000, node.get("price").asInt());
+        // Проверяем новую категорию
+        assertEquals(1, node.get("categories").size());
+        assertEquals(category, node.get("categories").get(0).asLong());
+
+        // Теперь удаляем категори
+        product.setCategories(Collections.emptyList());
+
+        result = utils.put("/api/products/" + productId, session, product)
+                .andExpect(status().isOk())
+                .andReturn();
+
+        node = utils.read(result);
+        assertNull(node.get("categories"));
     }
 
     /**
-     * Проверяет JSON на содержание ошибок
-     * Пара: errorCode - field
+     * Удаление товара
      */
-    private void assertErrors(MvcResult result, List<Pair<String, String>> errors) throws Exception {
+    @Test
+    public void testDeleteProduct() throws Exception {
 
-        JsonNode node = mapper.readTree(result.getResponse().getContentAsString());
-        JsonNode errorList = node.get("errors");
+        String session = registerAdmin();
 
-        for (Pair<String, String> error : errors) {
-            boolean contains = false;
-            for (int i = 0; i < errorList.size(); ++i) {
+        // Удаление товара без логина
+        MvcResult result = utils.delete("/api/products/3", "erwer")
+                .andExpect(status().isBadRequest())
+                .andReturn();
+        utils.assertErrorCode(result, "NotLogin");
 
-                if (error.getFirst().equals(errorList.get(i).get("errorCode").asText())
-                        && error.getSecond().equals(errorList.get(i).get("field").asText())) {
-                    contains = true;
-                    break;
-                }
+        // Удаляем несуществующий
+        result = utils.delete("/api/products/3", session)
+                .andExpect(status().isBadRequest())
+                .andReturn();
 
-            }
-            if (!contains)
-                fail();
-        }
+        utils.assertErrorCode(result, "ProductNotFound");
+
+        // Создаём товар
+        ProductDto newProduct = new ProductDto();
+        newProduct.setName("cup");
+        newProduct.setPrice(10_000);
+        newProduct.setCount(15);
+        result = utils.post("/api/products", session, newProduct)
+                .andExpect(status().isOk())
+                .andReturn();
+
+        long productId = utils.read(result).get("id").asLong();
+
+        // И удалим его
+        utils.delete("/api/products/" + productId, session)
+                .andExpect(status().isOk())
+                .andExpect(content().string("{}"));
     }
 
     /**
-     * Проверяет JSON на содержание ошибок
-     * Пара: errorCode - field
+     *  Получение информации о товаре
      */
-    private void assertErrorsCodes(MvcResult result, List<String> errors) throws Exception {
+    @Test
+    public void testGetProduct() throws Exception {
 
-        JsonNode node = mapper.readTree(result.getResponse().getContentAsString());
-        JsonNode errorList = node.get("errors");
+        String session = registerAdmin();
 
-        for (String error : errors) {
-            boolean contains = false;
-            for (int i = 0; i < errorList.size(); ++i) {
+        // Получение данных без логина
+        MvcResult result = utils.get("/api/products/3", "ewrwe")
+                .andExpect(status().isBadRequest())
+                .andReturn();
 
-                if (error.equals(errorList.get(i).get("errorCode").asText())) {
-                    contains = true;
-                    break;
-                }
+        utils.assertErrorCode(result, "NotLogin");
 
-            }
-            if (!contains)
-                fail();
-        }
+        // Получение данных о несуществующем
+        result = utils.get("/api/products/3", session)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrorCode(result, "ProductNotFound");
+
+        // Создаём товар
+        long category = registerCategory(session, "category", null);
+        ProductDto newProduct = new ProductDto();
+        newProduct.setName("cup");
+        newProduct.setPrice(10_000);
+        newProduct.setCount(15);
+        newProduct.setCategories(Collections.singletonList(category));
+
+        result = utils.post("/api/products", session, newProduct)
+                .andExpect(status().isOk())
+                .andReturn();
+
+        long productId = utils.read(result).get("id").asLong();
+
+        // Получаем данные
+        result = utils.get("/api/products/" + productId, session)
+                .andExpect(status().isOk())
+                .andReturn();
+
+        JsonNode node = utils.read(result);
+        assertEquals(productId, node.get("id").asLong());
+        assertEquals(newProduct.getName(), node.get("name").asText());
+        assertEquals((int)newProduct.getCount(), node.get("count").asInt());
+        assertEquals((int)newProduct.getPrice(), node.get("price").asInt());
+        assertEquals(1, node.get("categories").size());
+        assertEquals(category, node.get("categories").get(0).asLong());
+    }
+
+    /**
+     * Получение списка товаров отсортированных по их именам
+     */
+    @Test
+    public void testGetProductsByProductsNames() throws Exception {
+
+        String session = registerAdmin();
+
+        // Получение списка товаров без логина
+        MvcResult result = utils.get("/api/products", "erew")
+                .andExpect(status().isBadRequest())
+                .andReturn();
+        utils.assertErrorCode(result, "NotLogin");
+
+        // Подгатавливаем список товаров
+        long category = registerCategory(session, "category", null);
+
+        long warcraft = registerProduct(session, "warcraft", null);
+        long apple = registerProduct(session, "apple", Collections.singletonList(category));
+        long berretta = registerProduct(session, "berretta", null);
+
+        // Создадим удалённый товар и проверим что в список он не попадёт
+        long deleted = registerProduct(session, "deleted", null);
+        utils.delete("/api/products/" + deleted, session)
+                .andExpect(status().isOk());
+
+        result = utils.get("/api/products", session)
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String firstResult = utils.getContent(result);
+        JsonNode node = utils.read(result);
+
+        assertEquals(3, node.size());
+
+        assertEquals(apple, node.get(0).get("id").asLong());
+        assertEquals("apple", node.get(0).get("name").asText());
+        assertEquals(10_000, node.get(0).get("price").asInt());
+        assertEquals(15, node.get(0).get("count").asInt());
+        assertEquals(1, node.get(0).get("categories").size());
+        assertEquals(category, node.get(0).get("categories").get(0).asLong());
+
+        assertEquals(berretta, node.get(1).get("id").asLong());
+        assertEquals("berretta", node.get(1).get("name").asText());
+        assertEquals(10_000, node.get(1).get("price").asInt());
+        assertEquals(15, node.get(1).get("count").asInt());
+
+        assertEquals(warcraft, node.get(2).get("id").asLong());
+        assertEquals("warcraft", node.get(2).get("name").asText());
+        assertEquals(10_000, node.get(2).get("price").asInt());
+        assertEquals(15, node.get(2).get("count").asInt());
+
+        // Указываем сортировку по товарам явно и проверяем, что ответ будет тот же самый
+        // потому что по умолчанию всегда используется сортировка по товарам
+        utils.get("/api/products?order=product", session)
+                .andExpect(status().isOk())
+                .andExpect(content().string(firstResult));
+
+        // Сортировка по товарам, но только товары, которые не принадлежат не одной категории
+        result = utils.get("/api/products?order=product&category=", session)
+                .andExpect(status().isOk())
+                .andReturn();
+
+        node = utils.read(result);
+        assertEquals(2, node.size());
+        assertEquals("berretta", node.get(0).get("name").asText());
+        assertEquals("warcraft", node.get(1).get("name").asText());
+
+        // Список товаров, которые принадлежат данным категориям
+        result = utils.get("/api/products?order=product&category=" + category, session)
+                .andExpect(status().isOk())
+                .andReturn();
+
+        node = utils.read(result);
+        assertEquals(1, node.size());
+        assertEquals("apple", node.get(0).get("name").asText());
+    }
+
+    /**
+     * Получение списка товаров отсортированных по именам категорий, а внутри
+     * категорий по именам товаров
+     */
+    @Test
+    public void testGetProductsByCategories() throws Exception {
+
+        String session = registerAdmin();
+
+        // Подгатавливаем список
+        long pen = registerProduct(session, "pen", null);
+        long array = registerProduct(session, "array", null);
+
+        long bat = registerCategory(session, "bat", null);
+        long wat = registerCategory(session, "wat", null);
+        long at = registerCategory(session, "at", null);
+
+        registerProduct(session, "xen", Collections.singletonList(at));
+        registerProduct(session, "apple", Collections.singletonList(wat));
+        long berretta = registerProduct(session, "berretta", Arrays.asList(at, wat));
+        registerProduct(session, "warcraft", Collections.singletonList(bat));
+
+        MvcResult result = utils.get("/api/products?order=category", session)
+                .andExpect(status().isOk())
+                .andReturn();
+
+        JsonNode node = utils.read(result);
+
+        /*
+        Ожидаем такой порядок:
+
+        Категория   |   Товар
+        ---------------------------
+                        array
+                        pen
+        at              berretta
+        at              xen
+        bat             warcraft
+        wat             apple
+        wat             berretta
+
+         */
+
+        // Проверяем первые два продукта без категорий
+
+        assertEquals(array, node.get(0).get("id").asLong());
+        assertEquals("array", node.get(0).get("name").asText());
+        assertEquals(10_000, node.get(0).get("price").asInt());
+        assertEquals(15, node.get(0).get("count").asInt());
+        assertNull(node.get(0).get("categories"));
+
+        assertEquals(pen, node.get(1).get("id").asLong());
+        assertEquals("pen", node.get(1).get("name").asText());
+        assertEquals(10_000, node.get(1).get("price").asInt());
+        assertEquals(15, node.get(1).get("count").asInt());
+        assertNull(node.get(1).get("categories"));
+
+        // Теперь проверяем список с категориями
+        // at   -> berretta
+        assertEquals(berretta, node.get(2).get("id").asLong());
+        assertEquals("berretta", node.get(2).get("name").asText());
+        assertEquals(10_000, node.get(2).get("price").asInt());
+        assertEquals(15, node.get(2).get("count").asInt());
+        assertEquals(1, node.get(2).get("categories").size());
+        assertEquals(at, node.get(2).get("categories").get(0).asLong());
+
+        // Теперь будем проверять только именами и категории, так как
+        // формат однозначно верный
+        // at   -> xen
+        assertEquals("xen", node.get(3).get("name").asText());
+        assertEquals(1, node.get(3).get("categories").size());
+        assertEquals(at, node.get(3).get("categories").get(0).asLong());
+
+        // bat  -> warcraft
+        assertEquals("warcraft", node.get(4).get("name").asText());
+        assertEquals(1, node.get(4).get("categories").size());
+        assertEquals(bat, node.get(4).get("categories").get(0).asLong());
+
+        // wat  -> apple
+        assertEquals("apple", node.get(5).get("name").asText());
+        assertEquals(1, node.get(5).get("categories").size());
+        assertEquals(wat, node.get(5).get("categories").get(0).asLong());
+
+        // wat  -> berretta
+        assertEquals("berretta", node.get(6).get("name").asText());
+        assertEquals(1, node.get(6).get("categories").size());
+        assertEquals(wat, node.get(6).get("categories").get(0).asLong());
+
+        // Сортировка по именам категорий товаров, которые не принадлежат не одной категории
+        result = utils.get("/api/products?order=category&category=", session)
+                .andExpect(status().isOk())
+                .andReturn();
+
+        node = utils.read(result);
+
+        // Должна быть сортировка по именам первых двух товаров
+        assertEquals(2, node.size());
+        assertEquals("array", node.get(0).get("name").asText());
+        assertEquals("pen", node.get(1).get("name").asText());
+
+        // Сортировка по именам категорий товаров, которые принадлежат категориям
+        result = utils.get("/api/products?order=category&category=" + wat + "," + bat, session)
+            .andExpect(status().isOk())
+                .andReturn();
+
+        node = utils.read(result);
+
+        // Должны получить три товара которые содержат категории
+        // wat и bat, отсортированные по категориям, а затем по именам товаров
+        assertEquals(3, node.size());
+        assertEquals("warcraft", node.get(0).get("name").asText());
+        assertEquals("apple", node.get(1).get("name").asText());
+        assertEquals("berretta", node.get(2).get("name").asText());
+
+    }
+
+    private long registerProduct(String session, String name, List<Long> categories) throws Exception {
+        ProductDto newProduct = new ProductDto();
+        newProduct.setName(name);
+        newProduct.setPrice(10_000);
+        newProduct.setCount(15);
+        newProduct.setCategories(categories);
+        MvcResult result = utils.post("/api/products", session, newProduct)
+                .andExpect(status().isOk()).andReturn();
+
+        return utils.read(result).get("id").asLong();
     }
 
     private String registerAdmin() throws Exception {
-        MvcResult result = mvc.perform(
-                post("/api/admins")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(createAdmin())))
+        MvcResult result = utils.post("/api/admins", null, createAdmin())
                 .andExpect(status().isOk()).andReturn();
-        return result.getResponse().getCookie("JAVASESSIONID").getValue();
+        
+        return utils.getSession(result);
     }
 
     private long registerCategory(String session, String name, Long parentId) throws Exception {
@@ -794,24 +1273,17 @@ public class AdministratorIntegrationTest {
         category.setName(name);
         category.setParentId(parentId);
 
-        MvcResult result = mvc.perform(
-                post("/api/categories")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .cookie(new Cookie("JAVASESSIONID", session))
-                        .content(mapper.writeValueAsString(category)))
+        MvcResult result = utils.post("/api/categories", session, category)
                 .andExpect(status().isOk()).andReturn();
 
-        return mapper.readTree(result.getResponse().getContentAsString()).get("id").asLong();
+        return utils.read(result).get("id").asLong();
     }
 
     private void registerClient(String login) throws Exception {
         ClientDto client = createClient();
         client.setLogin(login);
 
-        mvc.perform(
-                post("/api/clients")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(client)))
+        utils.post("/api/clients", null, client)
                 .andExpect(status().isOk());
     }
 
@@ -830,9 +1302,9 @@ public class AdministratorIntegrationTest {
 
     private AdminDto createAdmin() {
         AdminDto admin = new AdminDto();
-        admin.setFirstName("Vadim");
-        admin.setLastName("Gush");
-        admin.setPatronymic("Vadimovich");
+        admin.setFirstName("Вадим");
+        admin.setLastName("Гуш");
+        admin.setPatronymic("Вадимович");
         admin.setPosition("Janitor");
         admin.setLogin("Vadim");
         admin.setPassword("Iddqd225");

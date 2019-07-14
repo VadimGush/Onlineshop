@@ -30,7 +30,6 @@ public class AccountService extends GeneralService {
      * Регистрирует нового клиента
      * @param client информация о клиенте
      * @return созданный аккаунт клиента
-     * @throws ServiceException
      */
     public Account register(ClientDto client) throws ServiceException {
 
@@ -55,7 +54,6 @@ public class AccountService extends GeneralService {
     /**
      * @param admin регистрационная инфа об админе
      * @return аккаунт зарегистрированного администратора
-     * @throws ServiceException
      */
     public Account register(AdminDto admin) throws ServiceException {
 
@@ -74,7 +72,6 @@ public class AccountService extends GeneralService {
      * @param sessionId сессия клиента
      * @param client новая инфа клиента
      * @return аккаунт изменённого клиента
-     * @throws ServiceException
      */
     public AccountDto edit(String sessionId, ClientEditDto client) throws ServiceException {
 
@@ -100,7 +97,6 @@ public class AccountService extends GeneralService {
      * @param sessionId сессия администратора
      * @param admin запрос с изменёнными данными
      * @return аккаунт изменённого администратора
-     * @throws ServiceException
      */
     public AccountDto edit(String sessionId, AdminEditDto admin) throws ServiceException {
 
@@ -122,7 +118,6 @@ public class AccountService extends GeneralService {
     /**
      * @param sessionId сессия администратора
      * @return список всех клиентов
-     * @throws ServiceException
      */
     public List<AccountDto> getAll(String sessionId) throws ServiceException {
 
@@ -141,7 +136,6 @@ public class AccountService extends GeneralService {
      * @param login пароль пользователя
      * @param password логин пользователя
      * @return идентификатор новой сессии
-     * @throws ServiceException
      */
     public String login(String login, String password) throws ServiceException {
         Account account = accountDao.get(login, password);
@@ -157,7 +151,6 @@ public class AccountService extends GeneralService {
      * Получает информацию об аккаунте по его сессии
      * @param sessionId сессия пользователя
      * @return аккаунт пользователя из БД
-     * @throws ServiceException
      */
     public AccountDto get(String sessionId) throws ServiceException {
         Session session = sessionDao.get(sessionId);

@@ -12,7 +12,7 @@ public class GeneralService {
         this.sessionDao = sessionDao;
     }
 
-    public Account getAdmin(String sessionId) throws ServiceException {
+    Account getAdmin(String sessionId) throws ServiceException {
         Account account = getAccount(sessionId);
 
         if (!account.isAdmin())
@@ -21,7 +21,7 @@ public class GeneralService {
         return account;
     }
 
-    public Account getClient(String sessionId) throws ServiceException {
+    Account getClient(String sessionId) throws ServiceException {
         Account account = getAccount(sessionId);
 
         if (account.isAdmin())

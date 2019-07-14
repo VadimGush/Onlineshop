@@ -1,5 +1,8 @@
 package net.thumbtack.onlineshop.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ServerConfigurationDto {
 
     private int maxNameLength;

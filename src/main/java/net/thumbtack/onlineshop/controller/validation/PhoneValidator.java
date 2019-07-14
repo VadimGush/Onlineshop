@@ -28,14 +28,11 @@ public class PhoneValidator implements
             value = value.replaceAll("\\+", "");
             value = value.replaceAll("-", "");
 
-            if (value.length() != 11 || !value.chars().allMatch(Character::isDigit))
-                return false;
+            return value.length() == 11 && value.chars().allMatch(Character::isDigit);
 
         } else {
             return false;
         }
-
-        return true;
 
     }
 }

@@ -1,7 +1,12 @@
 package net.thumbtack.onlineshop.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import net.thumbtack.onlineshop.controller.validation.OptionalNotBlank;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class CategoryEditDto {
 
+    @OptionalNotBlank
     private String name;
     private Long parentId;
 

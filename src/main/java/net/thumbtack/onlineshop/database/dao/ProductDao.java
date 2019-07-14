@@ -114,8 +114,7 @@ public class ProductDao implements Dao {
                 "select a.* from product a left join productcategory b on" +
                         " a.id = b.product_id where b.category_id is NULL and deleted = 0"
         , Product.class);
-        List<Product> result = query.getResultList();
-        return result;
+        return query.getResultList();
     }
 
     /**

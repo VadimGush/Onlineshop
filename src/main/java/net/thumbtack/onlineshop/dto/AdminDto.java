@@ -1,8 +1,9 @@
 package net.thumbtack.onlineshop.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import net.thumbtack.onlineshop.controller.validation.OptionalName;
+import net.thumbtack.onlineshop.controller.validation.OptionalRussianName;
 import net.thumbtack.onlineshop.controller.validation.RequiredName;
+import net.thumbtack.onlineshop.controller.validation.RequiredRussianName;
 import net.thumbtack.onlineshop.database.models.Account;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -10,11 +11,14 @@ public class AdminDto extends LoginDto {
 
     private Long id;
 
-    @RequiredName
+    // @RequiredName
+    @RequiredRussianName
     private String firstName;
-    @RequiredName
+    //@RequiredName
+    @RequiredRussianName
     private String lastName;
-    @OptionalName
+    // @OptionalName
+    @OptionalRussianName
     private String patronymic;
     @RequiredName
     private String position;

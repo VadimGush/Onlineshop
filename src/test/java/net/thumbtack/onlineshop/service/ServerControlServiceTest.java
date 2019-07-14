@@ -12,8 +12,6 @@ import static org.mockito.Mockito.verify;
 
 public class ServerControlServiceTest {
 
-    private ServerControlService service;
-
     @Mock
     private AccountDao mockAccountDao;
 
@@ -22,6 +20,7 @@ public class ServerControlServiceTest {
 
     @Test
     public void testClear() {
+        ServerControlService service;
 
         MockitoAnnotations.initMocks(this);
         service = new ServerControlService(Arrays.asList(mockAccountDao, mockProductDao));

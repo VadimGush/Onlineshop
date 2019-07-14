@@ -1,21 +1,26 @@
 package net.thumbtack.onlineshop.dto;
 
 
-import net.thumbtack.onlineshop.controller.validation.OptionalName;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import net.thumbtack.onlineshop.controller.validation.OptionalRussianName;
 import net.thumbtack.onlineshop.controller.validation.Password;
 import net.thumbtack.onlineshop.controller.validation.RequiredName;
+import net.thumbtack.onlineshop.controller.validation.RequiredRussianName;
 
+import javax.validation.constraints.NotBlank;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class AdminEditDto {
 
-    @RequiredName
+    @RequiredRussianName
     private String firstName;
-    @RequiredName
+    @RequiredRussianName
     private String lastName;
-    @OptionalName
+    @OptionalRussianName
     private String patronymic;
     @RequiredName
     private String position;
-    @Password
+    @NotBlank
     private String oldPassword;
     @Password
     private String newPassword;

@@ -27,7 +27,6 @@ public class CategoriesService extends GeneralService {
      * @param sessionId сессия админа
      * @param category информация о категории
      * @return добавленная категория
-     * @throws ServiceException
      */
     public CategoryDto addCategory(String sessionId, CategoryDto category) throws ServiceException {
 
@@ -61,7 +60,6 @@ public class CategoriesService extends GeneralService {
      * @param sessionId сессия админа
      * @param id id категории
      * @return категория из БД
-     * @throws ServiceException
      */
     public CategoryDto getCategory(String sessionId, long id) throws ServiceException {
 
@@ -80,7 +78,6 @@ public class CategoriesService extends GeneralService {
      * @param categoryDto новая инфа о категории
      * @param id id категории
      * @return изменённая категория
-     * @throws ServiceException
      */
     public CategoryDto editCategory(String sessionId, CategoryEditDto categoryDto, long id) throws ServiceException {
 
@@ -122,7 +119,6 @@ public class CategoriesService extends GeneralService {
      * Удаляет категорию
      * @param sessionId сессия админа
      * @param id id категории
-     * @throws ServiceException
      */
     public void deleteCategory(String sessionId, long id) throws ServiceException {
 
@@ -140,7 +136,6 @@ public class CategoriesService extends GeneralService {
      * Получает список всех категорий
      * @param sessionId сессия админа
      * @return список категорий
-     * @throws ServiceException
      */
     public List<CategoryDto> getCategories(String sessionId) throws ServiceException {
 

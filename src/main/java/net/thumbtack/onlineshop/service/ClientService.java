@@ -52,7 +52,6 @@ public class ClientService extends GeneralService {
      * @param sessionId сессия клиента
      * @param buyProduct информиация о товаре
      * @return информация о купленном товаре
-     * @throws ServiceException
      */
     public ProductDto buyProduct(String sessionId, ProductDto buyProduct) throws ServiceException {
 
@@ -92,7 +91,6 @@ public class ClientService extends GeneralService {
      * @param sessionId сессия клиента
      * @param buyProduct информация о товаре
      * @return информация о купленном товаре
-     * @throws ServiceException
      */
     public List<ProductDto> addToBasket(String sessionId, ProductDto buyProduct) throws ServiceException {
 
@@ -125,7 +123,6 @@ public class ClientService extends GeneralService {
      * Удаляет товар из корзины
      * @param sessionId сессия клиента
      * @param productId id продукта
-     * @throws ServiceException
      */
     public void deleteFromBasket(String sessionId, long productId) throws ServiceException {
 
@@ -144,7 +141,6 @@ public class ClientService extends GeneralService {
      * @param sessionId сессия клиент
      * @param product информация о товаре
      * @return содержание корзины
-     * @throws ServiceException
      */
     public List<ProductDto> editProductCount(String sessionId, ProductDto product) throws ServiceException {
 
@@ -167,7 +163,6 @@ public class ClientService extends GeneralService {
      * Получает содержимое корзины клиента
      * @param sessionId сессия клиента
      * @return содержимое корзины
-     * @throws ServiceException
      */
     public List<ProductDto> getBasket(String sessionId) throws ServiceException {
 
@@ -185,8 +180,6 @@ public class ClientService extends GeneralService {
      *
      * @return пара из двух коллекций. Первая коллекция содержит список купленных товаров, а
      * вторая коллекция содержит список оставшихся в корзине товаров
-     *
-     * @throws ServiceException
      */
     public ResultBasketDto buyBasket(String sessionId, List<ProductDto> toBuy) throws ServiceException {
 

@@ -303,7 +303,7 @@ public class CategoryServiceTest {
         when(mockSessionDao.get("token")).thenReturn(null);
 
         try {
-            categoryService.addCategory("token", null);
+            categoryService.addCategory("token", new CategoryDto());
             fail();
         } catch (ServiceException e) {
             assertEquals(ServiceException.ErrorCode.NOT_LOGIN, e.getErrorCode());
@@ -350,7 +350,7 @@ public class CategoryServiceTest {
         ));
 
         try {
-            categoryService.addCategory("token", null);
+            categoryService.addCategory("token", new CategoryDto());
             fail();
         } catch (ServiceException e) {
             assertEquals(ServiceException.ErrorCode.NOT_ADMIN, e.getErrorCode());
@@ -388,12 +388,6 @@ public class CategoryServiceTest {
 
     private void setAdmin() {
         when(mockSessionDao.get("token")).thenReturn(new Session("token", generateAdmin()));
-    }
-
-    private Account generateClient() {
-        return AccountFactory.createClient(
-                "rewrw", "sder", "werew", "ewrwe", "wrwe", "werwe", "werw"
-        );
     }
 
     private Account generateAdmin() {

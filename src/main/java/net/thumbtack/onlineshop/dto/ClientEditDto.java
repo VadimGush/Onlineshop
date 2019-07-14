@@ -1,5 +1,6 @@
 package net.thumbtack.onlineshop.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import net.thumbtack.onlineshop.controller.validation.OptionalName;
 import net.thumbtack.onlineshop.controller.validation.Password;
 import net.thumbtack.onlineshop.controller.validation.Phone;
@@ -8,6 +9,7 @@ import net.thumbtack.onlineshop.controller.validation.RequiredName;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ClientEditDto {
 
     @RequiredName

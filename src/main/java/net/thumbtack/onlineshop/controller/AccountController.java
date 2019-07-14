@@ -120,7 +120,7 @@ public class AccountController {
     @DeleteMapping("sessions")
     @ResponseStatus(HttpStatus.OK)
     public String logout(
-            @CookieValue("JAVASESSIONID") String session) {
+            @CookieValue(value = "JAVASESSIONID", required = false) String session) {
 
         accountService.logout(session);
         return "{}";

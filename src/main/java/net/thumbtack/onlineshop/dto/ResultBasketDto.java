@@ -1,10 +1,12 @@
 package net.thumbtack.onlineshop.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import net.thumbtack.onlineshop.database.models.Basket;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ResultBasketDto {
 
     private List<ProductDto> bought;

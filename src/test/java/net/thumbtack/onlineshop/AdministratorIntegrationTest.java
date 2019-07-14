@@ -322,9 +322,9 @@ public class AdministratorIntegrationTest {
         String session = registerAdmin();
 
         AdminEditDto info = new AdminEditDto();
-        info.setFirstName("Denis");
-        info.setLastName("Ovcharov");
-        info.setPatronymic("Vladimirovich");
+        info.setFirstName("Денис");
+        info.setLastName("Овчаров");
+        info.setPatronymic("Владиславович");
         info.setPosition("administrator");
         info.setOldPassword("erewr");
         info.setNewPassword("VadimGush225");

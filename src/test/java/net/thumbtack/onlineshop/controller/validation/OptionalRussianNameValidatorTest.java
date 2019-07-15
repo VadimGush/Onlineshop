@@ -41,7 +41,7 @@ public class OptionalRussianNameValidatorTest {
     @Test
     public void testEmpty() {
 
-        assertTrue(validator.isValid("", mockContext));
+        assertFalse(validator.isValid("", mockContext));
 
         assertTrue(validator.isValid(null, mockContext));
 

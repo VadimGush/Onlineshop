@@ -20,6 +20,12 @@ public class OptionalNameValidator implements ConstraintValidator<OptionalName, 
     public boolean isValid(String value, ConstraintValidatorContext context) {
 
         if (value != null) {
+
+            if (value.isEmpty()) {
+                setMessage(context, "Пустое поле");
+                return false;
+            }
+
             if (value.length() > maxNameLength) {
                 setMessage(context, "Превышена максимальная длина поля");
                 return false;

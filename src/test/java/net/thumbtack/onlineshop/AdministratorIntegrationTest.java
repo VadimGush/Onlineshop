@@ -92,6 +92,7 @@ public class AdministratorIntegrationTest {
         admin.setLogin("");
         admin.setPosition("");
         admin.setPassword("");
+        admin.setPatronymic("");
 
         // Пытаемся зарегаться с пустыми полями
         MvcResult result = utils.post("/api/admins", null, admin)
@@ -103,7 +104,8 @@ public class AdministratorIntegrationTest {
                 Pair.of("RequiredRussianName", "lastName"),
                 Pair.of("Login", "login"),
                 Pair.of("RequiredName", "position"),
-                Pair.of("Password", "password")
+                Pair.of("Password", "password"),
+                Pair.of("OptionalRussianName", "patronymic")
         ));
 
         // Пытаемся зарегистрироваться с маленьким паролем

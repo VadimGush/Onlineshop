@@ -46,7 +46,7 @@ public class OptionalNameValidatorTest {
 
         assertTrue(validator.isValid("привет мир", mockContext));
 
-        assertTrue(validator.isValid("", mockContext));
+        assertFalse(validator.isValid("", mockContext));
 
         assertTrue(validator.isValid("      ", mockContext));
 

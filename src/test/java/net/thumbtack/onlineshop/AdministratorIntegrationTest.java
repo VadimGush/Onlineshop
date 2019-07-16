@@ -1074,6 +1074,50 @@ public class AdministratorIntegrationTest {
         assertEquals(category, node.get("categories").get(0).asLong());
     }
 
+    @Test
+    public void testEditProductWithoutLogin() throws Exception {
+        ProductEditDto product = new ProductEditDto();
+
+        // Изменение товара без логина
+        MvcResult result = utils.put("/api/products/3", "erwe", product)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrorCode(result, "NotLogin");
+    }
+
+    @Test
+    public void testEditProductNotFound() throws Exception {
+
+        String session = registerAdmin();
+
+        // Изменение несуществующего товара
+        ProductEditDto product = new ProductEditDto();
+
+        MvcResult result = utils.put("/api/products/3", session, product)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrorCode(result, "ProductNotFound");
+    }
+
+    @Test
+    public void testEditProductCategoryNotFound() throws Exception {
+
+        String session = registerAdmin();
+
+        // Проверим что нельзя изменить с несуществующей категорией
+        long product = registerProduct(session, "table", null);
+
+        ProductEditDto productEdit = new ProductEditDto();
+        productEdit.setCategories(Collections.singletonList(-1L));
+
+        MvcResult result = utils.put("/api/products/" + product, session, productEdit)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+        utils.assertError(result, Pair.of("CategoryNotFound", "categories"));
+    }
+
     /**
      * Изменение данных товара
      */
@@ -1083,20 +1127,6 @@ public class AdministratorIntegrationTest {
         String session = registerAdmin();
         ProductEditDto product = new ProductEditDto();
 
-        // Изменение товара без логина
-        MvcResult result = utils.put("/api/products/3", "erwe", product)
-                .andExpect(status().isBadRequest())
-                .andReturn();
-
-        utils.assertErrorCode(result, "NotLogin");
-
-        // Изменение несуществующего товара
-        result = utils.put("/api/products/3", session, product)
-                .andExpect(status().isBadRequest())
-                .andReturn();
-
-        utils.assertErrorCode(result, "ProductNotFound");
-
         // Теперь создадим товар с категорией
         long category = registerCategory(session, "category", null);
         ProductDto newProduct = new ProductDto();
@@ -1105,7 +1135,7 @@ public class AdministratorIntegrationTest {
         newProduct.setCount(15);
         newProduct.setCategories(Collections.singletonList(category));
 
-        result = utils.post("/api/products", session, newProduct)
+        MvcResult result = utils.post("/api/products", session, newProduct)
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -1126,13 +1156,6 @@ public class AdministratorIntegrationTest {
         assertEquals(20, node.get("count").asInt());
         assertEquals(5_000, node.get("price").asInt());
         assertEquals(1, node.get("categories").size());
-
-        // Проверим что нельзя изменить с несуществующей категорией
-        product.setCategories(Collections.singletonList(-1L));
-        result = utils.put("/api/products/" + productId, session, product)
-                .andExpect(status().isBadRequest())
-                .andReturn();
-        utils.assertError(result, Pair.of("CategoryNotFound", "categories"));
 
         // Теперь заменим список категорий
         category = registerCategory(session, "other category", null);
@@ -1166,6 +1189,29 @@ public class AdministratorIntegrationTest {
         assertNull(node.get("categories"));
     }
 
+    @Test
+    public void testDeleteProductWithoutLogin() throws Exception {
+
+        // Удаление товара без логина
+        MvcResult result = utils.delete("/api/products/3", "erwer")
+                .andExpect(status().isBadRequest())
+                .andReturn();
+        utils.assertErrorCode(result, "NotLogin");
+    }
+
+    @Test
+    public void testDeleteProductNotFound() throws Exception {
+
+        String session = registerAdmin();
+
+        // Удаляем несуществующий
+        MvcResult result = utils.delete("/api/products/3", session)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrorCode(result, "ProductNotFound");
+    }
+
     /**
      * Удаление товара
      */
@@ -1174,25 +1220,12 @@ public class AdministratorIntegrationTest {
 
         String session = registerAdmin();
 
-        // Удаление товара без логина
-        MvcResult result = utils.delete("/api/products/3", "erwer")
-                .andExpect(status().isBadRequest())
-                .andReturn();
-        utils.assertErrorCode(result, "NotLogin");
-
-        // Удаляем несуществующий
-        result = utils.delete("/api/products/3", session)
-                .andExpect(status().isBadRequest())
-                .andReturn();
-
-        utils.assertErrorCode(result, "ProductNotFound");
-
         // Создаём товар
         ProductDto newProduct = new ProductDto();
         newProduct.setName("cup");
         newProduct.setPrice(10_000);
         newProduct.setCount(15);
-        result = utils.post("/api/products", session, newProduct)
+        MvcResult result = utils.post("/api/products", session, newProduct)
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -1204,13 +1237,8 @@ public class AdministratorIntegrationTest {
                 .andExpect(content().string("{}"));
     }
 
-    /**
-     *  Получение информации о товаре
-     */
     @Test
-    public void testGetProduct() throws Exception {
-
-        String session = registerAdmin();
+    public void testGetProductWithoutLogin() throws Exception {
 
         // Получение данных без логина
         MvcResult result = utils.get("/api/products/3", "ewrwe")
@@ -1218,13 +1246,24 @@ public class AdministratorIntegrationTest {
                 .andReturn();
 
         utils.assertErrorCode(result, "NotLogin");
+    }
+
+    @Test
+    public void testGetProductNotFound() throws Exception {
+        String session = registerAdmin();
 
         // Получение данных о несуществующем
-        result = utils.get("/api/products/3", session)
+        MvcResult result = utils.get("/api/products/3", session)
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
         utils.assertErrorCode(result, "ProductNotFound");
+    }
+
+    @Test
+    public void testGetProduct() throws Exception {
+
+        String session = registerAdmin();
 
         // Создаём товар
         long category = registerCategory(session, "category", null);
@@ -1234,7 +1273,7 @@ public class AdministratorIntegrationTest {
         newProduct.setCount(15);
         newProduct.setCategories(Collections.singletonList(category));
 
-        result = utils.post("/api/products", session, newProduct)
+        MvcResult result = utils.post("/api/products", session, newProduct)
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -1254,6 +1293,16 @@ public class AdministratorIntegrationTest {
         assertEquals(category, node.get("categories").get(0).asLong());
     }
 
+    @Test
+    public void testGetProductsWithoutLogin() throws Exception {
+
+        // Получение списка товаров без логина
+        MvcResult result = utils.get("/api/products", "erew")
+                .andExpect(status().isBadRequest())
+                .andReturn();
+        utils.assertErrorCode(result, "NotLogin");
+    }
+
     /**
      * Получение списка товаров отсортированных по их именам
      */
@@ -1262,11 +1311,6 @@ public class AdministratorIntegrationTest {
 
         String session = registerAdmin();
 
-        // Получение списка товаров без логина
-        MvcResult result = utils.get("/api/products", "erew")
-                .andExpect(status().isBadRequest())
-                .andReturn();
-        utils.assertErrorCode(result, "NotLogin");
 
         // Подгатавливаем список товаров
         long category = registerCategory(session, "category", null);
@@ -1280,7 +1324,7 @@ public class AdministratorIntegrationTest {
         utils.delete("/api/products/" + deleted, session)
                 .andExpect(status().isOk());
 
-        result = utils.get("/api/products", session)
+        MvcResult result = utils.get("/api/products", session)
                 .andExpect(status().isOk())
                 .andReturn();
 

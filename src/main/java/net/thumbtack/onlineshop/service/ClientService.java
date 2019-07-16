@@ -285,6 +285,12 @@ public class ClientService extends GeneralService {
 
     }
 
+    /**
+     * Сравнивает информацию о товаре из БД с информацией в запросе.
+     * @param product товар из бд
+     * @param buyProduct товар из запроса
+     * @throws ServiceException если данные о товарах не совпадают
+     */
     private void checkProducts(Product product, ProductDto buyProduct) throws ServiceException {
         if (product == null)
             throw new ServiceException(ServiceException.ErrorCode.PRODUCT_NOT_FOUND, "id");

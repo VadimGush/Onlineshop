@@ -89,37 +89,12 @@ public class AdministratorIntegrationTest {
 
     }
 
-    /**
-     * Проверка, что регистрация не пройдёт с пустыми или неверными полями
-     */
     @Test
-    public void testFailedRegistration() throws Exception {
-
-        AdminDto admin = createAdmin();
-        admin.setFirstName("");
-        admin.setLastName("");
-        admin.setLogin("");
-        admin.setPosition("");
-        admin.setPassword("");
-        admin.setPatronymic("");
-
-        // Пытаемся зарегаться с пустыми полями
-        MvcResult result = utils.post("/api/admins", null, admin)
-                .andExpect(status().isBadRequest())
-                .andReturn();
-
-        utils.assertErrors(result, Arrays.asList(
-                Pair.of("RequiredRussianName", "firstName"),
-                Pair.of("RequiredRussianName", "lastName"),
-                Pair.of("Login", "login"),
-                Pair.of("RequiredName", "position"),
-                Pair.of("Password", "password"),
-                Pair.of("OptionalRussianName", "patronymic")
-        ));
+    public void testFailedRegistrationLongFieldsShortPassword() throws Exception {
 
         // Пытаемся зарегистрироваться с маленьким паролем
         // и слишком длинными именами
-        admin = createAdmin();
+        AdminDto admin = createAdmin();
         admin.setFirstName("eewrewrjlewkjrewrklwerjew");
         admin.setLastName("eewrewrjlewkjrewrklwerjew");
         admin.setPatronymic("eewrewrjlewkjrewrklwerjew");
@@ -128,7 +103,7 @@ public class AdministratorIntegrationTest {
 
         admin.setPassword("wew");
 
-        result = utils.post("/api/admins", null, admin)
+        MvcResult result = utils.post("/api/admins", null, admin)
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
@@ -141,8 +116,14 @@ public class AdministratorIntegrationTest {
                 Pair.of("Password", "password")
         ));
 
+    }
+
+    @Test
+    public void testFailedRegistrationWrongNamesFormat() throws Exception {
+
         // Имя не может состоять из английских букв, цифр и знаков препинания
-        admin = createAdmin();
+
+        AdminDto admin = createAdmin();
         admin.setFirstName("Vadim");
         admin.setLastName("234234");
         admin.setPatronymic("Ar.- ");
@@ -150,7 +131,7 @@ public class AdministratorIntegrationTest {
         admin.setLogin("vadim234");
         admin.setPassword("wererewrw");
 
-        result = utils.post("/api/admins", null, admin)
+        MvcResult result = utils.post("/api/admins", null, admin)
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
@@ -160,11 +141,46 @@ public class AdministratorIntegrationTest {
                 Pair.of("OptionalRussianName", "patronymic")
         ));
 
+    }
+
+    /**
+     * Проверка, что регистрация не пройдёт с пустыми или неверными полями
+     */
+    @Test
+    public void testFailedRegistrationEmptyFields() throws Exception {
+
+        // Пытаемся зарегаться с пустыми полями
+
+        AdminDto admin = createAdmin();
+        admin.setFirstName("");
+        admin.setLastName("");
+        admin.setLogin("");
+        admin.setPosition("");
+        admin.setPassword("");
+        admin.setPatronymic("");
+
+        MvcResult result = utils.post("/api/admins", null, admin)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrors(result, Arrays.asList(
+                Pair.of("RequiredRussianName", "firstName"),
+                Pair.of("RequiredRussianName", "lastName"),
+                Pair.of("Login", "login"),
+                Pair.of("RequiredName", "position"),
+                Pair.of("Password", "password"),
+                Pair.of("OptionalRussianName", "patronymic")
+        ));
+    }
+
+    @Test
+    public void testFailedRegistrationWrongLoginFormat() throws Exception {
+
         // Логин не может содержать в себе знаки препинания или пробелы
-        admin = createAdmin();
+        AdminDto admin = createAdmin();
         admin.setLogin("vadim.");
 
-        result = utils.post("/api/admins", null, admin)
+        MvcResult result = utils.post("/api/admins", null, admin)
                 .andExpect(status().isBadRequest())
                 .andReturn();
         utils.assertError(result, Pair.of("Login", "login"));
@@ -176,6 +192,7 @@ public class AdministratorIntegrationTest {
                 .andExpect(status().isBadRequest())
                 .andReturn();
         utils.assertError(result, Pair.of("Login", "login"));
+
     }
 
     @Test
@@ -201,6 +218,40 @@ public class AdministratorIntegrationTest {
     }
 
     @Test
+    public void testLoginWithWrongPassword() throws Exception {
+
+        registerAdmin();
+
+        // Неверный пароль
+        LoginDto login = new LoginDto("vadim", "werew8778");
+        MvcResult result = utils.post("/api/sessions", null, login)
+                .andExpect(status().isBadRequest()).andReturn();
+
+        utils.assertErrorsCodes(result, Collections.singletonList("UserNotFound"));
+
+    }
+
+    @Test
+    public void testLoginWithWrongLogin() throws Exception {
+        // Неверный логин
+        LoginDto login = new LoginDto("vadi", "Iddqd225");
+
+        MvcResult result = utils.post("/api/sessions", null, login)
+                .andExpect(status().isBadRequest()).andReturn();
+
+        utils.assertErrorsCodes(result, Collections.singletonList("UserNotFound"));
+    }
+
+    @Test
+    public void testLogoutWithoutSession() throws Exception {
+
+        // Выход без сессии тоже работает
+        utils.delete("/api/sessions", null)
+                .andExpect(status().isOk()).andExpect(content().string("{}"));
+
+    }
+
+    @Test
     public void testLoginAndLogout() throws Exception {
 
         // Регистрируем администратора
@@ -215,26 +266,9 @@ public class AdministratorIntegrationTest {
         utils.delete("/api/sessions", session)
                 .andExpect(status().isOk()).andExpect(content().string("{}"));
 
-        // Выход без сессии тоже работает
-        utils.delete("/api/sessions", null)
-                .andExpect(status().isOk()).andExpect(content().string("{}"));
 
-        // Неверный пароль
-        LoginDto login = new LoginDto("vadim", "werew8778");
-        result = utils.post("/api/sessions", null, login)
-                .andExpect(status().isBadRequest()).andReturn();
-
-        utils.assertErrorsCodes(result, Collections.singletonList("UserNotFound"));
-
-        // Неверный логин
-        login = new LoginDto("vadi", "Iddqd225");
-        result = utils.post("/api/sessions", null, login)
-                .andExpect(status().isBadRequest()).andReturn();
-
-        utils.assertErrorsCodes(result, Collections.singletonList("UserNotFound"));
-
-        // Теперь повторяем логин
-        login = new LoginDto("vadIm", "Iddqd225");
+        // Делаем успешный логин
+        LoginDto login = new LoginDto("vadIm", "Iddqd225");
 
         result = utils.post("/api/sessions", null, login)
                 .andExpect(status().isOk()).andReturn();
@@ -282,7 +316,7 @@ public class AdministratorIntegrationTest {
     }
 
     @Test
-    public void testGetClients() throws Exception {
+    public void testGetClientsEmpty() throws Exception {
 
         // Проверяем что без логина не получится вызвать метод
         MvcResult result = utils.get("/api/clients", "werew")
@@ -296,12 +330,19 @@ public class AdministratorIntegrationTest {
         utils.get("/api/clients", session)
                 .andExpect(status().isOk()).andExpect(content().string("[]"));
 
+    }
+
+    @Test
+    public void testGetClients() throws Exception {
+
+        String session = registerAdmin();
+
         // Теперь зарегаем пару клиентов
         registerClient("client1");
         registerClient("client2");
 
         // Получаем уже не пустой список
-        result = utils.get("/api/clients", session)
+        MvcResult result = utils.get("/api/clients", session)
                 .andExpect(status().isOk()).andReturn();
 
         // Проверяем этот список
@@ -328,9 +369,7 @@ public class AdministratorIntegrationTest {
     }
 
     @Test
-    public void testEditAccount() throws Exception {
-
-        String session = registerAdmin();
+    public void testEditAccountWithoutLogin() throws Exception {
 
         AdminEditDto info = new AdminEditDto();
         info.setFirstName("Денис");
@@ -343,13 +382,27 @@ public class AdministratorIntegrationTest {
         // Проверяем что редактирование без логина не пройдёт
         MvcResult result = utils.put("/api/admins", "erwe", info)
                 .andExpect(status().isBadRequest()).andReturn();
-        
+
         utils.assertErrorsCodes(result, Collections.singletonList("NotLogin"));
+    }
+
+    @Test
+    public void testEditAccountWithWrongPassword() throws Exception {
+
+        String session = registerAdmin();
+
+        AdminEditDto info = new AdminEditDto();
+        info.setFirstName("Денис");
+        info.setLastName("Овчаров");
+        info.setPatronymic("Владиславович");
+        info.setPosition("administrator");
+        info.setOldPassword("erewr");
+        info.setNewPassword("VadimGush225");
 
         // Сначала пытаемся изменить инфу с неверным старым паролем
-        result = utils.put("/api/admins", session, info)
+        MvcResult result = utils.put("/api/admins", session, info)
                 .andExpect(status().isBadRequest()).andReturn();
-        
+
         utils.assertErrors(result, Collections.singletonList(Pair.of("WrongPassword", "oldPassword")));
 
         // Потом пытаемся изменить инфу с пустым новым паролем
@@ -358,13 +411,24 @@ public class AdministratorIntegrationTest {
 
         result = utils.put("/api/admins", session, info)
                 .andExpect(status().isBadRequest()).andReturn();
-        
-        utils.assertErrors(result, Collections.singletonList(Pair.of("Password", "newPassword")));
 
-        // Теперь наконец-то изменяем нормально
+        utils.assertErrors(result, Collections.singletonList(Pair.of("Password", "newPassword")));
+    }
+
+    @Test
+    public void testEditAccount() throws Exception {
+
+        String session = registerAdmin();
+
+        AdminEditDto info = new AdminEditDto();
+        info.setFirstName("Денис");
+        info.setLastName("Овчаров");
+        info.setPatronymic("Владиславович");
+        info.setPosition("administrator");
+        info.setOldPassword("Iddqd225");
         info.setNewPassword("VadimGush225");
 
-        result = utils.put("/api/admins", session, info)
+        MvcResult result = utils.put("/api/admins", session, info)
                 .andExpect(status().isOk()).andReturn();
 
         // Теперь проверяем что вернул верные данные
@@ -379,11 +443,10 @@ public class AdministratorIntegrationTest {
 
     }
 
-    /**
-     * На редактирование аккаунта те же ограничения, что и на регистрацию
-     */
     @Test
-    public void testFailedEditAccount() throws Exception {
+    public void testFailedEditAccountWithEmptyFields() throws Exception {
+
+        // Пытаемся сделать поля пустыми
 
         String session = registerAdmin();
 
@@ -395,7 +458,6 @@ public class AdministratorIntegrationTest {
         admin.setOldPassword("Iddqd225");
         admin.setNewPassword("Iddqd225");
 
-        // Пытаемся зарегаться с пустыми полями
         MvcResult result = utils.put("/api/admins", session, admin)
                 .andExpect(status().isBadRequest())
                 .andReturn();
@@ -406,9 +468,15 @@ public class AdministratorIntegrationTest {
                 Pair.of("RequiredName", "position")
         ));
 
+    }
+
+    @Test
+    public void testFailedEditAccountWithLongNamesShortPassword() throws Exception {
+        String session = registerAdmin();
+
         // Пытаемся зарегистрироваться с маленьким паролем
         // и слишком длинными именами
-        admin = new AdminEditDto();
+        AdminEditDto admin = new AdminEditDto();
         admin.setFirstName("eewrewrjlewkjrewrklwerjew");
         admin.setLastName("eewrewrjlewkjrewrklwerjew");
         admin.setPatronymic("eewrewrjlewkjrewrklwerjew");
@@ -416,7 +484,7 @@ public class AdministratorIntegrationTest {
         admin.setOldPassword("Iddqd225");
         admin.setNewPassword("Iddqd225");
 
-        result = utils.put("/api/admins", session, admin)
+        MvcResult result = utils.put("/api/admins", session, admin)
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
@@ -427,8 +495,15 @@ public class AdministratorIntegrationTest {
                 Pair.of("OptionalRussianName", "patronymic")
         ));
 
+    }
+
+    @Test
+    public void testFailedEditAccountWithWrongNameFormat() throws Exception {
+
+        String session = registerAdmin();
+
         // Имя не может состоять из английских букв, цифр и знаков препинания
-        admin = new AdminEditDto();
+        AdminEditDto admin = new AdminEditDto();
         admin.setFirstName("Vadim");
         admin.setLastName("234234");
         admin.setPatronymic("Ar.- ");
@@ -436,7 +511,7 @@ public class AdministratorIntegrationTest {
         admin.setOldPassword("Iddqd225");
         admin.setNewPassword("Iddqd225");
 
-        result = utils.put("/api/admins", session, admin)
+        MvcResult result = utils.put("/api/admins", session, admin)
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
@@ -449,30 +524,40 @@ public class AdministratorIntegrationTest {
     }
 
     @Test
-    public void testAddCategory() throws Exception {
-
-        String session = registerAdmin();
-
+    public void testAddCategoryWithoutLogin() throws Exception {
         // Добавление категории без логина
         CategoryDto category = new CategoryDto();
         category.setName("apple");
 
         MvcResult result = utils.post("/api/categories", "rewr", category)
                 .andExpect(status().isBadRequest()).andReturn();
-        
+
         utils.assertErrorsCodes(result, Collections.singletonList("NotLogin"));
+    }
+
+    @Test
+    public void testAddCategoryWithoutName() throws Exception {
+        String session = registerAdmin();
 
         // Сначала попытаемся добавить категорию без имени
+        CategoryDto category = new CategoryDto();
         category.setName(null);
-        result = utils.post("/api/categories", session, category)
+        MvcResult result = utils.post("/api/categories", session, category)
                 .andExpect(status().isBadRequest()).andReturn();
 
         utils.assertError(result, Pair.of("NotBlank", "name"));
+    }
 
-        // Теперь добавим новую категорию нормально
+    @Test
+    public void testAddCategory() throws Exception {
+
+        String session = registerAdmin();
+
+        // Сначала попытаемся добавить категорию без имени
+        CategoryDto category = new CategoryDto();
         category.setName("apple");
 
-        result = utils.post("/api/categories", session, category)
+        MvcResult result = utils.post("/api/categories", session, category)
                 .andExpect(status().isOk()).andReturn();
 
         JsonNode node = utils.read(result);
@@ -503,20 +588,29 @@ public class AdministratorIntegrationTest {
         assertEquals(parentId, node.get("parentId").asLong());
         assertEquals("apple", node.get("parentName").asText());
 
-        // И нельзя добавить с тем же именем
-        category.setName("apple");
-        category.setParentId(null);
-
-        result = utils.post("/api/categories", session, category)
-                .andExpect(status().isBadRequest()).andReturn();
-
-        utils.assertError(result, Pair.of("SameCategoryName", "name"));
     }
 
     @Test
-    public void testGetCategory() throws Exception {
+    public void testAddCategoryWithSameName() throws Exception {
+
+        // Нельзя добавить категорию с тем же именем
 
         String session = registerAdmin();
+        registerCategory(session, "apple", null);
+
+        CategoryDto category = new CategoryDto();
+        category.setName("apple");
+        category.setParentId(null);
+
+        MvcResult result = utils.post("/api/categories", session, category)
+                .andExpect(status().isBadRequest()).andReturn();
+
+        utils.assertError(result, Pair.of("SameCategoryName", "name"));
+
+    }
+
+    @Test
+    public void testGetCategoryWithoutLogin() throws Exception {
 
         // Получение категорий без логина
         MvcResult result = utils.get("/api/categories/1", "ere")
@@ -524,8 +618,15 @@ public class AdministratorIntegrationTest {
 
         utils.assertErrorCode(result, "NotLogin");
 
+    }
+
+    @Test
+    public void testGetCategory() throws Exception {
+
+        String session = registerAdmin();
+
         // Получение категории, которой нет в БД
-        result = utils.get("/api/categories/1", session)
+        MvcResult result = utils.get("/api/categories/1", session)
                 .andExpect(status().isBadRequest()).andReturn();
 
         utils.assertErrorCode(result, "CategoryNotFound");
@@ -560,9 +661,7 @@ public class AdministratorIntegrationTest {
     }
 
     @Test
-    public void testEditCategory() throws Exception {
-
-        String session = registerAdmin();
+    public void testEditCategoryWithoutLogin() throws Exception {
 
         CategoryEditDto info = new CategoryEditDto();
         info.setName("ikea");
@@ -573,13 +672,72 @@ public class AdministratorIntegrationTest {
                 .andReturn();
 
         utils.assertErrorCode(result, "NotLogin");
+    }
+
+    @Test
+    public void testEditCategoryNotFound() throws Exception {
+
+        String session = registerAdmin();
+
+        CategoryEditDto info = new CategoryEditDto();
+        info.setName("ikea");
 
         // Редактирование категории, котороый нет в БД
-        result = utils.put("/api/categories/1", session, info)
+        MvcResult result = utils.put("/api/categories/1", session, info)
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
         utils.assertErrorCode(result, "CategoryNotFound");
+    }
+
+    @Test
+    public void testEditCategoryWithSameName() throws Exception {
+
+        // Пытаемся изменить категорию на имя, которое уже занято
+        // другой категорией
+
+        String session = registerAdmin();
+
+        registerCategory(session, "msi", null);
+        long apple = registerCategory(session, "apple", null);
+
+        CategoryEditDto info = new CategoryEditDto();
+        info.setName("msi");
+
+        MvcResult result = utils.put("/api/categories/" + apple, session, info)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertError(result, Pair.of("SameCategoryName", "name"));
+
+    }
+
+    @Test
+    public void testEditCategoryEmptyField() throws Exception {
+
+        // Теперь делаем оба поля пустыми
+
+        String session = registerAdmin();
+        long apple = registerCategory(session, "apple", null);
+
+        CategoryEditDto info = new CategoryEditDto();
+        info.setParentId(null);
+        info.setName(null);
+
+        MvcResult result = utils.put("/api/categories/" + apple, session, info)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrorCode(result, "EditCategoryEmpty");
+
+    }
+
+    @Test
+    public void testEditCategory() throws Exception {
+
+        String session = registerAdmin();
+
+        CategoryEditDto info = new CategoryEditDto();
 
         // Регистрируем нормальную категорию
         long apple = registerCategory(session, "apple", null);
@@ -587,37 +745,16 @@ public class AdministratorIntegrationTest {
         long msi = registerCategory(session, "msi", null);
 
         info.setParentId(iphone);
-        // Теперь пытаемся сделать категорию подкатегорией (что непозволительно)
 
-        result = utils.put("/api/categories/" + apple, session, info)
+        // Теперь пытаемся сделать категорию подкатегорией (что непозволительно)
+        MvcResult result = utils.put("/api/categories/" + apple, session, info)
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
         utils.assertErrorCode(result, "CategoryToSubcategory");
 
-        // Пытаемся изменить имя категории на уже существующее
-
-        info.setName("msi");
-        info.setParentId(null);
-        result = utils.put("/api/categories/" + apple, session, info)
-                .andExpect(status().isBadRequest())
-                .andReturn();
-
-        utils.assertError(result, Pair.of("SameCategoryName", "name"));
-
-        // Теперь делаем оба поля пустыми
-        info.setParentId(null);
-        info.setName(null);
-
-        result = utils.put("/api/categories/" + apple, session, info)
-                .andExpect(status().isBadRequest())
-                .andReturn();
-
-        utils.assertErrorCode(result, "EditCategoryEmpty");
-
         // Теперь переместим одну подкатегорию к другому родителю
         info.setParentId(msi);
-
 
         result = utils.put("/api/categories/" + iphone, session, info)
                 .andExpect(status().isOk())
@@ -688,10 +825,7 @@ public class AdministratorIntegrationTest {
     }
 
     @Test
-    public void testDeleteCategory() throws Exception {
-
-        String session = registerAdmin();
-
+    public void testDeleteCategoryWithoutLogin() throws Exception {
         // Удаление без логина
         MvcResult result = utils.delete("/api/categories/1", "ewrwe")
                 .andExpect(status().isBadRequest())
@@ -699,12 +833,25 @@ public class AdministratorIntegrationTest {
 
         utils.assertErrorCode(result, "NotLogin");
 
+    }
+
+    @Test
+    public void testDeleteCategoryNotFound() throws Exception {
+        String session = registerAdmin();
+
         // Удаление несуществующей
-        result = utils.delete("/api/categories/1", session)
+        MvcResult result = utils.delete("/api/categories/1", session)
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
         utils.assertErrorCode(result, "CategoryNotFound");
+
+    }
+
+    @Test
+    public void testDeleteCategory() throws Exception {
+
+        String session = registerAdmin();
 
         // Создаём категорию и удаляем её сразу
         long category = registerCategory(session, "category", null);
@@ -727,7 +874,7 @@ public class AdministratorIntegrationTest {
                 .andExpect(content().string("{}"));
 
         // Получаем список категорий и проверяем что родительская категория на месте
-        result = utils.get("/api/categories", session)
+        MvcResult result = utils.get("/api/categories", session)
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -746,6 +893,16 @@ public class AdministratorIntegrationTest {
                 .andExpect(content().string("[]"));
     }
 
+    @Test
+    public void testGetCategoriesWithoutLogin() throws Exception {
+
+        // Получение списка категорий без логина
+        MvcResult result = utils.get("/api/categories", "ewrew")
+                .andExpect(status().isBadRequest())
+                .andReturn();
+        utils.assertErrorCode(result, "NotLogin");
+    }
+
     /**
      * Получение списка категорий
      */
@@ -753,12 +910,6 @@ public class AdministratorIntegrationTest {
     public void testGetCategories() throws Exception {
 
         String session = registerAdmin();
-
-        // Получение списка категорий без логина
-        MvcResult result = utils.get("/api/categories", "ewrew")
-                .andExpect(status().isBadRequest())
-                .andReturn();
-        utils.assertErrorCode(result, "NotLogin");
 
         /*
         Ожидаем такой порядок:
@@ -778,7 +929,7 @@ public class AdministratorIntegrationTest {
         long ipod = registerCategory(session, "ipod", apple);
         long iphone = registerCategory(session, "iphone", apple);
 
-        result = utils.get("/api/categories", session)
+        MvcResult result = utils.get("/api/categories", session)
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -806,16 +957,31 @@ public class AdministratorIntegrationTest {
         assertEquals(msi, node.get(4).get("parentId").asLong());
     }
 
-    /**
-     * Добавление товара
-     */
     @Test
-    public void testAddProduct() throws Exception {
+    public void testAddProductWithoutLogin() throws Exception {
+
+        ProductDto product = new ProductDto();
+        product.setName("table");
+        product.setPrice(1000);
+
+        // Добавление товара без логина
+        MvcResult result = utils.post("/api/products", "erwer", product)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrorCode(result, "NotLogin");
+
+    }
+
+    @Test
+    public void testAddProductWithoutFields() throws Exception {
 
         String session = registerAdmin();
-        ProductDto product = new ProductDto();
 
         // Проверяем что нельзя добавить продукт без имени и цены
+
+        ProductDto product = new ProductDto();
+
         MvcResult result = utils.post("/api/products", session, product)
                 .andExpect(status().isBadRequest())
                 .andReturn();
@@ -825,10 +991,17 @@ public class AdministratorIntegrationTest {
                 Pair.of("RequiredName", "name")
         ));
 
+    }
+
+    @Test
+    public void testAddProductWithNegativePrice() throws Exception {
+        String session = registerAdmin();
+
         // Проверяем что нельзя добавить отрицательную цену
+        ProductDto product = new ProductDto();
         product.setPrice(-1);
 
-        result = utils.post("/api/products", session, product)
+        MvcResult result = utils.post("/api/products", session, product)
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
@@ -836,30 +1009,45 @@ public class AdministratorIntegrationTest {
                 Pair.of("DecimalMin", "price"),
                 Pair.of("RequiredName", "name")
         ));
+    }
 
-        // Теперь всё нормально, но категории нет
+    @Test
+    public void testAddProductWithWrongCategory() throws Exception {
+
+        String session = registerAdmin();
+
+        // Указываем категорию, которая не существует
+        ProductDto product = new ProductDto();
         product.setName("table");
         product.setPrice(1000);
         product.setCategories(Collections.singletonList(1L));
 
-        result = utils.post("/api/products", session, product)
+        MvcResult result = utils.post("/api/products", session, product)
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
         utils.assertError(result, Pair.of("CategoryNotFound", "categories"));
 
-        // Добавление товара без логина
-        result = utils.post("/api/products", "erwer", product)
-                .andExpect(status().isBadRequest())
-                .andReturn();
+    }
 
-        utils.assertErrorCode(result, "NotLogin");
+    /**
+     * Добавление товара
+     */
+    @Test
+    public void testAddProduct() throws Exception {
+
+        String session = registerAdmin();
+
+        ProductDto product = new ProductDto();
+        // Теперь всё нормально, но категории нет
+        product.setName("table");
+        product.setPrice(1000);
 
         // Добавим товар без категори
         // И с количеством по умолчанию ноль
         product.setCategories(null);
 
-        result = utils.post("/api/products", session , product)
+        MvcResult result = utils.post("/api/products", session , product)
                 .andExpect(status().isOk())
                 .andReturn();
 

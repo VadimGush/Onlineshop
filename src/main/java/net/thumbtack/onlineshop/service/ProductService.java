@@ -48,9 +48,12 @@ public class ProductService extends GeneralService {
         // Отдельно добавляем список категорий
         if (productDto.getCategories() != null) {
 
+            // Создаём множество, так как категории в запросе могут повторяться
+            Set<Long> categories = new HashSet<>(productDto.getCategories());
+
             List<Category> newCategories = new ArrayList<>();
 
-            for (long categoryId : productDto.getCategories()) {
+            for (long categoryId : categories) {
                 Category category = categoryDao.get(categoryId);
                 if (category == null)
                     throw new ServiceException(ServiceException.ErrorCode.CATEGORY_NOT_FOUND, "categories");
@@ -103,8 +106,11 @@ public class ProductService extends GeneralService {
             // Формируем новый список категорий
             List<ProductCategory> newCategories = new ArrayList<>();
 
+            // Избавляемся от повторений
+            Set<Long> categories = new HashSet<>(productDto.getCategories());
+
             // Добавляем новые категории
-            for (long categoryId : productDto.getCategories()) {
+            for (long categoryId : categories) {
                 Category category = categoryDao.get(categoryId);
                 if (category == null)
                     throw new ServiceException(ServiceException.ErrorCode.CATEGORY_NOT_FOUND, "categories");
@@ -219,6 +225,8 @@ public class ProductService extends GeneralService {
      * @return список пар (товар - категория)
      */
     private List<ProductCategory> getAllProductsWithSort(List<Long> categories, SortOrder order) {
+
+        // TODO: Упростить метод
 
         // Получем список продуктов и ассоциируемых с ними категорий
         List<ProductCategory> result = new ArrayList<>();

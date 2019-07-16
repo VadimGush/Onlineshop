@@ -183,10 +183,59 @@ public class ClientService extends GeneralService {
      */
     public ResultBasketDto buyBasket(String sessionId, List<ProductDto> toBuy) throws ServiceException {
 
-        // Внимание: вносить изменения только с ТЗ в руках!
-
         Account account = getClient(sessionId);
+
+        // Получаем корзину
         List<Basket> basket = basketDao.get(account);
+
+        // Убираем из списка покупок неверные товары
+        removeInvalidProducts(toBuy, basket);
+
+        // Теперь в списке tobBuy всё валидное
+        // Теперь считаем сколько денег нужно для покупки всего
+        int sum = 0;
+        for (ProductDto product : toBuy) {
+            sum += product.getCount() * product.getPrice();
+        }
+
+        if (sum > account.getDeposit())
+            throw new ServiceException(ServiceException.ErrorCode.NOT_ENOUGH_MONEY);
+
+        // Начинаем покупать товары
+
+        // Снимаем деньги
+        account.setDeposit(account.getDeposit() - sum);
+        accountDao.update(account);
+
+        for (ProductDto product : toBuy) {
+
+            // Уменьшаем количество товаров на складе
+            Product currentProduct = productDao.get(product.getId());
+            currentProduct.setCount(currentProduct.getCount() - product.getCount());
+            productDao.update(currentProduct);
+
+            // Удаляем нужное количество товара из корзины
+            // Или совсем из корзины
+            Basket basketEntity = basketDao.get(account, product.getId());
+            basketEntity.setCount(basketEntity.getCount() - product.getCount());
+            if (basketEntity.getCount() == 0)
+                basketDao.delete(basketEntity);
+            else
+                basketDao.update(basketEntity);
+
+        }
+
+        // Возвращаем инфу сколько мы купили и сколько в корзине осталось
+        return new ResultBasketDto(toBuy, basketDao.get(account));
+    }
+
+    /**
+     * Убирает из списка покупок все товары, которые не соответсвуют требованиям.
+     * (к примеру товары, которых нет в БД или нет в текущей корзине клиента и т.д.)
+     * @param toBuy список покупок
+     * @param basket корзина клиента
+     */
+    private void removeInvalidProducts(List<ProductDto> toBuy, List<Basket> basket) {
 
         List<ProductDto> copyList = new ArrayList<>(toBuy);
 
@@ -234,44 +283,6 @@ public class ClientService extends GeneralService {
                 toBuy.remove(product);
         }
 
-        // Теперь в списке tobBuy всё валидное
-        // Теперь считаем сколько денег нужно для покупки всего
-        int sum = 0;
-        for (ProductDto product : toBuy) {
-            sum += product.getCount() * product.getPrice();
-        }
-
-        if (sum > account.getDeposit())
-            throw new ServiceException(ServiceException.ErrorCode.NOT_ENOUGH_MONEY);
-
-        // Теперь можно всё покупать
-        // Тут можно было бы использовать метод buyProduct, но это и так увеличит количество
-        // исключений и в без того "исключительном" коде
-
-        // Снимаем деньги
-        account.setDeposit(account.getDeposit() - sum);
-        accountDao.update(account);
-
-        for (ProductDto product : toBuy) {
-
-            // Уменьшаем количество товаров на складе
-            Product currentProduct = productDao.get(product.getId());
-            currentProduct.setCount(currentProduct.getCount() - product.getCount());
-            productDao.update(currentProduct);
-
-            // Удаляем нужное количество товара из корзины
-            // Или совсем из корзины
-            Basket basketEntity = basketDao.get(account, product.getId());
-            basketEntity.setCount(basketEntity.getCount() - product.getCount());
-            if (basketEntity.getCount() == 0)
-                basketDao.delete(basketEntity);
-            else
-                basketDao.update(basketEntity);
-
-            // Ну вроде бы всё...
-        }
-
-        return new ResultBasketDto(toBuy, basketDao.get(account));
     }
 
     private void checkProducts(Product product, ProductDto buyProduct) throws ServiceException {

@@ -26,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
-        classes = OnlineShopServerTest.class
+        classes = OnlineShopServer.class
 )
 @TestPropertySource("classpath:config-test.properties")
 @AutoConfigureMockMvc

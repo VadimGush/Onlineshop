@@ -226,94 +226,126 @@ public class ProductService extends GeneralService {
      */
     private List<ProductCategory> getAllProductsWithSort(List<Long> categories, SortOrder order) {
 
-        // TODO: Упростить метод
-
-        // Получем список продуктов и ассоциируемых с ними категорий
-        List<ProductCategory> result = new ArrayList<>();
-
         if (order == null || order == SortOrder.PRODUCT) {
             // Сортировка товаров по именам
+            return  getAllProductsSortedByName(categories);
 
-            if (categories == null) {
-
-                // Все товары
-                List<Product> products = productDao.getAll();
-                products.forEach((p) -> result.add(new ProductCategory(p, null)));
-
-            } else if (categories.isEmpty()) {
-
-                // Все товары без категорий
-                List<Product> products = productDao.getAllWithoutCategory();
-                products.forEach((p) -> result.add(new ProductCategory(p, null)));
-
-            } else {
-
-                // Все товары которые содержат данные категории
-                List<ProductCategory> products = productDao.getAllWithCategory();
-                Set<Product> resultSet = new HashSet<>();
-
-                for (long category : categories) {
-                    for (ProductCategory product : products) {
-                        if (product.getCategory().getId() == category)
-                            resultSet.add(product.getProduct());
-                    }
-                }
-
-                // Теперь переносим всё это в конечный результат
-                resultSet.forEach((p) -> result.add(new ProductCategory(p, null)));
-            }
-
-            // Сортируем по именам товаров
-            result.sort(Comparator.comparing((ProductCategory left) -> left.getProduct().getName()));
-
-        } else if (order == SortOrder.CATEGORY) {
-            // Сортировка по именам категорий
-
-            if (categories == null) {
-
-                // Сначала добавляем в начало списка все товары без категорий
-                List<Product> products = productDao.getAllWithoutCategory();
-                products.forEach((p) -> result.add(new ProductCategory(p, null)));
-                // И сортируем по именам товаров
-                result.sort(Comparator.comparing((ProductCategory left) -> left.getProduct().getName()));
-
-                // Теперь получаем список товаров c категориями
-                List<ProductCategory> temp = productDao.getAllWithCategory();
-                // И сортируем по именам категорий (а внутри категорий, по именам товаров)
-                temp.sort(
-                        Comparator.comparing(
-                                (ProductCategory left) -> left.getCategory().getName() + left.getProduct().getName()
-                        )
-                );
-                result.addAll(temp);
-
-            } else if (categories.isEmpty()) {
-
-                // Все товары без категорий
-                List<Product> products = productDao.getAllWithoutCategory();
-                products.forEach((p) -> result.add(new ProductCategory(p, null)));
-                // Сортируем по именам товаров
-                result.sort(Comparator.comparing((ProductCategory left) -> left.getProduct().getName()));
-
-            } else {
-
-                // Получаем список товаров с категориями
-                List<ProductCategory> products = productDao.getAllWithCategory();
-                for (long category : categories) {
-                    for (ProductCategory product : products)
-                        if (product.getCategory().getId() == category)
-                            result.add(product);
-                }
-
-                // Теперь сортируем по именам категорий
-                result.sort(
-                        Comparator.comparing(
-                                (ProductCategory left) -> left.getCategory().getName() + left.getProduct().getName()
-                        )
-                );
-            }
-
+        } else {
+            // Получаем все товары отсортированные по именам категорий
+            return  getAllProductsCategorySorted(categories);
         }
+
+    }
+
+    /**
+     * @param categories категории, которым должны принадлежать товары.
+     *                   Пустой список - все товары без категорий
+     *                   Без списка - все товары
+     * @return выборка товаров отсортированных по именам категорий
+     */
+    private List<ProductCategory> getAllProductsCategorySorted(List<Long> categories) {
+
+        List<ProductCategory> result = new ArrayList<>();
+
+        if (categories == null) {
+
+            // Все товары без категорий в начало списка
+            result.addAll(getAllProductsWithoutCategorySorted());
+
+            // Теперь получаем список товаров c категориями
+            List<ProductCategory> temp = productDao.getAllWithCategory();
+            // И сортируем по именам категорий (а внутри категорий, по именам товаров)
+            temp.sort(
+                    Comparator.comparing(
+                            (ProductCategory left) -> left.getCategory().getName() + left.getProduct().getName()
+                    )
+            );
+            result.addAll(temp);
+
+        } else if (categories.isEmpty()) {
+
+            // В товарах без категорий сортировать нечего
+            return getAllProductsWithoutCategorySorted();
+
+        } else {
+
+            // Отбираем товары, которые принадлежат данным категориям
+
+            // Получаем список товаров с категориями
+            List<ProductCategory> products = productDao.getAllWithCategory();
+            for (long category : categories) {
+                for (ProductCategory product : products)
+                    if (product.getCategory().getId() == category)
+                        result.add(product);
+            }
+
+            // Теперь сортируем по именам категорий
+            result.sort(
+                    Comparator.comparing(
+                            (ProductCategory left) -> left.getCategory().getName() + left.getProduct().getName()
+                    )
+            );
+        }
+
+        return result;
+    }
+
+    /**
+     * @param categories категории, которым должны принадлежать товары.
+     *                   Пустой список - все товары без категорий
+     *                   Без списка - все товары
+     * @return выборка товаров отсортированных по их именам
+     */
+    private List<ProductCategory> getAllProductsSortedByName(List<Long> categories) {
+
+        List<ProductCategory> result = new ArrayList<>();
+
+        if (categories == null) {
+
+            // Все товары
+            List<Product> products = productDao.getAll();
+            products.forEach((p) -> result.add(new ProductCategory(p, null)));
+
+        } else if (categories.isEmpty()) {
+
+            // Все товары без категорий
+            List<Product> products = productDao.getAllWithoutCategory();
+            products.forEach((p) -> result.add(new ProductCategory(p, null)));
+
+        } else {
+
+            // Все товары которые содержат данные категории
+            List<ProductCategory> products = productDao.getAllWithCategory();
+            Set<Product> resultSet = new HashSet<>();
+
+            for (long category : categories) {
+                for (ProductCategory product : products) {
+                    if (product.getCategory().getId() == category)
+                        resultSet.add(product.getProduct());
+                }
+            }
+
+            // Теперь переносим всё это в конечный результат
+            resultSet.forEach((p) -> result.add(new ProductCategory(p, null)));
+        }
+
+        // Сортируем по именам товаров
+        result.sort(Comparator.comparing((ProductCategory left) -> left.getProduct().getName()));
+
+        return result;
+    }
+
+    /**
+     * @return список всех товаров без категории отсортированные по имени
+     */
+    private List<ProductCategory> getAllProductsWithoutCategorySorted() {
+        List<ProductCategory> result = new ArrayList<>();
+
+        // Все товары без категорий
+        List<Product> products = productDao.getAllWithoutCategory();
+        products.forEach((p) -> result.add(new ProductCategory(p, null)));
+        // Сортируем по именам товаров
+        result.sort(Comparator.comparing((ProductCategory left) -> left.getProduct().getName()));
 
         return result;
     }

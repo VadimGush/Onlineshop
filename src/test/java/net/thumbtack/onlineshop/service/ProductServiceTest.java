@@ -423,7 +423,7 @@ public class ProductServiceTest {
         when(mockProductDao.getAllWithCategory()).thenReturn(productCategory);
 
         List<ProductDto> results =
-                productService.getAll("token", Collections.singletonList(1), ProductService.SortOrder.PRODUCT);
+                productService.getAll("token", Collections.singletonList(1L), ProductService.SortOrder.PRODUCT);
 
         verify(mockProductDao).getAllWithCategory();
 
@@ -472,7 +472,7 @@ public class ProductServiceTest {
         when(mockProductDao.getAllWithCategory()).thenReturn(productCategory);
 
         List<ProductDto> results =
-                productService.getAll("token", Arrays.asList(1, 3), ProductService.SortOrder.CATEGORY);
+                productService.getAll("token", Arrays.asList(1L, 3L), ProductService.SortOrder.CATEGORY);
 
         verify(mockProductDao).getAllWithCategory();
 

@@ -71,7 +71,7 @@ public class ProductController {
     @ResponseStatus(HttpStatus.OK)
     public List<ProductDto> getProducts(
             @CookieValue("JAVASESSIONID") String session,
-            @RequestParam(name = "category", required = false) List<Integer> categories,
+            @RequestParam(name = "category", required = false) List<Long> categories,
             @RequestParam(name = "order", required = false) String orderString) throws Exception {
 
         ProductService.SortOrder order = ProductService.SortOrder.PRODUCT;

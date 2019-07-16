@@ -67,17 +67,26 @@ public class AdministratorIntegrationTest {
         assertNull(node.get("login"));
         assertNull(node.get("password"));
 
+    }
+
+    @Test
+    public void testRegistrationWithSameLogin() throws Exception {
+
+        // Регистрация будет с логином "Vadim"
+        registerAdmin();
+
         // Логин не чувствителен к регистру, поэтому регистрация не пройдёт
-        admin = createAdmin();
+        AdminDto admin = createAdmin();
         admin.setLogin("vadim");
 
-        result = utils.post("/api/admins", null, admin)
+        MvcResult result = utils.post("/api/admins", null, admin)
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
         utils.assertErrors(result, Collections.singletonList(
                 Pair.of("LoginInUse", "login")
         ));
+
     }
 
     /**

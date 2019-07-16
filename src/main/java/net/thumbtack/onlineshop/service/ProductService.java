@@ -45,8 +45,6 @@ public class ProductService extends GeneralService {
                 productDto.getCount(),
                 productDto.getPrice());
 
-        // TODO: А что будет если номера категорий будут повторяться?
-
         // Отдельно добавляем список категорий
         if (productDto.getCategories() != null) {
 
@@ -177,12 +175,52 @@ public class ProductService extends GeneralService {
      * @param order порядок сортировки
      * @return список товаров
      */
-    public List<ProductDto> getAll(String sessionId, List<Integer> categories, SortOrder order) throws ServiceException {
-
-        // TODO: Избавится от дубликаций кода и упростить метод
+    public List<ProductDto> getAll(String sessionId, List<Long> categories, SortOrder order) throws ServiceException {
 
         getAccount(sessionId);
 
+        // Делаем запрос на выборку товаров. Получаем список пар (товар - категория)
+        // Если категории в паре нет, то для товара получим полный список категорий
+        List<ProductCategory> result = getAllProductsWithSort(categories, order);
+
+        // Теперь создаём список готовых DTO
+        List<ProductDto> response = new ArrayList<>();
+
+        for (ProductCategory pc : result) {
+
+            // Если категории нет, то получаем полный список
+            if (pc.getCategory() == null)
+                response.add(
+                        new ProductDto(
+                                pc.getProduct(),
+                                productDao.getCategories(pc.getProduct().getId())
+                        )
+                );
+            // Если категория есть, то только её и вставляем в конечный объект
+            else
+                response.add(
+                        new ProductDto(
+                                pc.getProduct(),
+                                Collections.singletonList(pc)
+                        )
+                );
+
+        }
+
+        return response;
+    }
+
+    /**
+     * Получаем список всех товаров и ассоциируемых с ними категорий. Для каждого товара
+     * мы получаем пару (товар - категория). Для пар с отсутствующей категорией считается что для
+     * товара нужно получить полный список категорий
+     * @param categories id категорий, которым должны принадлежать товары
+     * @param order порядок сортировки товаров
+     * @return список пар (товар - категория)
+     */
+    private List<ProductCategory> getAllProductsWithSort(List<Long> categories, SortOrder order) {
+
+        // Получем список продуктов и ассоциируемых с ними категорий
         List<ProductCategory> result = new ArrayList<>();
 
         if (order == null || order == SortOrder.PRODUCT) {
@@ -206,7 +244,7 @@ public class ProductService extends GeneralService {
                 List<ProductCategory> products = productDao.getAllWithCategory();
                 Set<Product> resultSet = new HashSet<>();
 
-                for (int category : categories) {
+                for (long category : categories) {
                     for (ProductCategory product : products) {
                         if (product.getCategory().getId() == category)
                             resultSet.add(product.getProduct());
@@ -253,7 +291,7 @@ public class ProductService extends GeneralService {
 
                 // Получаем список товаров с категориями
                 List<ProductCategory> products = productDao.getAllWithCategory();
-                for (int category : categories) {
+                for (long category : categories) {
                     for (ProductCategory product : products)
                         if (product.getCategory().getId() == category)
                             result.add(product);
@@ -269,44 +307,7 @@ public class ProductService extends GeneralService {
 
         }
 
-        // Теперь создаём список готовых DTO
-        List<ProductDto> response = new ArrayList<>();
-
-        /*
-        Код может показаться слегка сложноватым, но суть проста.
-
-        Иногда для товара нужно получить полный список категорий, иногда товар
-        в списке должен содержать только упоминание одной категории (если к примеру
-        мы используем сортировку по категориям (читай ТЗ)). Мы получаем из БД пары
-        ProductCategory. Товары, для которых необходимо получить полный список категорий
-        ProductCategory.getCategory() == null. Товары, в которых должна быть только одна категория
-        уже содержат её в паре.
-
-        Тривиально.
-         */
-        for (ProductCategory pc : result) {
-
-            // Если категории нет, то получаем полный список категорий
-            // из БД
-            if (pc.getCategory() == null)
-                response.add(
-                        new ProductDto(
-                                pc.getProduct(),
-                                productDao.getCategories(pc.getProduct().getId())
-                        )
-                );
-            // Если категория есть, то только её и вставляем в конечный объект
-            else
-                response.add(
-                        new ProductDto(
-                                pc.getProduct(),
-                                Collections.singletonList(pc)
-                        )
-                );
-
-        }
-
-        return response;
+        return result;
     }
 
 }

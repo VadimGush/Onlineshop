@@ -1,4 +1,4 @@
-package net.thumbtack.onlineshop;
+package net.thumbtack.onlineshop.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,64 +21,64 @@ import static junit.framework.TestCase.fail;
  * Вспомогательный класс с набором удобных методов для быстрого формирования запросов,
  * проверки ошибок и остального.
  */
-class IntegrationUtils {
+public class IntegrationUtils {
 
     private MockMvc mvc;
     private ObjectMapper mapper = new ObjectMapper();
 
-    IntegrationUtils(MockMvc mvc) {
+    public IntegrationUtils(MockMvc mvc) {
         this.mvc = mvc;
     }
 
-    ResultActions post(String url, String session, Object content) throws Exception {
+    public ResultActions post(String url, String session, Object content) throws Exception {
 
         MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.post(url);
         addParameters(builder, session, content);
         return mvc.perform(builder);
     }
 
-    ResultActions get(String url, String session) throws Exception {
+    public ResultActions get(String url, String session) throws Exception {
 
         MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.get(url);
         addParameters(builder, session, null);
         return mvc.perform(builder);
     }
 
-    ResultActions put(String url, String session, Object content) throws Exception {
+    public ResultActions put(String url, String session, Object content) throws Exception {
 
         MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.put(url);
         addParameters(builder, session, content);
         return mvc.perform(builder);
     }
 
-    ResultActions delete(String url, String session) throws Exception {
+    public ResultActions delete(String url, String session) throws Exception {
 
         MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.delete(url);
         addParameters(builder, session, null);
         return mvc.perform(builder);
     }
 
-    JsonNode read(MvcResult result) throws Exception {
+    public JsonNode read(MvcResult result) throws Exception {
         return mapper.readTree(result.getResponse().getContentAsString());
     }
 
-    String getSession(MvcResult result) {
+    public String getSession(MvcResult result) {
         return Objects.requireNonNull(result.getResponse().getCookie("JAVASESSIONID")).getValue();
     }
 
-    String getContent(MvcResult result) throws Exception {
+    public String getContent(MvcResult result) throws Exception {
         return result.getResponse().getContentAsString();
     }
 
-    void assertError(MvcResult result, Pair<String, String> error) throws Exception {
+    public void assertError(MvcResult result, Pair<String, String> error) throws Exception {
         assertErrors(result, Collections.singletonList(error));
     }
 
-    void assertErrorCode(MvcResult result, String errorCode) throws Exception {
+    public void assertErrorCode(MvcResult result, String errorCode) throws Exception {
         assertErrorsCodes(result, Collections.singletonList(errorCode));
     }
 
-    void assertErrors(MvcResult result, List<Pair<String, String>> errors) throws Exception {
+    public void assertErrors(MvcResult result, List<Pair<String, String>> errors) throws Exception {
 
         JsonNode node = read(result);
         JsonNode errorList = node.get("errors");
@@ -99,7 +99,7 @@ class IntegrationUtils {
         }
     }
 
-    void assertErrorsCodes(MvcResult result, List<String> errors) throws Exception {
+    public void assertErrorsCodes(MvcResult result, List<String> errors) throws Exception {
 
         JsonNode node = read(result);
         JsonNode errorList = node.get("errors");

@@ -5,7 +5,9 @@ import net.thumbtack.onlineshop.database.dao.SessionDao;
 import net.thumbtack.onlineshop.database.models.Account;
 import net.thumbtack.onlineshop.database.models.AccountFactory;
 import net.thumbtack.onlineshop.database.models.Session;
-import net.thumbtack.onlineshop.dto.*;
+import net.thumbtack.onlineshop.dto.AccountDto;
+import net.thumbtack.onlineshop.dto.AdminDto;
+import net.thumbtack.onlineshop.dto.ClientDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -73,7 +75,7 @@ public class AccountService extends GeneralService {
      * @param client новая инфа клиента
      * @return аккаунт изменённого клиента
      */
-    public AccountDto edit(String sessionId, ClientEditDto client) throws ServiceException {
+    public AccountDto edit(String sessionId, ClientDto client) throws ServiceException {
 
         Account account = getClient(sessionId);
 
@@ -98,7 +100,7 @@ public class AccountService extends GeneralService {
      * @param admin запрос с изменёнными данными
      * @return аккаунт изменённого администратора
      */
-    public AccountDto edit(String sessionId, AdminEditDto admin) throws ServiceException {
+    public AccountDto edit(String sessionId, AdminDto admin) throws ServiceException {
 
         Account account = getAdmin(sessionId);
 

@@ -2,14 +2,15 @@ package net.thumbtack.onlineshop.controller;
 
 import net.thumbtack.onlineshop.controller.validation.ValidationException;
 import net.thumbtack.onlineshop.dto.CategoryDto;
-import net.thumbtack.onlineshop.dto.CategoryEditDto;
+import net.thumbtack.onlineshop.dto.actions.Edit;
+import net.thumbtack.onlineshop.dto.actions.Register;
 import net.thumbtack.onlineshop.service.CategoriesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -27,7 +28,7 @@ public class CategoriesController {
     @ResponseStatus(HttpStatus.OK)
     public CategoryDto addCategory(
             @CookieValue("JAVASESSIONID") String session,
-            @RequestBody @Valid CategoryDto category,
+            @RequestBody @Validated(Register.class) CategoryDto category,
             BindingResult result) throws Exception {
 
         if (result.hasErrors())
@@ -50,10 +51,7 @@ public class CategoriesController {
     public CategoryDto editCategory(
             @CookieValue("JAVASESSIONID") String session,
             @PathVariable int id,
-            @RequestBody CategoryEditDto category) throws Exception {
-
-        // Поскольку в DTO может отсутствовать всё что угодно
-        // то и валидацию проводить бессмысленно
+            @RequestBody @Validated(Edit.class) CategoryDto category) throws Exception {
 
         return categoryService.editCategory(session, category, id);
     }

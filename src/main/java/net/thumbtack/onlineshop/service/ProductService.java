@@ -7,7 +7,6 @@ import net.thumbtack.onlineshop.database.models.Category;
 import net.thumbtack.onlineshop.database.models.Product;
 import net.thumbtack.onlineshop.database.models.ProductCategory;
 import net.thumbtack.onlineshop.dto.ProductDto;
-import net.thumbtack.onlineshop.dto.ProductEditDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -81,7 +80,7 @@ public class ProductService extends GeneralService {
      * @param productId id товара
      * @return информация об изменённом в БД товаре
      */
-    public ProductDto edit(String sessionId, ProductEditDto productDto, long productId) throws ServiceException {
+    public ProductDto edit(String sessionId, ProductDto productDto, long productId) throws ServiceException {
         getAdmin(sessionId);
 
         Product product = productDao.get(productId);

@@ -15,20 +15,20 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("api")
 public class ServerController {
 
-	@Value("${max_name_length}")
-	private int maxNameLength;
+    @Value("${max_name_length}")
+    private int maxNameLength;
 
-	@Value("${min_password_length}")
-	private int minPasswordLength;
+    @Value("${min_password_length}")
+    private int minPasswordLength;
 
-	@Value("${debug}")
-	private boolean debug;
+    @Value("${debug}")
+    private boolean debug;
 
-	private ServerControlService serverControl;
+    private ServerControlService serverControl;
 
-	@Autowired
-	public ServerController(ServerControlService serverControl) {
-	    this.serverControl = serverControl;
+    @Autowired
+    public ServerController(ServerControlService serverControl) {
+        this.serverControl = serverControl;
     }
 
     @GetMapping("settings")
@@ -40,9 +40,9 @@ public class ServerController {
     @PostMapping("debug/clear")
     @ResponseStatus(HttpStatus.OK)
     public String clearDatabase() {
-		if (debug)
-	    	serverControl.clear();
-	    return "{}";
+        if (debug)
+            serverControl.clear();
+        return "{}";
     }
 
 

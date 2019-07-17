@@ -8,7 +8,7 @@ import javax.validation.ConstraintValidatorContext;
 import static net.thumbtack.onlineshop.controller.validation.ValidatorUtils.setMessage;
 
 public class RequiredNameValidator implements
-        ConstraintValidator<RequiredName, String>{
+        ConstraintValidator<RequiredName, String> {
 
     @Value("${max_name_length}")
     private int maxNameLength;

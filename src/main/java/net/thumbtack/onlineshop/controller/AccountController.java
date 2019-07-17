@@ -2,12 +2,18 @@ package net.thumbtack.onlineshop.controller;
 
 import net.thumbtack.onlineshop.controller.validation.ValidationException;
 import net.thumbtack.onlineshop.database.models.Account;
-import net.thumbtack.onlineshop.dto.*;
+import net.thumbtack.onlineshop.dto.AccountDto;
+import net.thumbtack.onlineshop.dto.AdminDto;
+import net.thumbtack.onlineshop.dto.ClientDto;
+import net.thumbtack.onlineshop.dto.LoginDto;
+import net.thumbtack.onlineshop.dto.actions.Edit;
+import net.thumbtack.onlineshop.dto.actions.Register;
 import net.thumbtack.onlineshop.service.AccountService;
 import net.thumbtack.onlineshop.service.ServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.Cookie;
@@ -30,7 +36,7 @@ public class AccountController {
     @PostMapping("clients")
     @ResponseStatus(HttpStatus.OK)
     public AccountDto registerClient(
-            @RequestBody @Valid ClientDto client,
+            @RequestBody @Validated(Register.class) ClientDto client,
             BindingResult result,
             HttpServletResponse response) throws Exception {
 
@@ -45,7 +51,7 @@ public class AccountController {
     @PostMapping("admins")
     @ResponseStatus(HttpStatus.OK)
     public AccountDto registerAdmin(
-            @RequestBody @Valid AdminDto admin,
+            @RequestBody @Validated(Register.class) AdminDto admin,
             BindingResult result,
             HttpServletResponse response) throws Exception {
 
@@ -62,7 +68,7 @@ public class AccountController {
     @ResponseStatus(HttpStatus.OK)
     public AccountDto editAdmin(
             @CookieValue("JAVASESSIONID") String session,
-            @RequestBody @Valid AdminEditDto admin,
+            @RequestBody @Validated(Edit.class) AdminDto admin,
             BindingResult result) throws Exception {
 
         if (result.hasErrors())
@@ -75,7 +81,7 @@ public class AccountController {
     @ResponseStatus(HttpStatus.OK)
     public AccountDto editClient(
             @CookieValue("JAVASESSIONID") String session,
-            @RequestBody @Valid ClientEditDto client,
+            @RequestBody @Valid ClientDto client,
             BindingResult result) throws Exception {
 
         if (result.hasErrors())
@@ -103,7 +109,7 @@ public class AccountController {
     @PostMapping("sessions")
     @ResponseStatus(HttpStatus.OK)
     public AccountDto login(
-            @RequestBody @Valid LoginDto account,
+            @RequestBody @Validated(Register.class) LoginDto account,
             BindingResult result,
             HttpServletResponse response) throws Exception {
 

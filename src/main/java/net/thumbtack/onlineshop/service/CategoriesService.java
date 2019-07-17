@@ -4,7 +4,6 @@ import net.thumbtack.onlineshop.database.dao.CategoryDao;
 import net.thumbtack.onlineshop.database.dao.SessionDao;
 import net.thumbtack.onlineshop.database.models.Category;
 import net.thumbtack.onlineshop.dto.CategoryDto;
-import net.thumbtack.onlineshop.dto.CategoryEditDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -79,7 +78,7 @@ public class CategoriesService extends GeneralService {
      * @param id id категории
      * @return изменённая категория
      */
-    public CategoryDto editCategory(String sessionId, CategoryEditDto categoryDto, long id) throws ServiceException {
+    public CategoryDto editCategory(String sessionId, CategoryDto categoryDto, long id) throws ServiceException {
 
         getAdmin(sessionId);
 

@@ -1,7 +1,10 @@
 package net.thumbtack.onlineshop.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import net.thumbtack.onlineshop.controller.validation.OptionalNotBlank;
 import net.thumbtack.onlineshop.database.models.Category;
+import net.thumbtack.onlineshop.dto.actions.Edit;
+import net.thumbtack.onlineshop.dto.actions.Register;
 
 import javax.validation.constraints.NotBlank;
 
@@ -9,15 +12,20 @@ import javax.validation.constraints.NotBlank;
 public class CategoryDto {
 
     private Long id;
-    @NotBlank
+
+    @NotBlank(groups = Register.class)
+    @OptionalNotBlank(groups = Edit.class)
     private String name;
+
     private Long parentId;
+
     private String parentName;
 
     public CategoryDto() {
 
     }
 
+    @Deprecated
     public CategoryDto(String name, long parentId) {
         this.name = name;
         this.parentId = parentId;

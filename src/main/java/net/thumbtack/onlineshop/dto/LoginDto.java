@@ -3,14 +3,15 @@ package net.thumbtack.onlineshop.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import net.thumbtack.onlineshop.controller.validation.Login;
 import net.thumbtack.onlineshop.controller.validation.Password;
+import net.thumbtack.onlineshop.dto.actions.Register;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class LoginDto {
 
-    @Login
+    @Login(groups = Register.class)
     private String login;
 
-    @Password
+    @Password(groups = Register.class)
     private String password;
 
     public LoginDto() {

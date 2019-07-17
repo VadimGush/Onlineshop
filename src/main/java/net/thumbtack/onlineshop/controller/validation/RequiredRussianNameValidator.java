@@ -37,7 +37,7 @@ public class RequiredRussianNameValidator implements
 
         if (!localValue.chars()
                 .allMatch(
-                        c -> russian.contains(String.valueOf((char)c))
+                        c -> russian.contains(String.valueOf((char) c))
                 )) {
             setMessage(context, "Имя должно содержать только буквы русского алфавита");
             return false;

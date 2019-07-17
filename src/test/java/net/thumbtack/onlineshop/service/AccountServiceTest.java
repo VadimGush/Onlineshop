@@ -5,7 +5,9 @@ import net.thumbtack.onlineshop.database.dao.SessionDao;
 import net.thumbtack.onlineshop.database.models.Account;
 import net.thumbtack.onlineshop.database.models.AccountFactory;
 import net.thumbtack.onlineshop.database.models.Session;
-import net.thumbtack.onlineshop.dto.*;
+import net.thumbtack.onlineshop.dto.AccountDto;
+import net.thumbtack.onlineshop.dto.AdminDto;
+import net.thumbtack.onlineshop.dto.ClientDto;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -16,6 +18,8 @@ import java.util.List;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
+import static net.thumbtack.onlineshop.utils.TestUtils.createAdminEditDto;
+import static net.thumbtack.onlineshop.utils.TestUtils.createClientEditDto;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -96,7 +100,7 @@ public class AccountServiceTest {
         );
         when(mockSessionDao.get("token")).thenReturn(new Session("token", admin));
 
-        AccountDto result = accountService.edit("token", new AdminEditDto(
+        AccountDto result = accountService.edit("token", createAdminEditDto(
                 "name", "lastName", "patro", "pos", "23", "33"
         ));
 
@@ -117,7 +121,7 @@ public class AccountServiceTest {
         when(mockSessionDao.get("token")).thenReturn(new Session("token", admin));
 
         try {
-            accountService.edit("token", new AdminEditDto(
+            accountService.edit("token", createAdminEditDto(
                     "name", "lastName", "patro", "pos", "43", "33"
             ));
 
@@ -154,7 +158,7 @@ public class AccountServiceTest {
         when(mockSessionDao.get("token")).thenReturn(null);
 
         try {
-            accountService.edit("token", new AdminEditDto());
+            accountService.edit("token", new AdminDto());
 
         } catch (ServiceException e) {
             verify(mockAccountDao, never()).update(any());
@@ -169,7 +173,7 @@ public class AccountServiceTest {
         when(mockSessionDao.get("token")).thenReturn(new Session("token", generateClient()));
 
         try {
-            accountService.edit("token", new AdminEditDto());
+            accountService.edit("token", new AdminDto());
 
         } catch (ServiceException e) {
             verify(mockAccountDao, never()).update(any());
@@ -266,7 +270,7 @@ public class AccountServiceTest {
 
         when(mockSessionDao.get("token")).thenReturn(new Session("token", client));
 
-        ClientEditDto edited = new ClientEditDto(
+        ClientDto edited = createClientEditDto(
                 "new name", "new last name", "new patro",
                 "new email", "new address", "new phone", client.getPassword(),
                 "new password"
@@ -291,7 +295,7 @@ public class AccountServiceTest {
 
         when(mockSessionDao.get("token")).thenReturn(new Session("token", client));
 
-        ClientEditDto edited = new ClientEditDto(
+        ClientDto edited = createClientEditDto(
                 "new name", "new last name", "new patro",
                 "new email", "new address", "new phone", "wrong",
                 "new password"
@@ -388,5 +392,6 @@ public class AccountServiceTest {
                 "vadim", "gush", "vadimovich", "coder", "vadim", "Iddqd225"
         );
     }
+
 
 }

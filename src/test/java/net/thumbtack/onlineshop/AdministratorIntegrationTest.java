@@ -3,6 +3,7 @@ package net.thumbtack.onlineshop;
 import com.fasterxml.jackson.databind.JsonNode;
 import net.thumbtack.onlineshop.dto.*;
 import net.thumbtack.onlineshop.service.ServerControlService;
+import net.thumbtack.onlineshop.utils.IntegrationUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -286,7 +287,7 @@ public class AdministratorIntegrationTest {
         // С помощью полученной сессии мы должны успешно выполнить какой-нибудь запрос
         session = utils.getSession(result);
 
-        utils.get("/api/clients", session ).andExpect(status().isOk());
+        utils.get("/api/clients", session).andExpect(status().isOk());
     }
 
     @Test
@@ -371,7 +372,7 @@ public class AdministratorIntegrationTest {
     @Test
     public void testEditAccountWithoutLogin() throws Exception {
 
-        AdminEditDto info = new AdminEditDto();
+        AdminDto info = new AdminDto();
         info.setFirstName("Денис");
         info.setLastName("Овчаров");
         info.setPatronymic("Владиславович");
@@ -391,7 +392,7 @@ public class AdministratorIntegrationTest {
 
         String session = registerAdmin();
 
-        AdminEditDto info = new AdminEditDto();
+        AdminDto info = new AdminDto();
         info.setFirstName("Денис");
         info.setLastName("Овчаров");
         info.setPatronymic("Владиславович");
@@ -420,7 +421,7 @@ public class AdministratorIntegrationTest {
 
         String session = registerAdmin();
 
-        AdminEditDto info = new AdminEditDto();
+        AdminDto info = new AdminDto();
         info.setFirstName("Денис");
         info.setLastName("Овчаров");
         info.setPatronymic("Владиславович");
@@ -450,7 +451,7 @@ public class AdministratorIntegrationTest {
 
         String session = registerAdmin();
 
-        AdminEditDto admin = new AdminEditDto();
+        AdminDto admin = new AdminDto();
         admin.setFirstName("");
         admin.setLastName("");
         admin.setPosition("");
@@ -476,7 +477,7 @@ public class AdministratorIntegrationTest {
 
         // Пытаемся зарегистрироваться с маленьким паролем
         // и слишком длинными именами
-        AdminEditDto admin = new AdminEditDto();
+        AdminDto admin = new AdminDto();
         admin.setFirstName("eewrewrjlewkjrewrklwerjew");
         admin.setLastName("eewrewrjlewkjrewrklwerjew");
         admin.setPatronymic("eewrewrjlewkjrewrklwerjew");
@@ -503,7 +504,7 @@ public class AdministratorIntegrationTest {
         String session = registerAdmin();
 
         // Имя не может состоять из английских букв, цифр и знаков препинания
-        AdminEditDto admin = new AdminEditDto();
+        AdminDto admin = new AdminDto();
         admin.setFirstName("Vadim");
         admin.setLastName("234234");
         admin.setPatronymic("Ar.- ");
@@ -663,7 +664,7 @@ public class AdministratorIntegrationTest {
     @Test
     public void testEditCategoryWithoutLogin() throws Exception {
 
-        CategoryEditDto info = new CategoryEditDto();
+        CategoryDto info = new CategoryDto();
         info.setName("ikea");
 
         // Редактирование категории без логина
@@ -679,7 +680,7 @@ public class AdministratorIntegrationTest {
 
         String session = registerAdmin();
 
-        CategoryEditDto info = new CategoryEditDto();
+        CategoryDto info = new CategoryDto();
         info.setName("ikea");
 
         // Редактирование категории, котороый нет в БД
@@ -701,7 +702,7 @@ public class AdministratorIntegrationTest {
         registerCategory(session, "msi", null);
         long apple = registerCategory(session, "apple", null);
 
-        CategoryEditDto info = new CategoryEditDto();
+        CategoryDto info = new CategoryDto();
         info.setName("msi");
 
         MvcResult result = utils.put("/api/categories/" + apple, session, info)
@@ -720,7 +721,7 @@ public class AdministratorIntegrationTest {
         String session = registerAdmin();
         long apple = registerCategory(session, "apple", null);
 
-        CategoryEditDto info = new CategoryEditDto();
+        CategoryDto info = new CategoryDto();
         info.setParentId(null);
         info.setName(null);
 
@@ -737,7 +738,7 @@ public class AdministratorIntegrationTest {
 
         String session = registerAdmin();
 
-        CategoryEditDto info = new CategoryEditDto();
+        CategoryDto info = new CategoryDto();
 
         // Регистрируем нормальную категорию
         long apple = registerCategory(session, "apple", null);
@@ -785,7 +786,7 @@ public class AdministratorIntegrationTest {
     /**
      * Проверяем что изменение категории не влияет на товары, которые принадлежат
      * этой самой категории
-     *
+     * <p>
      * А удалённая категория просто исчезает из списка категорий товара
      */
     @Test
@@ -797,7 +798,7 @@ public class AdministratorIntegrationTest {
 
         // Теперь изменяем информацию о категории
 
-        CategoryEditDto info = new CategoryEditDto();
+        CategoryDto info = new CategoryDto();
         info.setName("ikea");
 
         // Редактирование категории без логина
@@ -1047,14 +1048,14 @@ public class AdministratorIntegrationTest {
         // И с количеством по умолчанию ноль
         product.setCategories(null);
 
-        MvcResult result = utils.post("/api/products", session , product)
+        MvcResult result = utils.post("/api/products", session, product)
                 .andExpect(status().isOk())
                 .andReturn();
 
         JsonNode node = utils.read(result);
         assertNotNull(node.get("id"));
         assertEquals(product.getName(), node.get("name").asText());
-        assertEquals((long)product.getPrice(), node.get("price").asLong());
+        assertEquals((long) product.getPrice(), node.get("price").asLong());
         assertEquals(0L, node.get("count").asLong());
         assertNull(node.get("categories"));
 
@@ -1069,14 +1070,14 @@ public class AdministratorIntegrationTest {
         node = utils.read(result);
         assertNotNull(node.get("id"));
         assertEquals(product.getName(), node.get("name").asText());
-        assertEquals((long)product.getPrice(), node.get("price").asLong());
+        assertEquals((long) product.getPrice(), node.get("price").asLong());
         assertEquals(0L, node.get("count").asLong());
         assertEquals(category, node.get("categories").get(0).asLong());
     }
 
     @Test
     public void testEditProductWithoutLogin() throws Exception {
-        ProductEditDto product = new ProductEditDto();
+        ProductDto product = new ProductDto();
 
         // Изменение товара без логина
         MvcResult result = utils.put("/api/products/3", "erwe", product)
@@ -1092,7 +1093,7 @@ public class AdministratorIntegrationTest {
         String session = registerAdmin();
 
         // Изменение несуществующего товара
-        ProductEditDto product = new ProductEditDto();
+        ProductDto product = new ProductDto();
 
         MvcResult result = utils.put("/api/products/3", session, product)
                 .andExpect(status().isBadRequest())
@@ -1109,7 +1110,7 @@ public class AdministratorIntegrationTest {
         // Проверим что нельзя изменить с несуществующей категорией
         long product = registerProduct(session, "table", null);
 
-        ProductEditDto productEdit = new ProductEditDto();
+        ProductDto productEdit = new ProductDto();
         productEdit.setCategories(Collections.singletonList(-1L));
 
         MvcResult result = utils.put("/api/products/" + product, session, productEdit)
@@ -1125,7 +1126,7 @@ public class AdministratorIntegrationTest {
     public void testEditProduct() throws Exception {
 
         String session = registerAdmin();
-        ProductEditDto product = new ProductEditDto();
+        ProductDto product = new ProductDto();
 
         // Теперь создадим товар с категорией
         long category = registerCategory(session, "category", null);
@@ -1287,8 +1288,8 @@ public class AdministratorIntegrationTest {
         JsonNode node = utils.read(result);
         assertEquals(productId, node.get("id").asLong());
         assertEquals(newProduct.getName(), node.get("name").asText());
-        assertEquals((int)newProduct.getCount(), node.get("count").asInt());
-        assertEquals((int)newProduct.getPrice(), node.get("price").asInt());
+        assertEquals((int) newProduct.getCount(), node.get("count").asInt());
+        assertEquals((int) newProduct.getPrice(), node.get("price").asInt());
         assertEquals(1, node.get("categories").size());
         assertEquals(category, node.get("categories").get(0).asLong());
     }
@@ -1478,7 +1479,7 @@ public class AdministratorIntegrationTest {
 
         // Сортировка по именам категорий товаров, которые принадлежат категориям
         result = utils.get("/api/products?order=category&category=" + wat + "," + bat, session)
-            .andExpect(status().isOk())
+                .andExpect(status().isOk())
                 .andReturn();
 
         node = utils.read(result);
@@ -1507,7 +1508,7 @@ public class AdministratorIntegrationTest {
     private String registerAdmin() throws Exception {
         MvcResult result = utils.post("/api/admins", null, createAdmin())
                 .andExpect(status().isOk()).andReturn();
-        
+
         return utils.getSession(result);
     }
 

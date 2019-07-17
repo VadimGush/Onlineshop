@@ -2,13 +2,14 @@ package net.thumbtack.onlineshop.controller;
 
 import net.thumbtack.onlineshop.controller.validation.ValidationException;
 import net.thumbtack.onlineshop.dto.ProductDto;
-import net.thumbtack.onlineshop.dto.ProductEditDto;
+import net.thumbtack.onlineshop.dto.actions.Edit;
+import net.thumbtack.onlineshop.dto.actions.Register;
 import net.thumbtack.onlineshop.service.ProductService;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -25,7 +26,7 @@ public class ProductController {
     @ResponseStatus(HttpStatus.OK)
     public ProductDto addProduct(
             @CookieValue("JAVASESSIONID") String session,
-            @RequestBody @Valid ProductDto product,
+            @RequestBody @Validated(Register.class) ProductDto product,
             BindingResult result) throws Exception {
 
         if (result.hasErrors())
@@ -41,7 +42,7 @@ public class ProductController {
     @ResponseStatus(HttpStatus.OK)
     public ProductDto editProduct(
             @CookieValue("JAVASESSIONID") String session,
-            @RequestBody ProductEditDto product,
+            @RequestBody @Validated(Edit.class) ProductDto product,
             @PathVariable int id) throws Exception {
 
         return productService.edit(session, product, id);

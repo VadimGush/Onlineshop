@@ -1,10 +1,13 @@
 package net.thumbtack.onlineshop.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import net.thumbtack.onlineshop.controller.validation.OptionalNotBlank;
 import net.thumbtack.onlineshop.controller.validation.RequiredName;
 import net.thumbtack.onlineshop.database.models.Basket;
 import net.thumbtack.onlineshop.database.models.Product;
 import net.thumbtack.onlineshop.database.models.ProductCategory;
+import net.thumbtack.onlineshop.dto.actions.Edit;
+import net.thumbtack.onlineshop.dto.actions.Register;
 
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotNull;
@@ -15,10 +18,13 @@ import java.util.List;
 public class ProductDto {
 
     private Long id;
-    @RequiredName
+
+    @RequiredName(groups = Register.class)
+    @OptionalNotBlank(groups = Edit.class)
     private String name;
-    @NotNull
-    @DecimalMin("0")
+
+    @NotNull(groups = Register.class)
+    @DecimalMin(value = "0", groups = Register.class)
     private Integer price;
 
     private Integer count;
@@ -29,22 +35,26 @@ public class ProductDto {
 
     }
 
+    @Deprecated
     public ProductDto(String name, Integer price, Integer count) {
         this.name = name;
         this.price = price;
         this.count = count;
     }
 
+    @Deprecated
     public ProductDto(String name, Integer price, Integer count, List<Long> categories) {
         this(name, price, count);
         this.categories = categories;
     }
 
+    @Deprecated
     public ProductDto(Long id, String name, Integer price, Integer count) {
         this(name, price, count);
         this.id = id;
     }
 
+    @Deprecated
     public ProductDto(Long id, String name, Integer price, Integer count, List<Long> categories) {
         this(id, name, price, count);
         this.categories = categories;

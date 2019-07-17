@@ -2,9 +2,12 @@ package net.thumbtack.onlineshop.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import net.thumbtack.onlineshop.controller.validation.OptionalName;
+import net.thumbtack.onlineshop.controller.validation.Password;
 import net.thumbtack.onlineshop.controller.validation.Phone;
 import net.thumbtack.onlineshop.controller.validation.RequiredName;
 import net.thumbtack.onlineshop.database.models.Account;
+import net.thumbtack.onlineshop.dto.actions.Edit;
+import net.thumbtack.onlineshop.dto.actions.Register;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -14,18 +17,29 @@ public class ClientDto extends LoginDto {
 
     private Long id;
 
-    @RequiredName
+    @RequiredName(groups = { Register.class, Edit.class})
     private String firstName;
-    @RequiredName
+
+    @RequiredName(groups = { Register.class, Edit.class })
     private String lastName;
-    @OptionalName
+
+    @OptionalName(groups = { Register.class, Edit.class })
     private String patronymic;
-    @Email
+
+    @Email(groups = { Register.class, Edit.class })
     private String email;
-    @NotBlank
+
+    @NotBlank(groups = { Register.class, Edit.class })
     private String address;
-    @Phone
+
+    @Phone(groups = { Register.class, Edit.class })
     private String phone;
+
+    @NotBlank(groups = Edit.class)
+    private String oldPassword;
+
+    @Password(groups = Edit.class)
+    private String newPassword;
 
     public ClientDto() {
 
@@ -40,6 +54,22 @@ public class ClientDto extends LoginDto {
         this.email = account.getEmail();
         this.address = account.getAddress();
         this.phone = account.getPhone();
+    }
+
+    public String getOldPassword() {
+        return oldPassword;
+    }
+
+    public void setOldPassword(String oldPassword) {
+        this.oldPassword = oldPassword;
+    }
+
+    public String getNewPassword() {
+        return newPassword;
+    }
+
+    public void setNewPassword(String newPassword) {
+        this.newPassword = newPassword;
     }
 
     public Long getId() {

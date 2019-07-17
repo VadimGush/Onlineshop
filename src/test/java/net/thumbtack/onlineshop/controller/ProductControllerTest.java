@@ -2,7 +2,6 @@ package net.thumbtack.onlineshop.controller;
 
 import net.thumbtack.onlineshop.controller.validation.ValidationException;
 import net.thumbtack.onlineshop.dto.ProductDto;
-import net.thumbtack.onlineshop.dto.ProductEditDto;
 import net.thumbtack.onlineshop.service.ProductService;
 import org.junit.Before;
 import org.junit.Test;
@@ -69,7 +68,7 @@ public class ProductControllerTest {
     @Test
     public void testEditProduct() throws Exception {
 
-        ProductEditDto product = new ProductEditDto();
+        ProductDto product = new ProductDto();
         ProductDto expected = new ProductDto();
 
         when(mockResult.hasErrors()).thenReturn(false);

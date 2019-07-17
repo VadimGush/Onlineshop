@@ -2,52 +2,62 @@ package net.thumbtack.onlineshop.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import net.thumbtack.onlineshop.controller.validation.OptionalRussianName;
+import net.thumbtack.onlineshop.controller.validation.Password;
 import net.thumbtack.onlineshop.controller.validation.RequiredName;
 import net.thumbtack.onlineshop.controller.validation.RequiredRussianName;
 import net.thumbtack.onlineshop.database.models.Account;
+import net.thumbtack.onlineshop.dto.actions.Edit;
+import net.thumbtack.onlineshop.dto.actions.Register;
+
+import javax.validation.constraints.NotBlank;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AdminDto extends LoginDto {
 
     private Long id;
 
-    // @RequiredName
-    @RequiredRussianName
+    @RequiredRussianName(groups = { Register.class, Edit.class })
     private String firstName;
-    //@RequiredName
-    @RequiredRussianName
+
+    @RequiredRussianName(groups = { Register.class, Edit.class })
     private String lastName;
-    // @OptionalName
-    @OptionalRussianName
+
+    @OptionalRussianName(groups = { Register.class, Edit.class })
     private String patronymic;
-    @RequiredName
+
+    @RequiredName(groups = { Register.class, Edit.class })
     private String position;
+
+    @NotBlank(groups = Edit.class)
+    private String oldPassword;
+
+    @Password(groups = Edit.class)
+    private String newPassword;
 
     public AdminDto() {
 
     }
 
-    // Основной конструктор с обязательным полями
+    @Deprecated
     public AdminDto(String firstName, String lastName, String position) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.position = position;
     }
 
-    // Регистрация администратора без отчества
+    @Deprecated
     public AdminDto(String firstName, String lastName, String position, String login, String password) {
         this(firstName, lastName, position);
         this.setLogin(login);
         this.setPassword(password);
     }
 
-    // Регистрация администратора с отчеством
+    @Deprecated
     public AdminDto(String firstName, String lastName, String patronymic, String position, String login, String password) {
         this(firstName, lastName, position, login, password);
         this.patronymic = patronymic;
     }
 
-    // Создание объекта из энтити БД
     public AdminDto(Account account) {
         super(account.getLogin(), account.getPassword());
         this.id = account.getId();
@@ -55,6 +65,22 @@ public class AdminDto extends LoginDto {
         this.lastName = account.getLastName();
         this.patronymic = account.getPatronymic();
         this.position = account.getPosition();
+    }
+
+    public String getOldPassword() {
+        return oldPassword;
+    }
+
+    public void setOldPassword(String oldPassword) {
+        this.oldPassword = oldPassword;
+    }
+
+    public String getNewPassword() {
+        return newPassword;
+    }
+
+    public void setNewPassword(String newPassword) {
+        this.newPassword = newPassword;
     }
 
     public Long getId() {

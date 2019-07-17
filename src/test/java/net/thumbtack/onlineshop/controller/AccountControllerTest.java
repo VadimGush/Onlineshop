@@ -2,7 +2,10 @@ package net.thumbtack.onlineshop.controller;
 
 import net.thumbtack.onlineshop.controller.validation.ValidationException;
 import net.thumbtack.onlineshop.database.models.Account;
-import net.thumbtack.onlineshop.dto.*;
+import net.thumbtack.onlineshop.dto.AccountDto;
+import net.thumbtack.onlineshop.dto.AdminDto;
+import net.thumbtack.onlineshop.dto.ClientDto;
+import net.thumbtack.onlineshop.dto.LoginDto;
 import net.thumbtack.onlineshop.service.AccountService;
 import org.junit.Before;
 import org.junit.Test;
@@ -125,7 +128,7 @@ public class AccountControllerTest {
     @Test
     public void testEditClient() throws Exception {
 
-        ClientEditDto client = new ClientEditDto();
+        ClientDto client = new ClientDto();
         AccountDto expected = new AccountDto();
 
         when(mockResult.hasErrors()).thenReturn(false);
@@ -140,13 +143,13 @@ public class AccountControllerTest {
     @Test(expected = ValidationException.class)
     public void testEditClientValidation() throws Exception {
 
-        ClientEditDto client = new ClientEditDto();
+        ClientDto client = new ClientDto();
         when(mockResult.hasErrors()).thenReturn(true);
 
         try {
             accountController.editClient("token", client, mockResult);
         } catch (ValidationException e) {
-            verify(mockAccountService, never()).edit(any(), any(ClientEditDto.class));
+            verify(mockAccountService, never()).edit(any(), any(ClientDto.class));
             throw e;
         }
 
@@ -155,7 +158,7 @@ public class AccountControllerTest {
     @Test
     public void testEditAdmin() throws Exception {
 
-        AdminEditDto admin = new AdminEditDto();
+        AdminDto admin = new AdminDto();
         AccountDto expected = new AccountDto();
 
         when(mockResult.hasErrors()).thenReturn(false);
@@ -170,13 +173,13 @@ public class AccountControllerTest {
     @Test(expected = ValidationException.class)
     public void testEditAdminValidation() throws Exception {
 
-        AdminEditDto admin = new AdminEditDto();
+        AdminDto admin = new AdminDto();
         when(mockResult.hasErrors()).thenReturn(true);
 
         try {
             accountController.editAdmin("token", admin, mockResult);
         } catch (ValidationException e) {
-            verify(mockAccountService, never()).edit(any(), any(AdminEditDto.class));
+            verify(mockAccountService, never()).edit(any(), any(AdminDto.class));
             throw e;
         }
 

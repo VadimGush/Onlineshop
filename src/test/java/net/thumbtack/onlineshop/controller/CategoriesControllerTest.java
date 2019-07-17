@@ -2,7 +2,6 @@ package net.thumbtack.onlineshop.controller;
 
 import net.thumbtack.onlineshop.controller.validation.ValidationException;
 import net.thumbtack.onlineshop.dto.CategoryDto;
-import net.thumbtack.onlineshop.dto.CategoryEditDto;
 import net.thumbtack.onlineshop.service.CategoriesService;
 import org.junit.Before;
 import org.junit.Test;
@@ -78,7 +77,7 @@ public class CategoriesControllerTest {
     @Test
     public void testEditCategory() throws Exception {
 
-        CategoryEditDto category = new CategoryEditDto();
+        CategoryDto category = new CategoryDto();
         CategoryDto expected = new CategoryDto();
 
         when(mockCategoriesService.editCategory("token", category, 0))

@@ -16,6 +16,10 @@ public class DepositDto {
 
     }
 
+    public DepositDto(Integer deposit) {
+        this.deposit = deposit;
+    }
+
     public Integer getDeposit() {
         return deposit;
     }

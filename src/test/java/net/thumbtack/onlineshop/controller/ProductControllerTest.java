@@ -74,7 +74,7 @@ public class ProductControllerTest {
         when(mockResult.hasErrors()).thenReturn(false);
         when(mockProductService.edit("token", product, 0)).thenReturn(expected);
 
-        ProductDto result = controller.editProduct("token", product, 0);
+        ProductDto result = controller.editProduct("token", product, mockResult, 0);
 
         assertEquals(expected, result);
         verify(mockProductService).edit("token", product, 0);

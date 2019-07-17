@@ -33,12 +33,12 @@ public class ErrorDto {
         private String field;
         private String message;
 
-        public Error(String errorCode, String field, String message) {
+        Error(String errorCode, String field, String message) {
             this(errorCode, message);
             this.field = field;
         }
 
-        public Error(String errorCode, String message) {
+        Error(String errorCode, String message) {
             this.errorCode = errorCode;
             this.message = message;
         }

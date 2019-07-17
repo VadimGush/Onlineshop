@@ -204,7 +204,8 @@ public class AdministratorIntegrationTest {
         admin.setPatronymic(null);
 
         MvcResult result = utils.post("/api/admins", null, admin)
-                .andExpect(status().isOk()).andReturn();
+                .andExpect(status().isOk())
+                .andReturn();
 
         assertNotNull(result.getResponse().getCookie("JAVASESSIONID"));
 
@@ -226,7 +227,8 @@ public class AdministratorIntegrationTest {
         // Неверный пароль
         LoginDto login = new LoginDto("vadim", "werew8778");
         MvcResult result = utils.post("/api/sessions", null, login)
-                .andExpect(status().isBadRequest()).andReturn();
+                .andExpect(status().isBadRequest())
+                .andReturn();
 
         utils.assertErrorsCodes(result, Collections.singletonList("UserNotFound"));
 
@@ -238,9 +240,23 @@ public class AdministratorIntegrationTest {
         LoginDto login = new LoginDto("vadi", "Iddqd225");
 
         MvcResult result = utils.post("/api/sessions", null, login)
-                .andExpect(status().isBadRequest()).andReturn();
+                .andExpect(status().isBadRequest())
+                .andReturn();
 
         utils.assertErrorsCodes(result, Collections.singletonList("UserNotFound"));
+    }
+
+    @Test
+    public void testLoginWithEmptyFields() throws Exception {
+
+        MvcResult result = utils.post("/api/sessions", null, new LoginDto())
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrors(result, Arrays.asList(
+                Pair.of("Login", "login"),
+                Pair.of("Password", "password")
+        ));
     }
 
     @Test
@@ -309,11 +325,16 @@ public class AdministratorIntegrationTest {
         assertNull(node.get("login"));
         assertNull(node.get("password"));
 
+    }
+
+    @Test
+    public void testGetAccountWithoutLogin() throws Exception {
         // Проверяем что с неверной сессией мы данные не получим
-        result = utils.get("/api/accounts", "erew")
+        MvcResult result = utils.get("/api/accounts", "erew")
                 .andExpect(status().isBadRequest()).andReturn();
 
         utils.assertErrorsCodes(result, Collections.singletonList("NotLogin"));
+
     }
 
     @Test
@@ -995,12 +1016,13 @@ public class AdministratorIntegrationTest {
     }
 
     @Test
-    public void testAddProductWithNegativePrice() throws Exception {
+    public void testAddProductWithNegativePriceAndCount() throws Exception {
         String session = registerAdmin();
 
         // Проверяем что нельзя добавить отрицательную цену
         ProductDto product = new ProductDto();
         product.setPrice(-1);
+        product.setCount(-1);
 
         MvcResult result = utils.post("/api/products", session, product)
                 .andExpect(status().isBadRequest())
@@ -1008,7 +1030,8 @@ public class AdministratorIntegrationTest {
 
         utils.assertErrors(result, Arrays.asList(
                 Pair.of("DecimalMin", "price"),
-                Pair.of("RequiredName", "name")
+                Pair.of("RequiredName", "name"),
+                Pair.of("DecimalMin", "count")
         ));
     }
 
@@ -1103,6 +1126,25 @@ public class AdministratorIntegrationTest {
     }
 
     @Test
+    public void testEditProductWithNegativeCountAndPrice() throws Exception {
+
+        String session = registerAdmin();
+
+        ProductDto product = new ProductDto();
+        product.setPrice(-1);
+        product.setCount(-1);
+
+        MvcResult result = utils.put("/api/products/3", session, product)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrors(result, Arrays.asList(
+                Pair.of("DecimalMin", "price"),
+                Pair.of("DecimalMin", "count")
+        ));
+    }
+
+    @Test
     public void testEditProductCategoryNotFound() throws Exception {
 
         String session = registerAdmin();
@@ -1116,6 +1158,7 @@ public class AdministratorIntegrationTest {
         MvcResult result = utils.put("/api/products/" + product, session, productEdit)
                 .andExpect(status().isBadRequest())
                 .andReturn();
+
         utils.assertError(result, Pair.of("CategoryNotFound", "categories"));
     }
 

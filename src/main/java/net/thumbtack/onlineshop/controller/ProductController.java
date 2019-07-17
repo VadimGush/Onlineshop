@@ -43,7 +43,11 @@ public class ProductController {
     public ProductDto editProduct(
             @CookieValue("JAVASESSIONID") String session,
             @RequestBody @Validated(Edit.class) ProductDto product,
+            BindingResult result,
             @PathVariable int id) throws Exception {
+
+        if (result.hasErrors())
+            throw new ValidationException(result);
 
         return productService.edit(session, product, id);
     }

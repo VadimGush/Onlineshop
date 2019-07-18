@@ -1,13 +1,12 @@
 package net.thumbtack.onlineshop.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import net.thumbtack.onlineshop.controller.validation.OptionalNotBlank;
-import net.thumbtack.onlineshop.controller.validation.RequiredName;
 import net.thumbtack.onlineshop.database.models.Basket;
 import net.thumbtack.onlineshop.database.models.Product;
 import net.thumbtack.onlineshop.database.models.ProductCategory;
 import net.thumbtack.onlineshop.dto.actions.Edit;
 import net.thumbtack.onlineshop.dto.actions.Register;
+import net.thumbtack.onlineshop.dto.validation.RequiredName;
 
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotNull;
@@ -20,7 +19,6 @@ public class ProductDto {
     private Long id;
 
     @RequiredName(groups = Register.class)
-    @OptionalNotBlank(groups = Edit.class)
     private String name;
 
     @NotNull(groups = Register.class)

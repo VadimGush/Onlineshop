@@ -15,8 +15,9 @@ public class GeneralService {
     Account getAdmin(String sessionId) throws ServiceException {
         Account account = getAccount(sessionId);
 
-        if (!account.isAdmin())
+        if (!account.isAdmin()) {
             throw new ServiceException(ServiceException.ErrorCode.NOT_ADMIN);
+        }
 
         return account;
     }
@@ -24,8 +25,9 @@ public class GeneralService {
     Account getClient(String sessionId) throws ServiceException {
         Account account = getAccount(sessionId);
 
-        if (account.isAdmin())
+        if (account.isAdmin()) {
             throw new ServiceException(ServiceException.ErrorCode.NOT_CLIENT);
+        }
 
         return account;
     }
@@ -33,8 +35,9 @@ public class GeneralService {
     public Account getAccount(String sessionId) throws ServiceException {
         Session session = sessionDao.get(sessionId);
 
-        if (session == null)
+        if (session == null) {
             throw new ServiceException(ServiceException.ErrorCode.NOT_LOGIN);
+        }
 
         return session.getAccount();
     }

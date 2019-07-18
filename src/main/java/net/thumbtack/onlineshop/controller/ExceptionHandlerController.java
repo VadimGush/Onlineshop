@@ -1,7 +1,7 @@
 package net.thumbtack.onlineshop.controller;
 
-import net.thumbtack.onlineshop.controller.validation.ValidationException;
 import net.thumbtack.onlineshop.dto.ErrorDto;
+import net.thumbtack.onlineshop.dto.validation.ValidationException;
 import net.thumbtack.onlineshop.service.ServiceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
@@ -29,8 +29,11 @@ public class ExceptionHandlerController {
     @ResponseBody
     public ErrorDto handleValidationException(ValidationException exception) {
         ErrorDto errors = new ErrorDto();
-        for (FieldError e : exception.getErrors().getFieldErrors())
+
+        for (FieldError e : exception.getErrors().getFieldErrors()) {
             errors.addError(e.getCode(), e.getField(), e.getDefaultMessage());
+        }
+
         return errors;
     }
 

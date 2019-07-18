@@ -59,6 +59,7 @@ public class AccountDao implements Dao {
         criteria.where(builder.equal(from.get("login"), login));
 
         TypedQuery<Long> typed = manager.createQuery(criteria);
+
         return typed.getSingleResult() != 0;
     }
 

@@ -1,9 +1,9 @@
 package net.thumbtack.onlineshop.controller;
 
-import net.thumbtack.onlineshop.controller.validation.ValidationException;
 import net.thumbtack.onlineshop.dto.CategoryDto;
 import net.thumbtack.onlineshop.dto.actions.Edit;
 import net.thumbtack.onlineshop.dto.actions.Register;
+import net.thumbtack.onlineshop.dto.validation.ValidationException;
 import net.thumbtack.onlineshop.service.CategoriesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,8 +31,9 @@ public class CategoriesController {
             @RequestBody @Validated(Register.class) CategoryDto category,
             BindingResult result) throws Exception {
 
-        if (result.hasErrors())
+        if (result.hasErrors()) {
             throw new ValidationException(result);
+        }
 
         return categoryService.addCategory(session, category);
     }

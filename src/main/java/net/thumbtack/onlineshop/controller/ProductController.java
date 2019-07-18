@@ -1,9 +1,9 @@
 package net.thumbtack.onlineshop.controller;
 
-import net.thumbtack.onlineshop.controller.validation.ValidationException;
 import net.thumbtack.onlineshop.dto.ProductDto;
 import net.thumbtack.onlineshop.dto.actions.Edit;
 import net.thumbtack.onlineshop.dto.actions.Register;
+import net.thumbtack.onlineshop.dto.validation.ValidationException;
 import net.thumbtack.onlineshop.service.ProductService;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
@@ -29,11 +29,13 @@ public class ProductController {
             @RequestBody @Validated(Register.class) ProductDto product,
             BindingResult result) throws Exception {
 
-        if (result.hasErrors())
+        if (result.hasErrors()) {
             throw new ValidationException(result);
+        }
 
-        if (product.getCount() == null)
+        if (product.getCount() == null) {
             product.setCount(0);
+        }
 
         return productService.add(session, product);
     }
@@ -46,8 +48,9 @@ public class ProductController {
             BindingResult result,
             @PathVariable int id) throws Exception {
 
-        if (result.hasErrors())
+        if (result.hasErrors()) {
             throw new ValidationException(result);
+        }
 
         return productService.edit(session, product, id);
     }
@@ -81,8 +84,9 @@ public class ProductController {
 
         ProductService.SortOrder order = ProductService.SortOrder.PRODUCT;
 
-        if (orderString != null && orderString.equals("category"))
+        if (orderString != null && orderString.equals("category")) {
             order = ProductService.SortOrder.CATEGORY;
+        }
 
         return productService.getAll(session, categories, order);
     }

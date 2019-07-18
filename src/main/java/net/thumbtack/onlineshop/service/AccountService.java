@@ -30,13 +30,17 @@ public class AccountService extends GeneralService {
 
     /**
      * Регистрирует нового клиента
+     *
      * @param client информация о клиенте
      * @return созданный аккаунт клиента
      */
     public Account register(ClientDto client) throws ServiceException {
 
-        if (accountDao.exists(client.getLogin()))
+        if (accountDao.exists(client.getLogin())) {
             throw new ServiceException(ServiceException.ErrorCode.LOGIN_ALREADY_IN_USE, "login");
+        }
+
+        client.setPhone(client.getPhone().replaceAll("-", ""));
 
         Account registeredClient = AccountFactory.createClient(
                 client.getFirstName(),
@@ -59,11 +63,17 @@ public class AccountService extends GeneralService {
      */
     public Account register(AdminDto admin) throws ServiceException {
 
-        if (accountDao.exists(admin.getLogin()))
+        if (accountDao.exists(admin.getLogin())) {
             throw new ServiceException(ServiceException.ErrorCode.LOGIN_ALREADY_IN_USE, "login");
+        }
 
         Account registeredAdmin = AccountFactory.createAdmin(
-                admin.getFirstName(), admin.getLastName(), admin.getPatronymic(), admin.getPosition(), admin.getLogin(), admin.getPassword()
+                admin.getFirstName(),
+                admin.getLastName(),
+                admin.getPatronymic(),
+                admin.getPosition(),
+                admin.getLogin(),
+                admin.getPassword()
         );
         accountDao.insert(registeredAdmin);
         return registeredAdmin;
@@ -71,16 +81,18 @@ public class AccountService extends GeneralService {
 
     /**
      * Изменяет информацию о клиенте
+     *
      * @param sessionId сессия клиента
-     * @param client новая инфа клиента
+     * @param client    новая инфа клиента
      * @return аккаунт изменённого клиента
      */
     public AccountDto edit(String sessionId, ClientDto client) throws ServiceException {
 
         Account account = getClient(sessionId);
 
-        if (!account.getPassword().equals(client.getOldPassword()))
+        if (!account.getPassword().equals(client.getOldPassword())) {
             throw new ServiceException(ServiceException.ErrorCode.WRONG_PASSWORD, "oldPassword");
+        }
 
         account.setFirstName(client.getFirstName());
         account.setLastName(client.getLastName());
@@ -97,15 +109,16 @@ public class AccountService extends GeneralService {
 
     /**
      * @param sessionId сессия администратора
-     * @param admin запрос с изменёнными данными
+     * @param admin     запрос с изменёнными данными
      * @return аккаунт изменённого администратора
      */
     public AccountDto edit(String sessionId, AdminDto admin) throws ServiceException {
 
         Account account = getAdmin(sessionId);
 
-        if (!account.getPassword().equals(admin.getOldPassword()))
+        if (!account.getPassword().equals(admin.getOldPassword())) {
             throw new ServiceException(ServiceException.ErrorCode.WRONG_PASSWORD, "oldPassword");
+        }
 
         account.setFirstName(admin.getFirstName());
         account.setLastName(admin.getLastName());
@@ -135,14 +148,17 @@ public class AccountService extends GeneralService {
 
     /**
      * Проводит авторизацию пользователя по логину и паролю
-     * @param login пароль пользователя
+     *
+     * @param login    пароль пользователя
      * @param password логин пользователя
      * @return идентификатор новой сессии
      */
     public String login(String login, String password) throws ServiceException {
         Account account = accountDao.get(login, password);
-        if (account == null)
+
+        if (account == null) {
             throw new ServiceException(ServiceException.ErrorCode.USER_NOT_FOUND);
+        }
 
         Session session = new Session(UUID.randomUUID().toString(), account);
         sessionDao.insert(session);
@@ -151,27 +167,31 @@ public class AccountService extends GeneralService {
 
     /**
      * Получает информацию об аккаунте по его сессии
+     *
      * @param sessionId сессия пользователя
      * @return аккаунт пользователя из БД
      */
     public AccountDto get(String sessionId) throws ServiceException {
         Session session = sessionDao.get(sessionId);
 
-        if (session == null)
+        if (session == null) {
             throw new ServiceException(ServiceException.ErrorCode.NOT_LOGIN);
+        }
 
         return new AccountDto(session.getAccount());
     }
 
     /**
      * Удаляет сессию из БД
+     *
      * @param sessionId сессия пользователя
      */
     public void logout(String sessionId) {
         Session session = sessionDao.get(sessionId);
 
-        if (session != null)
+        if (session != null) {
             sessionDao.delete(session);
+        }
     }
 
 }

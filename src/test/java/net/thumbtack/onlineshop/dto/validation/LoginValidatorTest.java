@@ -1,4 +1,4 @@
-package net.thumbtack.onlineshop.controller.validation;
+package net.thumbtack.onlineshop.dto.validation;
 
 import org.junit.Before;
 import org.junit.Test;

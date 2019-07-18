@@ -1,4 +1,4 @@
-package net.thumbtack.onlineshop.controller.validation;
+package net.thumbtack.onlineshop.dto.validation;
 
 import javax.validation.ConstraintValidatorContext;
 

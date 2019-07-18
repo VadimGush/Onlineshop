@@ -1,4 +1,4 @@
-package net.thumbtack.onlineshop.controller.validation;
+package net.thumbtack.onlineshop.dto.validation;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -14,9 +14,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class RequiredNameValidatorTest {
+public class OptionalNameValidatorTest {
 
-    private RequiredNameValidator validator;
+    private OptionalNameValidator validator;
 
     @Mock
     private ConstraintValidatorContext mockContext;
@@ -25,26 +25,17 @@ public class RequiredNameValidatorTest {
     public void setUpClass() {
         MockitoAnnotations.initMocks(this);
 
-        ConstraintValidatorContext.ConstraintViolationBuilder mockBuilder = mock(ConstraintValidatorContext.ConstraintViolationBuilder.class);
+        ConstraintValidatorContext.ConstraintViolationBuilder mockBuilder =
+                mock(ConstraintValidatorContext.ConstraintViolationBuilder.class);
         when(mockContext.buildConstraintViolationWithTemplate(any()))
                 .thenReturn(mockBuilder);
 
-        validator = new RequiredNameValidator();
+        validator = new OptionalNameValidator();
         ReflectionTestUtils.setField(
                 validator,
                 "maxNameLength",
                 10
         );
-    }
-
-
-    @Test
-    public void testEmpty() {
-
-        assertFalse(validator.isValid("", mockContext));
-
-        assertFalse(validator.isValid(null, mockContext));
-
     }
 
     @Test
@@ -55,7 +46,10 @@ public class RequiredNameValidatorTest {
 
         assertTrue(validator.isValid("привет мир", mockContext));
 
+        assertFalse(validator.isValid("", mockContext));
+
         assertTrue(validator.isValid("      ", mockContext));
 
+        assertTrue(validator.isValid(null, mockContext));
     }
 }

@@ -112,8 +112,9 @@ public class ProductDao implements Dao {
 
         Query query = manager.createNativeQuery(
                 "select a.* from product a left join productcategory b on" +
-                        " a.id = b.product_id where b.category_id is NULL and deleted = 0"
-        , Product.class);
+                        " a.id = b.product_id where b.category_id is NULL and deleted = 0",
+                Product.class);
+
         return query.getResultList();
     }
 

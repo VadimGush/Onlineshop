@@ -40,8 +40,9 @@ public class ServerController {
     @PostMapping("debug/clear")
     @ResponseStatus(HttpStatus.OK)
     public String clearDatabase() {
-        if (debug)
+        if (debug) {
             serverControl.clear();
+        }
         return "{}";
     }
 

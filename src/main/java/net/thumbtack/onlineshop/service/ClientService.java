@@ -60,11 +60,13 @@ public class ClientService extends GeneralService {
 
         checkProducts(product, buyProduct);
 
-        if (buyProduct.getCount() > product.getCount())
+        if (buyProduct.getCount() > product.getCount()) {
             throw new ServiceException(ServiceException.ErrorCode.NOT_ENOUGH_PRODUCT, "count");
+        }
 
-        if (buyProduct.getCount() * buyProduct.getPrice() > account.getDeposit())
+        if (buyProduct.getCount() * buyProduct.getPrice() > account.getDeposit()) {
             throw new ServiceException(ServiceException.ErrorCode.NOT_ENOUGH_MONEY);
+        }
 
         product.setCount(product.getCount() - buyProduct.getCount());
         productDao.update(product);
@@ -116,6 +118,7 @@ public class ClientService extends GeneralService {
 
         List<ProductDto> result = new ArrayList<>();
         basketDao.get(account).forEach(b -> result.add(new ProductDto(b)));
+
         return result;
     }
 
@@ -129,8 +132,9 @@ public class ClientService extends GeneralService {
         Account account = getClient(sessionId);
         Basket basket = basketDao.get(account, productId);
 
-        if (basket == null)
+        if (basket == null) {
             throw new ServiceException(ServiceException.ErrorCode.PRODUCT_NOT_FOUND);
+        }
 
         basketDao.delete(basket);
 
@@ -147,8 +151,9 @@ public class ClientService extends GeneralService {
         Account account = getClient(sessionId);
         Basket basket = basketDao.get(account, product.getId());
 
-        if (basket == null)
+        if (basket == null) {
             throw new ServiceException(ServiceException.ErrorCode.PRODUCT_NOT_FOUND, "id");
+        }
 
         checkProducts(basket.getProduct(), product);
         basket.setCount(product.getCount());
@@ -156,6 +161,7 @@ public class ClientService extends GeneralService {
 
         List<ProductDto> result = new ArrayList<>();
         basketDao.get(account).forEach(b -> result.add(new ProductDto(b)));
+
         return result;
     }
 
@@ -170,6 +176,7 @@ public class ClientService extends GeneralService {
 
         List<ProductDto> result = new ArrayList<>();
         basketDao.get(account).forEach(b -> result.add(new ProductDto(b)));
+
         return result;
     }
 
@@ -198,8 +205,9 @@ public class ClientService extends GeneralService {
             sum += product.getCount() * product.getPrice();
         }
 
-        if (sum > account.getDeposit())
+        if (sum > account.getDeposit()) {
             throw new ServiceException(ServiceException.ErrorCode.NOT_ENOUGH_MONEY);
+        }
 
         // Начинаем покупать товары
 
@@ -218,10 +226,11 @@ public class ClientService extends GeneralService {
             // Или совсем из корзины
             Basket basketEntity = basketDao.get(account, product.getId());
             basketEntity.setCount(basketEntity.getCount() - product.getCount());
-            if (basketEntity.getCount() == 0)
+            if (basketEntity.getCount() == 0) {
                 basketDao.delete(basketEntity);
-            else
+            } else {
                 basketDao.update(basketEntity);
+            }
 
         }
 
@@ -268,8 +277,9 @@ public class ClientService extends GeneralService {
 
             // Если количество не указано, то берём количество из корзины
             // так же если количество больше чем в корзине
-            if (product.getCount() == null || product.getCount() > basketEntity.getCount())
+            if (product.getCount() == null || product.getCount() > basketEntity.getCount()) {
                 product.setCount(basketEntity.getCount());
+            }
 
             // Если количество товара на складе меньше чем мы хотим купить,
             // то опять выкидываем из списка покупок
@@ -279,8 +289,9 @@ public class ClientService extends GeneralService {
             }
 
             // Если товар удалён из БД
-            if (basketEntity.getProduct().getDeleted())
+            if (basketEntity.getProduct().getDeleted()) {
                 toBuy.remove(product);
+            }
         }
 
     }
@@ -292,14 +303,17 @@ public class ClientService extends GeneralService {
      * @throws ServiceException если данные о товарах не совпадают
      */
     private void checkProducts(Product product, ProductDto buyProduct) throws ServiceException {
-        if (product == null)
+        if (product == null) {
             throw new ServiceException(ServiceException.ErrorCode.PRODUCT_NOT_FOUND, "id");
+        }
 
-        if (!product.getName().equals(buyProduct.getName()))
+        if (!product.getName().equals(buyProduct.getName())) {
             throw new ServiceException(ServiceException.ErrorCode.WRONG_PRODUCT_INFO, "name");
+        }
 
-        if (!product.getPrice().equals(buyProduct.getPrice()))
+        if (!product.getPrice().equals(buyProduct.getPrice())) {
             throw new ServiceException(ServiceException.ErrorCode.WRONG_PRODUCT_INFO, "price");
+        }
     }
 
 }

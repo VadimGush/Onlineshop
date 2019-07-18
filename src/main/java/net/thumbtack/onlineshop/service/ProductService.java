@@ -54,8 +54,9 @@ public class ProductService extends GeneralService {
 
             for (long categoryId : categories) {
                 Category category = categoryDao.get(categoryId);
-                if (category == null)
+                if (category == null) {
                     throw new ServiceException(ServiceException.ErrorCode.CATEGORY_NOT_FOUND, "categories");
+                }
                 newCategories.add(category);
             }
 
@@ -63,8 +64,9 @@ public class ProductService extends GeneralService {
             productDao.insert(product);
 
             // Добавляем новые категории
-            for (Category category : newCategories)
+            for (Category category : newCategories) {
                 productDao.insertCategory(new ProductCategory(product, category));
+            }
 
         } else {
             productDao.insert(product);
@@ -85,17 +87,21 @@ public class ProductService extends GeneralService {
 
         Product product = productDao.get(productId);
 
-        if (product == null)
+        if (product == null) {
             throw new ServiceException(ServiceException.ErrorCode.PRODUCT_NOT_FOUND, "id");
+        }
 
-        if (productDto.getName() != null)
+        if (productDto.getName() != null && !productDto.getName().isEmpty()) {
             product.setName(productDto.getName());
+        }
 
-        if (productDto.getCount() != null)
+        if (productDto.getCount() != null) {
             product.setCount(productDto.getCount());
+        }
 
-        if (productDto.getPrice() != null)
+        if (productDto.getPrice() != null) {
             product.setPrice(productDto.getPrice());
+        }
 
         if (productDto.getCategories() != null) {
 
@@ -111,19 +117,23 @@ public class ProductService extends GeneralService {
             // Добавляем новые категории
             for (long categoryId : categories) {
                 Category category = categoryDao.get(categoryId);
-                if (category == null)
+
+                if (category == null) {
                     throw new ServiceException(ServiceException.ErrorCode.CATEGORY_NOT_FOUND, "categories");
+                }
 
                 newCategories.add(new ProductCategory(product, category));
             }
 
             // Если никаких ошибок не было, то удаляем старые
-            for (ProductCategory category : oldCategories)
+            for (ProductCategory category : oldCategories) {
                 productDao.deleteCategory(category);
+            }
 
             // И добавляем новые
-            for (ProductCategory category : newCategories)
+            for (ProductCategory category : newCategories) {
                 productDao.insertCategory(category);
+            }
 
         }
 
@@ -144,13 +154,16 @@ public class ProductService extends GeneralService {
 
         Product product = productDao.get(id);
 
-        if (product == null)
+        if (product == null) {
             throw new ServiceException(ServiceException.ErrorCode.PRODUCT_NOT_FOUND);
+        }
 
         // Удаляем категории товара из БД
         List<ProductCategory> categories = productDao.getCategories(id);
-        for (ProductCategory category : categories)
+
+        for (ProductCategory category : categories) {
             productDao.deleteCategory(category);
+        }
 
         // Удаляем в конце товар
         productDao.delete(product);
@@ -167,8 +180,9 @@ public class ProductService extends GeneralService {
 
         Product product = productDao.get(id);
 
-        if (product == null)
+        if (product == null) {
             throw new ServiceException(ServiceException.ErrorCode.PRODUCT_NOT_FOUND);
+        }
 
         return new ProductDto(product, productDao.getCategories(product.getId()));
     }
@@ -194,21 +208,22 @@ public class ProductService extends GeneralService {
         for (ProductCategory pc : result) {
 
             // Если категории нет, то получаем полный список
-            if (pc.getCategory() == null)
+            if (pc.getCategory() == null) {
                 response.add(
                         new ProductDto(
                                 pc.getProduct(),
                                 productDao.getCategories(pc.getProduct().getId())
                         )
                 );
-            // Если категория есть, то только её и вставляем в конечный объект
-            else
+            } else {
+                // Если категория есть, то только её и вставляем в конечный объект
                 response.add(
                         new ProductDto(
                                 pc.getProduct(),
                                 Collections.singletonList(pc)
                         )
                 );
+            }
 
         }
 
@@ -228,7 +243,6 @@ public class ProductService extends GeneralService {
         if (order == null || order == SortOrder.PRODUCT) {
             // Сортировка товаров по именам
             return  getAllProductsSortedByName(categories);
-
         } else {
             // Получаем все товары отсортированные по именам категорий
             return  getAllProductsCategorySorted(categories);
@@ -273,9 +287,11 @@ public class ProductService extends GeneralService {
             // Получаем список товаров с категориями
             List<ProductCategory> products = productDao.getAllWithCategory();
             for (long category : categories) {
-                for (ProductCategory product : products)
-                    if (product.getCategory().getId() == category)
+                for (ProductCategory product : products) {
+                    if (product.getCategory().getId() == category) {
                         result.add(product);
+                    }
+                }
             }
 
             // Теперь сортируем по именам категорий
@@ -319,8 +335,9 @@ public class ProductService extends GeneralService {
 
             for (long category : categories) {
                 for (ProductCategory product : products) {
-                    if (product.getCategory().getId() == category)
+                    if (product.getCategory().getId() == category) {
                         resultSet.add(product.getProduct());
+                    }
                 }
             }
 
@@ -343,6 +360,7 @@ public class ProductService extends GeneralService {
         // Все товары без категорий
         List<Product> products = productDao.getAllWithoutCategory();
         products.forEach((p) -> result.add(new ProductCategory(p, null)));
+
         // Сортируем по именам товаров
         result.sort(Comparator.comparing((ProductCategory left) -> left.getProduct().getName()));
 

@@ -51,7 +51,7 @@ public class AdministratorIntegrationTest {
     public void testRegistration() throws Exception {
 
         // Регистриуем администратора
-        AdminDto admin = createAdmin();
+        AdminDto admin = utils.getDefaultAdmin();
 
         MvcResult result = utils.post("/api/admins", null, admin)
                 .andExpect(status().isOk())
@@ -74,10 +74,10 @@ public class AdministratorIntegrationTest {
     public void testRegistrationWithSameLogin() throws Exception {
 
         // Регистрация будет с логином "Vadim"
-        registerAdmin();
+        utils.register(utils.getDefaultAdmin());
 
         // Логин не чувствителен к регистру, поэтому регистрация не пройдёт
-        AdminDto admin = createAdmin();
+        AdminDto admin = utils.getDefaultAdmin();
         admin.setLogin("vadim");
 
         MvcResult result = utils.post("/api/admins", null, admin)
@@ -95,7 +95,7 @@ public class AdministratorIntegrationTest {
 
         // Пытаемся зарегистрироваться с маленьким паролем
         // и слишком длинными именами
-        AdminDto admin = createAdmin();
+        AdminDto admin = utils.getDefaultAdmin();
         admin.setFirstName("eewrewrjlewkjrewrklwerjew");
         admin.setLastName("eewrewrjlewkjrewrklwerjew");
         admin.setPatronymic("eewrewrjlewkjrewrklwerjew");
@@ -124,7 +124,7 @@ public class AdministratorIntegrationTest {
 
         // Имя не может состоять из английских букв, цифр и знаков препинания
 
-        AdminDto admin = createAdmin();
+        AdminDto admin = utils.getDefaultAdmin();
         admin.setFirstName("Vadim");
         admin.setLastName("234234");
         admin.setPatronymic("Ar.- ");
@@ -152,7 +152,7 @@ public class AdministratorIntegrationTest {
 
         // Пытаемся зарегаться с пустыми полями
 
-        AdminDto admin = createAdmin();
+        AdminDto admin = utils.getDefaultAdmin();
         admin.setFirstName("");
         admin.setLastName("");
         admin.setLogin("");
@@ -178,7 +178,7 @@ public class AdministratorIntegrationTest {
     public void testFailedRegistrationWrongLoginFormat() throws Exception {
 
         // Логин не может содержать в себе знаки препинания или пробелы
-        AdminDto admin = createAdmin();
+        AdminDto admin = utils.getDefaultAdmin();
         admin.setLogin("vadim.");
 
         MvcResult result = utils.post("/api/admins", null, admin)
@@ -186,7 +186,7 @@ public class AdministratorIntegrationTest {
                 .andReturn();
         utils.assertError(result, Pair.of("Login", "login"));
 
-        admin = createAdmin();
+        admin = utils.getDefaultAdmin();
         admin.setLogin("vad im");
 
         result = utils.post("/api/admins", null, admin)
@@ -200,7 +200,7 @@ public class AdministratorIntegrationTest {
     public void testRegistrationWithoutPatronymic() throws Exception {
 
         // Теперь проверяем что регистрация без отчества пройдёт успешно
-        AdminDto admin = createAdmin();
+        AdminDto admin = utils.getDefaultAdmin();
         admin.setPatronymic(null);
 
         MvcResult result = utils.post("/api/admins", null, admin)
@@ -222,7 +222,7 @@ public class AdministratorIntegrationTest {
     @Test
     public void testLoginWithWrongPassword() throws Exception {
 
-        registerAdmin();
+        utils.register(utils.getDefaultAdmin());
 
         // Неверный пароль
         LoginDto login = new LoginDto("vadim", "werew8778");
@@ -272,7 +272,7 @@ public class AdministratorIntegrationTest {
     public void testLoginAndLogout() throws Exception {
 
         // Регистрируем администратора
-        AdminDto admin = createAdmin();
+        AdminDto admin = utils.getDefaultAdmin();
 
         MvcResult result = utils.post("/api/admins", null, admin)
                 .andExpect(status().isOk()).andReturn();
@@ -309,8 +309,8 @@ public class AdministratorIntegrationTest {
     @Test
     public void testGetAccount() throws Exception {
 
-        String session = registerAdmin();
-        AdminDto admin = createAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
+        AdminDto admin = utils.getDefaultAdmin();
 
         MvcResult result = utils.get("/api/accounts", session)
                 .andExpect(status().isOk()).andReturn();
@@ -346,7 +346,7 @@ public class AdministratorIntegrationTest {
 
         utils.assertErrorsCodes(result, Collections.singletonList("NotLogin"));
 
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
 
         // Получаем пустой список
         utils.get("/api/clients", session)
@@ -357,18 +357,23 @@ public class AdministratorIntegrationTest {
     @Test
     public void testGetClients() throws Exception {
 
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
 
         // Теперь зарегаем пару клиентов
-        registerClient("client1");
-        registerClient("client2");
+        ClientDto client1 = utils.getDefaultClient();
+        client1.setLogin("client1");
+        utils.register(client1);
+
+        ClientDto client2 = utils.getDefaultClient();
+        client2.setLogin("client2");
+        utils.register(client2);
 
         // Получаем уже не пустой список
         MvcResult result = utils.get("/api/clients", session)
                 .andExpect(status().isOk()).andReturn();
 
         // Проверяем этот список
-        ClientDto client = createClient();
+        ClientDto client = utils.getDefaultClient();
 
         JsonNode node = utils.read(result);
         assertEquals(2, node.size());
@@ -411,7 +416,7 @@ public class AdministratorIntegrationTest {
     @Test
     public void testEditAccountWithWrongPassword() throws Exception {
 
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
 
         AdminDto info = new AdminDto();
         info.setFirstName("Денис");
@@ -440,7 +445,7 @@ public class AdministratorIntegrationTest {
     @Test
     public void testEditAccount() throws Exception {
 
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
 
         AdminDto info = new AdminDto();
         info.setFirstName("Денис");
@@ -470,7 +475,7 @@ public class AdministratorIntegrationTest {
 
         // Пытаемся сделать поля пустыми
 
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
 
         AdminDto admin = new AdminDto();
         admin.setFirstName("");
@@ -494,7 +499,7 @@ public class AdministratorIntegrationTest {
 
     @Test
     public void testFailedEditAccountWithLongNamesShortPassword() throws Exception {
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
 
         // Пытаемся зарегистрироваться с маленьким паролем
         // и слишком длинными именами
@@ -522,7 +527,7 @@ public class AdministratorIntegrationTest {
     @Test
     public void testFailedEditAccountWithWrongNameFormat() throws Exception {
 
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
 
         // Имя не может состоять из английских букв, цифр и знаков препинания
         AdminDto admin = new AdminDto();
@@ -559,7 +564,7 @@ public class AdministratorIntegrationTest {
 
     @Test
     public void testAddCategoryWithoutName() throws Exception {
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
 
         // Сначала попытаемся добавить категорию без имени
         CategoryDto category = new CategoryDto();
@@ -573,7 +578,7 @@ public class AdministratorIntegrationTest {
     @Test
     public void testAddCategory() throws Exception {
 
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
 
         // Сначала попытаемся добавить категорию без имени
         CategoryDto category = new CategoryDto();
@@ -617,7 +622,7 @@ public class AdministratorIntegrationTest {
 
         // Нельзя добавить категорию с тем же именем
 
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
         registerCategory(session, "apple", null);
 
         CategoryDto category = new CategoryDto();
@@ -645,7 +650,7 @@ public class AdministratorIntegrationTest {
     @Test
     public void testGetCategory() throws Exception {
 
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
 
         // Получение категории, которой нет в БД
         MvcResult result = utils.get("/api/categories/1", session)
@@ -699,7 +704,7 @@ public class AdministratorIntegrationTest {
     @Test
     public void testEditCategoryNotFound() throws Exception {
 
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
 
         CategoryDto info = new CategoryDto();
         info.setName("ikea");
@@ -718,7 +723,7 @@ public class AdministratorIntegrationTest {
         // Пытаемся изменить категорию на имя, которое уже занято
         // другой категорией
 
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
 
         registerCategory(session, "msi", null);
         long apple = registerCategory(session, "apple", null);
@@ -739,7 +744,7 @@ public class AdministratorIntegrationTest {
 
         // Теперь делаем оба поля пустыми
 
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
         long apple = registerCategory(session, "apple", null);
 
         CategoryDto info = new CategoryDto();
@@ -757,7 +762,7 @@ public class AdministratorIntegrationTest {
     @Test
     public void testEditCategory() throws Exception {
 
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
 
         CategoryDto info = new CategoryDto();
 
@@ -813,7 +818,7 @@ public class AdministratorIntegrationTest {
     @Test
     public void testEditCategoryAndCheckProduct() throws Exception {
 
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
         long category = registerCategory(session, "category", null);
         long product = registerProduct(session, "product", Collections.singletonList(category));
 
@@ -859,7 +864,7 @@ public class AdministratorIntegrationTest {
 
     @Test
     public void testDeleteCategoryNotFound() throws Exception {
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
 
         // Удаление несуществующей
         MvcResult result = utils.delete("/api/categories/1", session)
@@ -873,7 +878,7 @@ public class AdministratorIntegrationTest {
     @Test
     public void testDeleteCategory() throws Exception {
 
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
 
         // Создаём категорию и удаляем её сразу
         long category = registerCategory(session, "category", null);
@@ -931,7 +936,7 @@ public class AdministratorIntegrationTest {
     @Test
     public void testGetCategories() throws Exception {
 
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
 
         /*
         Ожидаем такой порядок:
@@ -998,7 +1003,7 @@ public class AdministratorIntegrationTest {
     @Test
     public void testAddProductWithoutFields() throws Exception {
 
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
 
         // Проверяем что нельзя добавить продукт без имени и цены
 
@@ -1017,7 +1022,7 @@ public class AdministratorIntegrationTest {
 
     @Test
     public void testAddProductWithNegativePriceAndCount() throws Exception {
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
 
         // Проверяем что нельзя добавить отрицательную цену
         ProductDto product = new ProductDto();
@@ -1038,7 +1043,7 @@ public class AdministratorIntegrationTest {
     @Test
     public void testAddProductWithWrongCategory() throws Exception {
 
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
 
         // Указываем категорию, которая не существует
         ProductDto product = new ProductDto();
@@ -1060,7 +1065,7 @@ public class AdministratorIntegrationTest {
     @Test
     public void testAddProduct() throws Exception {
 
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
 
         ProductDto product = new ProductDto();
         // Теперь всё нормально, но категории нет
@@ -1113,7 +1118,7 @@ public class AdministratorIntegrationTest {
     @Test
     public void testEditProductNotFound() throws Exception {
 
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
 
         // Изменение несуществующего товара
         ProductDto product = new ProductDto();
@@ -1128,7 +1133,7 @@ public class AdministratorIntegrationTest {
     @Test
     public void testEditProductWithNegativeCountAndPrice() throws Exception {
 
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
 
         ProductDto product = new ProductDto();
         product.setPrice(-1);
@@ -1147,7 +1152,7 @@ public class AdministratorIntegrationTest {
     @Test
     public void testEditProductCategoryNotFound() throws Exception {
 
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
 
         // Проверим что нельзя изменить с несуществующей категорией
         long product = registerProduct(session, "table", null);
@@ -1168,7 +1173,7 @@ public class AdministratorIntegrationTest {
     @Test
     public void testEditProduct() throws Exception {
 
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
         ProductDto product = new ProductDto();
 
         // Теперь создадим товар с категорией
@@ -1246,7 +1251,7 @@ public class AdministratorIntegrationTest {
     @Test
     public void testDeleteProductNotFound() throws Exception {
 
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
 
         // Удаляем несуществующий
         MvcResult result = utils.delete("/api/products/3", session)
@@ -1262,7 +1267,7 @@ public class AdministratorIntegrationTest {
     @Test
     public void testDeleteProduct() throws Exception {
 
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
 
         // Создаём товар
         ProductDto newProduct = new ProductDto();
@@ -1294,7 +1299,7 @@ public class AdministratorIntegrationTest {
 
     @Test
     public void testGetProductNotFound() throws Exception {
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
 
         // Получение данных о несуществующем
         MvcResult result = utils.get("/api/products/3", session)
@@ -1307,7 +1312,7 @@ public class AdministratorIntegrationTest {
     @Test
     public void testGetProduct() throws Exception {
 
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
 
         // Создаём товар
         long category = registerCategory(session, "category", null);
@@ -1353,7 +1358,7 @@ public class AdministratorIntegrationTest {
     @Test
     public void testGetProductsByProductsNames() throws Exception {
 
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
 
 
         // Подгатавливаем список товаров
@@ -1427,7 +1432,7 @@ public class AdministratorIntegrationTest {
     @Test
     public void testGetProductsByCategories() throws Exception {
 
-        String session = registerAdmin();
+        String session = utils.register(utils.getDefaultAdmin());
 
         // Подгатавливаем список
         long pen = registerProduct(session, "pen", null);
@@ -1548,13 +1553,6 @@ public class AdministratorIntegrationTest {
         return utils.read(result).get("id").asLong();
     }
 
-    private String registerAdmin() throws Exception {
-        MvcResult result = utils.post("/api/admins", null, createAdmin())
-                .andExpect(status().isOk()).andReturn();
-
-        return utils.getSession(result);
-    }
-
     private long registerCategory(String session, String name, Long parentId) throws Exception {
         CategoryDto category = new CategoryDto();
         category.setName(name);
@@ -1566,36 +1564,5 @@ public class AdministratorIntegrationTest {
         return utils.read(result).get("id").asLong();
     }
 
-    private void registerClient(String login) throws Exception {
-        ClientDto client = createClient();
-        client.setLogin(login);
-
-        utils.post("/api/clients", null, client)
-                .andExpect(status().isOk());
-    }
-
-    private ClientDto createClient() {
-        ClientDto client = new ClientDto();
-        client.setFirstName("Vadim");
-        client.setLastName("Gush");
-        client.setPatronymic("Vadimovich");
-        client.setAddress("Somewhere");
-        client.setEmail("vadim.djuke@yandex.ru");
-        client.setPhone("+79649951843");
-        client.setLogin("client");
-        client.setPassword("VadimGush225");
-        return client;
-    }
-
-    private AdminDto createAdmin() {
-        AdminDto admin = new AdminDto();
-        admin.setFirstName("Вадим");
-        admin.setLastName("Гуш");
-        admin.setPatronymic("Вадимович");
-        admin.setPosition("Janitor");
-        admin.setLogin("Vadim");
-        admin.setPassword("Iddqd225");
-        return admin;
-    }
 
 }

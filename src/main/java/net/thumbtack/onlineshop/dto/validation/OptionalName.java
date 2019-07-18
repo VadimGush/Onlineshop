@@ -1,4 +1,5 @@
-package net.thumbtack.onlineshop.controller.validation;
+package net.thumbtack.onlineshop.dto.validation;
+
 
 import javax.validation.Constraint;
 import javax.validation.Payload;
@@ -7,16 +8,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Constraint(validatedBy = PhoneValidator.class)
+@Constraint(validatedBy = OptionalNameValidator.class)
 @Target({ElementType.METHOD, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Phone {
+public @interface OptionalName {
 
     String message() default "";
 
     Class<?>[] groups() default {};
 
     Class<? extends Payload>[] payload() default {};
-
 
 }

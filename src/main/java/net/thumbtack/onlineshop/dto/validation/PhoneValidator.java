@@ -1,9 +1,9 @@
-package net.thumbtack.onlineshop.controller.validation;
+package net.thumbtack.onlineshop.dto.validation;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
-import static net.thumbtack.onlineshop.controller.validation.ValidatorUtils.setMessage;
+import static net.thumbtack.onlineshop.dto.validation.ValidatorUtils.setMessage;
 
 public class PhoneValidator implements
         ConstraintValidator<Phone, String> {

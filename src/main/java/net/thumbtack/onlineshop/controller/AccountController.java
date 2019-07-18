@@ -1,6 +1,5 @@
 package net.thumbtack.onlineshop.controller;
 
-import net.thumbtack.onlineshop.controller.validation.ValidationException;
 import net.thumbtack.onlineshop.database.models.Account;
 import net.thumbtack.onlineshop.dto.AccountDto;
 import net.thumbtack.onlineshop.dto.AdminDto;
@@ -8,6 +7,7 @@ import net.thumbtack.onlineshop.dto.ClientDto;
 import net.thumbtack.onlineshop.dto.LoginDto;
 import net.thumbtack.onlineshop.dto.actions.Edit;
 import net.thumbtack.onlineshop.dto.actions.Register;
+import net.thumbtack.onlineshop.dto.validation.ValidationException;
 import net.thumbtack.onlineshop.service.AccountService;
 import net.thumbtack.onlineshop.service.ServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,8 +40,9 @@ public class AccountController {
             BindingResult result,
             HttpServletResponse response) throws Exception {
 
-        if (result.hasErrors())
+        if (result.hasErrors()) {
             throw new ValidationException(result);
+        }
 
         client.setLogin(client.getLogin().toLowerCase());
 
@@ -55,8 +56,9 @@ public class AccountController {
             BindingResult result,
             HttpServletResponse response) throws Exception {
 
-        if (result.hasErrors())
+        if (result.hasErrors()) {
             throw new ValidationException(result);
+        }
 
         admin.setLogin(admin.getLogin().toLowerCase());
 
@@ -71,8 +73,9 @@ public class AccountController {
             @RequestBody @Validated(Edit.class) AdminDto admin,
             BindingResult result) throws Exception {
 
-        if (result.hasErrors())
+        if (result.hasErrors()) {
             throw new ValidationException(result);
+        }
 
         return accountService.edit(session, admin);
     }
@@ -84,8 +87,9 @@ public class AccountController {
             @RequestBody @Valid ClientDto client,
             BindingResult result) throws Exception {
 
-        if (result.hasErrors())
+        if (result.hasErrors()) {
             throw new ValidationException(result);
+        }
 
         return accountService.edit(session, client);
     }
@@ -113,8 +117,9 @@ public class AccountController {
             BindingResult result,
             HttpServletResponse response) throws Exception {
 
-        if (result.hasErrors())
+        if (result.hasErrors()) {
             throw new ValidationException(result);
+        }
 
         account.setLogin(account.getLogin().toLowerCase());
         String session = accountService.login(account.getLogin(), account.getPassword());

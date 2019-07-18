@@ -1,13 +1,13 @@
 package net.thumbtack.onlineshop.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import net.thumbtack.onlineshop.controller.validation.OptionalRussianName;
-import net.thumbtack.onlineshop.controller.validation.Password;
-import net.thumbtack.onlineshop.controller.validation.RequiredName;
-import net.thumbtack.onlineshop.controller.validation.RequiredRussianName;
 import net.thumbtack.onlineshop.database.models.Account;
 import net.thumbtack.onlineshop.dto.actions.Edit;
 import net.thumbtack.onlineshop.dto.actions.Register;
+import net.thumbtack.onlineshop.dto.validation.OptionalRussianName;
+import net.thumbtack.onlineshop.dto.validation.Password;
+import net.thumbtack.onlineshop.dto.validation.RequiredName;
+import net.thumbtack.onlineshop.dto.validation.RequiredRussianName;
 
 import javax.validation.constraints.NotBlank;
 

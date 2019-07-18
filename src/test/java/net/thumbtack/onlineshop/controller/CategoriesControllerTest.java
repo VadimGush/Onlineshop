@@ -1,7 +1,7 @@
 package net.thumbtack.onlineshop.controller;
 
-import net.thumbtack.onlineshop.controller.validation.ValidationException;
 import net.thumbtack.onlineshop.dto.CategoryDto;
+import net.thumbtack.onlineshop.dto.validation.ValidationException;
 import net.thumbtack.onlineshop.service.CategoriesService;
 import org.junit.Before;
 import org.junit.Test;

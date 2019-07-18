@@ -32,19 +32,22 @@ public class CategoriesService extends GeneralService {
         getAdmin(sessionId);
 
         // Сначала проверим имя категории
-        if (categoryDao.exists(category.getName()))
+        if (categoryDao.exists(category.getName())) {
             throw new ServiceException(ServiceException.ErrorCode.SAME_CATEGORY_NAME, "name");
+        }
 
         // Проверим родителя
         Category parent = null;
         if (category.getParentId() != null) {
             parent = categoryDao.get(category.getParentId());
 
-            if (parent == null)
+            if (parent == null) {
                 throw new ServiceException(ServiceException.ErrorCode.CATEGORY_NOT_FOUND, "parentId");
+            }
 
-            if (parent.isSubcategory())
+            if (parent.isSubcategory()) {
                 throw new ServiceException(ServiceException.ErrorCode.SECOND_SUBCATEGORY, "parentId");
+            }
 
         }
 
@@ -65,8 +68,9 @@ public class CategoriesService extends GeneralService {
         getAdmin(sessionId);
 
         Category category = categoryDao.get(id);
-        if (category == null)
+        if (category == null) {
             throw new ServiceException(ServiceException.ErrorCode.CATEGORY_NOT_FOUND);
+        }
 
         return new CategoryDto(category);
     }
@@ -83,30 +87,36 @@ public class CategoriesService extends GeneralService {
         getAdmin(sessionId);
 
         Category category = categoryDao.get(id);
-        if (category == null)
+
+        if (category == null) {
             throw new ServiceException(ServiceException.ErrorCode.CATEGORY_NOT_FOUND);
+        }
 
-        if (categoryDto.getName() == null && categoryDto.getParentId() == null)
+        // Не могут отсутствовать два поля одновременно
+        if (categoryDto.getName() == null && categoryDto.getParentId() == null) {
             throw new ServiceException(ServiceException.ErrorCode.EDIT_CATEGORY_EMPTY);
+        }
 
-        if (categoryDto.getName() != null) {
-            if (categoryDao.exists(categoryDto.getName()))
+        // Меняем имя
+        if (categoryDto.getName() != null && !categoryDto.getName().isEmpty()) {
+            // Нельзя изменить на уже существующее
+            if (categoryDao.exists(categoryDto.getName())) {
                 throw new ServiceException(ServiceException.ErrorCode.SAME_CATEGORY_NAME, "name");
-
+            }
             category.setName(categoryDto.getName());
         }
 
+        // Меняем родителя
         if (categoryDto.getParentId() != null) {
 
-            if (!category.isSubcategory())
+            if (!category.isSubcategory()) {
                 throw new ServiceException(ServiceException.ErrorCode.CATEGORY_TO_SUBCATEGORY, "parentId");
-
+            }
             Category parent = categoryDao.get(categoryDto.getParentId());
-            if (parent == null)
+            if (parent == null) {
                 throw new ServiceException(ServiceException.ErrorCode.CATEGORY_NOT_FOUND, "parentId");
-
+            }
             category.setParent(parent);
-
         }
 
         categoryDao.update(category);
@@ -124,8 +134,9 @@ public class CategoriesService extends GeneralService {
         getAdmin(sessionId);
 
         Category category = categoryDao.get(id);
-        if (category == null)
+        if (category == null) {
             throw new ServiceException(ServiceException.ErrorCode.CATEGORY_NOT_FOUND);
+        }
 
         categoryDao.delete(category);
 

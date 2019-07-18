@@ -1,11 +1,11 @@
 package net.thumbtack.onlineshop.controller;
 
-import net.thumbtack.onlineshop.controller.validation.ValidationException;
 import net.thumbtack.onlineshop.database.models.Account;
 import net.thumbtack.onlineshop.dto.AccountDto;
 import net.thumbtack.onlineshop.dto.AdminDto;
 import net.thumbtack.onlineshop.dto.ClientDto;
 import net.thumbtack.onlineshop.dto.LoginDto;
+import net.thumbtack.onlineshop.dto.validation.ValidationException;
 import net.thumbtack.onlineshop.service.AccountService;
 import org.junit.Before;
 import org.junit.Test;

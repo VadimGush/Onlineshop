@@ -1,4 +1,4 @@
-package net.thumbtack.onlineshop.controller.validation;
+package net.thumbtack.onlineshop.dto.validation;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -14,9 +14,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class OptionalNameValidatorTest {
+public class RequiredRussianNameValidatorTest {
 
-    private OptionalNameValidator validator;
+    private RequiredRussianNameValidator validator;
 
     @Mock
     private ConstraintValidatorContext mockContext;
@@ -25,12 +25,11 @@ public class OptionalNameValidatorTest {
     public void setUpClass() {
         MockitoAnnotations.initMocks(this);
 
-        ConstraintValidatorContext.ConstraintViolationBuilder mockBuilder =
-                mock(ConstraintValidatorContext.ConstraintViolationBuilder.class);
+        ConstraintValidatorContext.ConstraintViolationBuilder mockBuilder = mock(ConstraintValidatorContext.ConstraintViolationBuilder.class);
         when(mockContext.buildConstraintViolationWithTemplate(any()))
                 .thenReturn(mockBuilder);
 
-        validator = new OptionalNameValidator();
+        validator = new RequiredRussianNameValidator();
         ReflectionTestUtils.setField(
                 validator,
                 "maxNameLength",
@@ -38,18 +37,32 @@ public class OptionalNameValidatorTest {
         );
     }
 
+
+    @Test
+    public void testEmpty() {
+
+        assertFalse(validator.isValid("", mockContext));
+
+        assertFalse(validator.isValid(null, mockContext));
+
+    }
+
     @Test
     public void testMaxNameLength() {
         assertFalse(validator.isValid("asdfqwerasd", mockContext));
 
-        assertTrue(validator.isValid("asdfqweras", mockContext));
+        assertFalse(validator.isValid("asdfqweras", mockContext));
 
-        assertTrue(validator.isValid("привет мир", mockContext));
-
-        assertFalse(validator.isValid("", mockContext));
+        assertTrue(validator.isValid("Рривет Мир", mockContext));
 
         assertTrue(validator.isValid("      ", mockContext));
 
-        assertTrue(validator.isValid(null, mockContext));
+        assertFalse(validator.isValid("234324", mockContext));
+
+        assertTrue(validator.isValid("привет-Мир", mockContext));
+
+        assertFalse(validator.isValid("привет3", mockContext));
+
+        assertFalse(validator.isValid("привет.", mockContext));
     }
 }

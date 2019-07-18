@@ -1,4 +1,4 @@
-package net.thumbtack.onlineshop.controller.validation;
+package net.thumbtack.onlineshop.dto.validation;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -14,9 +14,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class RequiredRussianNameValidatorTest {
+public class RequiredNameValidatorTest {
 
-    private RequiredRussianNameValidator validator;
+    private RequiredNameValidator validator;
 
     @Mock
     private ConstraintValidatorContext mockContext;
@@ -29,7 +29,7 @@ public class RequiredRussianNameValidatorTest {
         when(mockContext.buildConstraintViolationWithTemplate(any()))
                 .thenReturn(mockBuilder);
 
-        validator = new RequiredRussianNameValidator();
+        validator = new RequiredNameValidator();
         ReflectionTestUtils.setField(
                 validator,
                 "maxNameLength",
@@ -51,18 +51,11 @@ public class RequiredRussianNameValidatorTest {
     public void testMaxNameLength() {
         assertFalse(validator.isValid("asdfqwerasd", mockContext));
 
-        assertFalse(validator.isValid("asdfqweras", mockContext));
+        assertTrue(validator.isValid("asdfqweras", mockContext));
 
-        assertTrue(validator.isValid("Рривет Мир", mockContext));
+        assertTrue(validator.isValid("привет мир", mockContext));
 
         assertTrue(validator.isValid("      ", mockContext));
 
-        assertFalse(validator.isValid("234324", mockContext));
-
-        assertTrue(validator.isValid("привет-Мир", mockContext));
-
-        assertFalse(validator.isValid("привет3", mockContext));
-
-        assertFalse(validator.isValid("привет.", mockContext));
     }
 }

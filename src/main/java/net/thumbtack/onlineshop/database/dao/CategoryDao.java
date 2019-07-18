@@ -74,6 +74,7 @@ public class CategoryDao implements Dao {
         criteria.select(from);
 
         TypedQuery<Category> typed = manager.createQuery(criteria);
+
         return typed.getResultList();
     }
 

@@ -1,11 +1,11 @@
-package net.thumbtack.onlineshop.controller.validation;
+package net.thumbtack.onlineshop.dto.validation;
 
 import org.springframework.beans.factory.annotation.Value;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
-import static net.thumbtack.onlineshop.controller.validation.ValidatorUtils.setMessage;
+import static net.thumbtack.onlineshop.dto.validation.ValidatorUtils.setMessage;
 
 public class LoginValidator implements
         ConstraintValidator<Login, String> {

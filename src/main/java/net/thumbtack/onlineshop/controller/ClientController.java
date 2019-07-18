@@ -5,11 +5,13 @@ import net.thumbtack.onlineshop.dto.AccountDto;
 import net.thumbtack.onlineshop.dto.DepositDto;
 import net.thumbtack.onlineshop.dto.ProductDto;
 import net.thumbtack.onlineshop.dto.ResultBasketDto;
+import net.thumbtack.onlineshop.dto.actions.Register;
 import net.thumbtack.onlineshop.service.AccountService;
 import net.thumbtack.onlineshop.service.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -53,7 +55,7 @@ public class ClientController {
     @ResponseStatus(HttpStatus.OK)
     public ProductDto buyProduct(
             @CookieValue("JAVASESSIONID") String session,
-            @RequestBody @Valid ProductDto product,
+            @RequestBody @Validated(Register.class) ProductDto product,
             BindingResult result) throws Exception {
 
         if (result.hasErrors())
@@ -69,7 +71,7 @@ public class ClientController {
     @ResponseStatus(HttpStatus.OK)
     public List<ProductDto> addToBasket(
             @CookieValue("JAVASESSIONID") String session,
-            @RequestBody @Valid ProductDto product,
+            @RequestBody @Validated(Register.class) ProductDto product,
             BindingResult result) throws Exception {
 
         if (result.hasErrors())
@@ -94,6 +96,7 @@ public class ClientController {
     }
 
     // TODO: Здесь поле количества должно быть обязательным
+
     @PutMapping("baskets")
     @ResponseStatus(HttpStatus.OK)
     public List<ProductDto> editProductCount(
@@ -119,7 +122,7 @@ public class ClientController {
     @ResponseStatus(HttpStatus.OK)
     public ResultBasketDto buyBasket(
             @CookieValue("JAVASESSIONID") String session,
-            @RequestBody @Valid List<ProductDto> toBuy,
+            @RequestBody @Validated(Register.class) List<ProductDto> toBuy,
             BindingResult result) throws Exception {
 
         if (result.hasErrors())

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import net.thumbtack.onlineshop.dto.ClientDto;
 import net.thumbtack.onlineshop.dto.DepositDto;
 import net.thumbtack.onlineshop.dto.LoginDto;
+import net.thumbtack.onlineshop.dto.ProductDto;
 import net.thumbtack.onlineshop.service.ServerControlService;
 import net.thumbtack.onlineshop.utils.IntegrationUtils;
 import org.junit.Before;
@@ -19,6 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -54,7 +56,8 @@ public class ClientIntegrationTest {
         ClientDto client = createClient();
 
         MvcResult result = utils.post("/api/clients", null, client)
-                .andExpect(status().isOk()).andReturn();
+                .andExpect(status().isOk())
+                .andReturn();
 
         // Проверяем информацию
         JsonNode node = utils.read(result);
@@ -70,6 +73,64 @@ public class ClientIntegrationTest {
 
         assertNull(node.get("login"));
         assertNull(node.get("password"));
+    }
+
+    @Test
+    public void testRegisterWithoutPatronymic() throws Exception {
+
+        // Отчество может отсутствовать, но не может быть пустым
+        ClientDto client = createClient();
+        client.setPatronymic("");
+
+        MvcResult result = utils.post("/api/clients", null, client)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertError(result, Pair.of("OptionalRussianName", "patronymic"));
+    }
+
+    @Test
+    public void testRegisterWithoutPatronymicNull() throws Exception {
+
+        // Отчество может отсутствовать
+        ClientDto client = createClient();
+        client.setPatronymic(null);
+
+        MvcResult result = utils.post("/api/clients", null, client)
+                .andExpect(status().isOk())
+                .andReturn();
+
+        JsonNode node = utils.read(result);
+        assertNull(node.get("patronymic"));
+    }
+
+    @Test
+    public void testRegisterWithRequiredFields() throws Exception {
+
+        ClientDto client = new ClientDto();
+        client.setFirstName("");
+        client.setLastName("");
+
+        client.setEmail("");
+        client.setAddress("");
+        client.setPhone("");
+
+        client.setLogin("");
+        client.setPassword("");
+
+        MvcResult result = utils.post("/api/clients", null, client)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrors(result, Arrays.asList(
+                Pair.of("RequiredRussianName", "firstName"),
+                Pair.of("RequiredRussianName", "lastName"),
+                Pair.of("Email", "email"),
+                Pair.of("Phone", "phone"),
+                Pair.of("NotBlank", "address"),
+                Pair.of("Login", "login"),
+                Pair.of("Password", "password")
+        ));
     }
 
     @Test
@@ -184,6 +245,80 @@ public class ClientIntegrationTest {
         utils.assertErrorCode(result, "NotLogin");
     }
 
+    @Test
+    public void testBuyProductWithoutLogin() throws Exception {
+
+        ProductDto product = createProduct("product");
+
+        MvcResult result = utils.post("/api/purchases", "rwe", product)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrorCode(result, "NotLogin");
+    }
+
+    @Test
+    public void testAddProductToBasketWithoutLogin() throws Exception {
+
+        ProductDto product = createProduct("product");
+
+        MvcResult result = utils.post("/api/baskets", "erwe", product)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrorCode(result, "NotLogin");
+    }
+
+    @Test
+    public void testDeleteFromBasketWithoutLogin() throws Exception {
+
+        MvcResult result = utils.delete("/api/baskets/3", "wrew")
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrorCode(result, "NotLogin");
+    }
+
+    @Test
+    public void testEditProductCountWithoutLogin() throws Exception {
+
+        ProductDto product = createProduct("product");
+
+        MvcResult result = utils.put("/api/baskets", "werwe", product)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrorCode(result, "NotLogin");
+    }
+
+    @Test
+    public void testGetBasketWithoutLogin() throws Exception {
+
+        MvcResult result = utils.get("/api/baskets", "werwe")
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrorCode(result, "NotLogin");
+    }
+
+    @Test
+    public void testBuyBasketWithoutLogin() throws Exception {
+
+        MvcResult result = utils.post("/api/purchases/baskets", "wre",
+                Collections.singletonList(createProduct("product")))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrorCode(result, "NotLogin");
+    }
+
+    private ProductDto createProduct(String name) {
+        ProductDto product = new ProductDto();
+        product.setName(name);
+        product.setPrice(10);
+
+        return product;
+    }
 
     private ClientDto createClient() {
         ClientDto client = new ClientDto();

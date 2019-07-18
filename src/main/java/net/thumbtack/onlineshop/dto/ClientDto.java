@@ -1,10 +1,7 @@
 package net.thumbtack.onlineshop.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import net.thumbtack.onlineshop.controller.validation.OptionalName;
-import net.thumbtack.onlineshop.controller.validation.Password;
-import net.thumbtack.onlineshop.controller.validation.Phone;
-import net.thumbtack.onlineshop.controller.validation.RequiredName;
+import net.thumbtack.onlineshop.controller.validation.*;
 import net.thumbtack.onlineshop.database.models.Account;
 import net.thumbtack.onlineshop.dto.actions.Edit;
 import net.thumbtack.onlineshop.dto.actions.Register;
@@ -17,13 +14,13 @@ public class ClientDto extends LoginDto {
 
     private Long id;
 
-    @RequiredName(groups = { Register.class, Edit.class})
+    @RequiredRussianName(groups = { Register.class, Edit.class})
     private String firstName;
 
-    @RequiredName(groups = { Register.class, Edit.class })
+    @RequiredRussianName(groups = { Register.class, Edit.class })
     private String lastName;
 
-    @OptionalName(groups = { Register.class, Edit.class })
+    @OptionalRussianName(groups = { Register.class, Edit.class })
     private String patronymic;
 
     @Email(groups = { Register.class, Edit.class })

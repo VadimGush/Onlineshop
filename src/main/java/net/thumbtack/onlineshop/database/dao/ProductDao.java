@@ -145,6 +145,7 @@ public class ProductDao implements Dao {
     public void clear() {
         manager.createNativeQuery("delete from productcategory")
                 .executeUpdate();
+
         manager.createNativeQuery("delete from product")
                 .executeUpdate();
     }

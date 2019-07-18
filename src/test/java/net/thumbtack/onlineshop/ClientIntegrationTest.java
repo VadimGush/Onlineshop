@@ -658,6 +658,224 @@ public class ClientIntegrationTest {
         assertEquals(0, node.get("count").asInt());
     }
 
+    /**
+     * Получаем список товаров отсортированных по именам
+     * Требования и проверки точно такие же как и в интеграционных администратора
+     *
+     * Создавать товары мы будем через аккунт админа, а через
+     * клиента получать список товаров
+     */
+    @Test
+    public void testGetProductsByProductsNames() throws Exception {
+
+        String adminSession = utils.register(utils.getDefaultAdmin());
+        String session = utils.register(utils.getDefaultClient());
+
+        // Подгатавливаем список товаров
+        long category = utils.register(adminSession, new CategoryDto("category"));
+
+        long warcraft = utils.register(adminSession,
+                utils.getProduct("warcraft", 10_000, null));
+
+        long apple = utils.register(adminSession,
+                utils.getProduct("apple", 10_000, Collections.singletonList(category)));
+
+        long berretta = utils.register(adminSession,
+                utils.getProduct("berretta", 10_000, null));
+
+        // Создадим удалённый товар и проверим что в список он не попадёт
+        long deleted = utils.register(adminSession,
+                utils.getProduct("deleted", 10_000, null));
+
+        utils.delete("/api/products/" + deleted, adminSession)
+                .andExpect(status().isOk());
+
+        // Теперь получем список всех товаров от имени клиента
+        MvcResult result = utils.get("/api/products", session)
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String firstResult = utils.getContent(result);
+        JsonNode node = utils.read(result);
+
+        assertEquals(3, node.size());
+
+        assertEquals(apple, node.get(0).get("id").asLong());
+        assertEquals("apple", node.get(0).get("name").asText());
+        assertEquals(10_000, node.get(0).get("price").asInt());
+        assertEquals(0, node.get(0).get("count").asInt());
+        assertEquals(1, node.get(0).get("categories").size());
+        assertEquals(category, node.get(0).get("categories").get(0).asLong());
+
+        assertEquals(berretta, node.get(1).get("id").asLong());
+        assertEquals("berretta", node.get(1).get("name").asText());
+        assertEquals(10_000, node.get(1).get("price").asInt());
+        assertEquals(0, node.get(1).get("count").asInt());
+
+        assertEquals(warcraft, node.get(2).get("id").asLong());
+        assertEquals("warcraft", node.get(2).get("name").asText());
+        assertEquals(10_000, node.get(2).get("price").asInt());
+        assertEquals(0, node.get(2).get("count").asInt());
+
+        // Указываем сортировку по товарам явно и проверяем, что ответ будет тот же самый
+        // потому что по умолчанию всегда используется сортировка по товарам
+        utils.get("/api/products?order=product", session)
+                .andExpect(status().isOk())
+                .andExpect(content().string(firstResult));
+
+        // Сортировка по товарам, но только товары, которые не принадлежат не одной категории
+        result = utils.get("/api/products?order=product&category=", session)
+                .andExpect(status().isOk())
+                .andReturn();
+
+        node = utils.read(result);
+        assertEquals(2, node.size());
+        assertEquals("berretta", node.get(0).get("name").asText());
+        assertEquals("warcraft", node.get(1).get("name").asText());
+
+        // Список товаров, которые принадлежат данным категориям
+        result = utils.get("/api/products?order=product&category=" + category, session)
+                .andExpect(status().isOk())
+                .andReturn();
+
+        node = utils.read(result);
+        assertEquals(1, node.size());
+        assertEquals("apple", node.get(0).get("name").asText());
+    }
+
+    /**
+     * Получение списка товаров отсортированных по именам категорий, а внутри
+     * категорий по именам товаров
+     *
+     * Опять же проверки такие же как и в интгеграционных для администратора
+     */
+    @Test
+    public void testGetProductsByCategories() throws Exception {
+
+        String adminSession = utils.register(utils.getDefaultAdmin());
+        String session = utils.register(utils.getDefaultClient());
+
+        // Подгатавливаем список
+        long pen = utils.register(adminSession,
+                utils.getProduct("pen", 10_000, null));
+
+        long array = utils.register(adminSession,
+                utils.getProduct("array", 10_000, null));
+
+        // Список категорий для товаров
+        long bat = utils.register(adminSession, new CategoryDto("bat"));
+        long wat = utils.register(adminSession, new CategoryDto("wat"));
+        long at = utils.register(adminSession, new CategoryDto("at"));
+
+        // И пару товаров зависящих от категорий
+        utils.register(adminSession,
+                utils.getProduct("xen", 10_000, Collections.singletonList(at)));
+
+        utils.register(adminSession,
+                utils.getProduct("apple", 10_000, Collections.singletonList(wat)));
+
+        long berretta = utils.register(adminSession,
+                utils.getProduct("berretta", 10_000, Arrays.asList(at, wat)));
+
+        utils.register(adminSession,
+                utils.getProduct("warcraft", 10_000, Collections.singletonList(bat)));
+
+        // И теперь получем списки от имени клиента
+        MvcResult result = utils.get("/api/products?order=category", session)
+                .andExpect(status().isOk())
+                .andReturn();
+
+        JsonNode node = utils.read(result);
+
+        /*
+        Ожидаем такой порядок:
+
+        Категория   |   Товар
+        ---------------------------
+                        array
+                        pen
+        at              berretta
+        at              xen
+        bat             warcraft
+        wat             apple
+        wat             berretta
+
+         */
+
+        // Проверяем первые два продукта без категорий
+
+        assertEquals(array, node.get(0).get("id").asLong());
+        assertEquals("array", node.get(0).get("name").asText());
+        assertEquals(10_000, node.get(0).get("price").asInt());
+        assertEquals(0, node.get(0).get("count").asInt());
+        assertNull(node.get(0).get("categories"));
+
+        assertEquals(pen, node.get(1).get("id").asLong());
+        assertEquals("pen", node.get(1).get("name").asText());
+        assertEquals(10_000, node.get(1).get("price").asInt());
+        assertEquals(0, node.get(1).get("count").asInt());
+        assertNull(node.get(1).get("categories"));
+
+        // Теперь проверяем список с категориями
+        // at   -> berretta
+        assertEquals(berretta, node.get(2).get("id").asLong());
+        assertEquals("berretta", node.get(2).get("name").asText());
+        assertEquals(10_000, node.get(2).get("price").asInt());
+        assertEquals(0, node.get(2).get("count").asInt());
+        assertEquals(1, node.get(2).get("categories").size());
+        assertEquals(at, node.get(2).get("categories").get(0).asLong());
+
+        // Теперь будем проверять только именами и категории, так как
+        // формат однозначно верный
+        // at   -> xen
+        assertEquals("xen", node.get(3).get("name").asText());
+        assertEquals(1, node.get(3).get("categories").size());
+        assertEquals(at, node.get(3).get("categories").get(0).asLong());
+
+        // bat  -> warcraft
+        assertEquals("warcraft", node.get(4).get("name").asText());
+        assertEquals(1, node.get(4).get("categories").size());
+        assertEquals(bat, node.get(4).get("categories").get(0).asLong());
+
+        // wat  -> apple
+        assertEquals("apple", node.get(5).get("name").asText());
+        assertEquals(1, node.get(5).get("categories").size());
+        assertEquals(wat, node.get(5).get("categories").get(0).asLong());
+
+        // wat  -> berretta
+        assertEquals("berretta", node.get(6).get("name").asText());
+        assertEquals(1, node.get(6).get("categories").size());
+        assertEquals(wat, node.get(6).get("categories").get(0).asLong());
+
+        // Сортировка по именам категорий товаров, которые не принадлежат не одной категории
+        result = utils.get("/api/products?order=category&category=", session)
+                .andExpect(status().isOk())
+                .andReturn();
+
+        node = utils.read(result);
+
+        // Должна быть сортировка по именам первых двух товаров
+        assertEquals(2, node.size());
+        assertEquals("array", node.get(0).get("name").asText());
+        assertEquals("pen", node.get(1).get("name").asText());
+
+        // Сортировка по именам категорий товаров, которые принадлежат категориям
+        result = utils.get("/api/products?order=category&category=" + wat + "," + bat, session)
+                .andExpect(status().isOk())
+                .andReturn();
+
+        node = utils.read(result);
+
+        // Должны получить три товара которые содержат категории
+        // wat и bat, отсортированные по категориям, а затем по именам товаров
+        assertEquals(3, node.size());
+        assertEquals("warcraft", node.get(0).get("name").asText());
+        assertEquals("apple", node.get(1).get("name").asText());
+        assertEquals("berretta", node.get(2).get("name").asText());
+
+    }
+
+
     @Test
     public void testAddProductToBasketWithoutLogin() throws Exception {
 

@@ -6,6 +6,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * Сервис для управления состоянием сервера
+ */
 @Service
 public class ServerControlService {
 
@@ -17,7 +20,7 @@ public class ServerControlService {
     }
 
     /**
-     * Удаляет все записи из базы данных
+     * Удаляет все существующие таблицы в базе данных
      */
     public void clear() {
         dao.forEach(Dao::clear);

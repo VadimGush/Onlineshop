@@ -66,6 +66,11 @@ public class CategoryDao implements Dao {
 
     }
 
+    /**
+     * Получает список всех
+     *
+     * @return
+     */
     public List<Category> getAll() {
         CriteriaBuilder builder = manager.getCriteriaBuilder();
         CriteriaQuery<Category> criteria = builder.createQuery(Category.class);

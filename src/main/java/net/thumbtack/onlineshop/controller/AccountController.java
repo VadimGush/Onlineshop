@@ -21,10 +21,12 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.List;
 
+/**
+ * Контроллер запросов для работы с аккаунтами
+ */
 @RestController
 @RequestMapping("api")
 public class AccountController {
-
 
     private AccountService accountService;
 

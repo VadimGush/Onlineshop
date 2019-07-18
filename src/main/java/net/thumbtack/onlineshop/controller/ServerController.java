@@ -8,8 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * RequestController - отвечает за запросы связанные с управлением сервером и
- * сессиями пользователей, а так же обработкой ошибок.
+ * Контроллер запросов для управления и настройкой сервера
  */
 @RestController
 @RequestMapping("api")

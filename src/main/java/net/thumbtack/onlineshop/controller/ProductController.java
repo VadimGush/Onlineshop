@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Контроллер запросов для работы с товарами
+ */
 @RestController
 @RequestMapping("api")
 public class ProductController {

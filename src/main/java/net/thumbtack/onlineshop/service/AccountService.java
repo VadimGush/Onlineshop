@@ -15,6 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Сервис для работы с аккаунтами
+ */
 @Service
 public class AccountService extends GeneralService {
 
@@ -58,6 +61,8 @@ public class AccountService extends GeneralService {
     }
 
     /**
+     * Регистрирует нового администратора
+     *
      * @param admin регистрационная инфа об админе
      * @return аккаунт зарегистрированного администратора
      */
@@ -108,6 +113,8 @@ public class AccountService extends GeneralService {
     }
 
     /**
+     * Изменяет данные администратора
+     *
      * @param sessionId сессия администратора
      * @param admin     запрос с изменёнными данными
      * @return аккаунт изменённого администратора
@@ -131,6 +138,8 @@ public class AccountService extends GeneralService {
     }
 
     /**
+     * Получает список всех клиентов
+     *
      * @param sessionId сессия администратора
      * @return список всех клиентов
      */

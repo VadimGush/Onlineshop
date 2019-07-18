@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Контроллер запросов для работы с категориями
+ */
 @RestController
 @RequestMapping("api")
 public class CategoriesController {

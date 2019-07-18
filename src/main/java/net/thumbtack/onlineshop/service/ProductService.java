@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+/**
+ * Сервис для работы с товарами
+ */
 @Service
 public class ProductService extends GeneralService {
 
@@ -31,7 +34,8 @@ public class ProductService extends GeneralService {
 
     /**
      * Добавляет товар в бд
-     * @param sessionId сессия админа
+     *
+     * @param sessionId  сессия админа
      * @param productDto информация о товаре
      * @return информация о зарегестрированном в БД товаре
      */
@@ -77,9 +81,10 @@ public class ProductService extends GeneralService {
 
     /**
      * Изменяет товар в БД
-     * @param sessionId сессия админа
+     *
+     * @param sessionId  сессия админа
      * @param productDto новая информация о товаре
-     * @param productId id товара
+     * @param productId  id товара
      * @return информация об изменённом в БД товаре
      */
     public ProductDto edit(String sessionId, ProductDto productDto, long productId) throws ServiceException {
@@ -104,6 +109,12 @@ public class ProductService extends GeneralService {
         }
 
         if (productDto.getCategories() != null) {
+
+            /*
+            TODO: Перепиши данный код
+                Он слишком долгий и затратный для большого списка категорий.
+                К тому же, списки категорий могут совпадать.
+             */
 
             // Сохраняем список старых категорий товара
             List<ProductCategory> oldCategories = productDao.getCategories(productId);
@@ -146,8 +157,9 @@ public class ProductService extends GeneralService {
 
     /**
      * Удаляет товар из БД
+     *
      * @param sessionId сессия админа
-     * @param id id товара
+     * @param id        id товара
      */
     public void delete(String sessionId, long id) throws ServiceException {
         getAdmin(sessionId);
@@ -171,8 +183,9 @@ public class ProductService extends GeneralService {
 
     /**
      * Получает информацию о товаре
+     *
      * @param sessionId сессия админа
-     * @param id id товара
+     * @param id        id товара
      * @return информация о товаре из БД
      */
     public ProductDto get(String sessionId, long id) throws ServiceException {
@@ -189,9 +202,10 @@ public class ProductService extends GeneralService {
 
     /**
      * Получает список всех товаров отсортированных и отобранных по необходимым условиям
-     * @param sessionId сессия админа
+     *
+     * @param sessionId  сессия админа
      * @param categories список категорий
-     * @param order порядок сортировки
+     * @param order      порядок сортировки
      * @return список товаров
      */
     public List<ProductDto> getAll(String sessionId, List<Long> categories, SortOrder order) throws ServiceException {
@@ -231,26 +245,30 @@ public class ProductService extends GeneralService {
     }
 
     /**
-     * Получаем список всех товаров и ассоциируемых с ними категорий. Для каждого товара
-     * мы получаем пару (товар - категория). Для пар с отсутствующей категорией считается что для
-     * товара нужно получить полный список категорий
+     * Получаем список всех товаров и ассоциируемых с ними категорий.
+     * <br>
+     * Для каждого товара мы получаем пару (товар - категория).
+     * Для пар с отсутствующей категорией считается что для товара нужно получить полный список категорий.
+     *
      * @param categories id категорий, которым должны принадлежать товары
-     * @param order порядок сортировки товаров
+     * @param order      порядок сортировки товаров
      * @return список пар (товар - категория)
      */
     private List<ProductCategory> getAllProductsWithSort(List<Long> categories, SortOrder order) {
 
         if (order == null || order == SortOrder.PRODUCT) {
             // Сортировка товаров по именам
-            return  getAllProductsSortedByName(categories);
+            return getAllProductsSortedByName(categories);
         } else {
             // Получаем все товары отсортированные по именам категорий
-            return  getAllProductsCategorySorted(categories);
+            return getAllProductsCategorySorted(categories);
         }
 
     }
 
     /**
+     * Получает список всех товаров, отсортированных по категориям
+     *
      * @param categories категории, которым должны принадлежать товары.
      *                   Пустой список - все товары без категорий
      *                   Без списка - все товары
@@ -306,6 +324,8 @@ public class ProductService extends GeneralService {
     }
 
     /**
+     * Получает список всех товаров, отсортированных по их именам
+     *
      * @param categories категории, которым должны принадлежать товары.
      *                   Пустой список - все товары без категорий
      *                   Без списка - все товары
@@ -352,7 +372,9 @@ public class ProductService extends GeneralService {
     }
 
     /**
-     * @return список всех товаров без категории отсортированные по имени
+     * Получает список всех товаров без категории отсортированных по имени
+     *
+     * @return список всех товаров
      */
     private List<ProductCategory> getAllProductsWithoutCategorySorted() {
         List<ProductCategory> result = new ArrayList<>();

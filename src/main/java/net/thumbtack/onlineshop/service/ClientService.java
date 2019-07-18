@@ -15,6 +15,9 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Сервис клиентского функционала
+ */
 @Service
 public class ClientService extends GeneralService {
 
@@ -35,8 +38,9 @@ public class ClientService extends GeneralService {
 
     /**
      * Положить деньги на клиентский счёт
+     *
      * @param sessionId сессия клиента
-     * @param amount количество денег
+     * @param amount    количество денег
      */
     public AccountDto putDeposit(String sessionId, int amount) throws ServiceException {
 
@@ -49,7 +53,8 @@ public class ClientService extends GeneralService {
 
     /**
      * Купить некоторый товар
-     * @param sessionId сессия клиента
+     *
+     * @param sessionId  сессия клиента
      * @param buyProduct информиация о товаре
      * @return информация о купленном товаре
      */
@@ -81,16 +86,7 @@ public class ClientService extends GeneralService {
     /**
      * Добавляет товар в корзину
      *
-     * <b>Внимание:</b> в записи корзины указывается ссылка на продукт в БД и рядом поле
-     * с количеством этого продукта, который заказывал клиент. Получается что у нас
-     * два поля с количеством. Один из таблицы product, который говорит сколько у нас
-     * товара на складе, а другой в таблице basket, который говорит
-     * сколько товара клиент положил в свою корзину.
-     *
-     * Поэтому количество товара в корзине надо получать только через Basket.getCount()
-     * (Никакого Basket.getProduct().getCount() - это количество товара на складе!)
-     *
-     * @param sessionId сессия клиента
+     * @param sessionId  сессия клиента
      * @param buyProduct информация о товаре
      * @return информация о купленном товаре
      */
@@ -124,6 +120,7 @@ public class ClientService extends GeneralService {
 
     /**
      * Удаляет товар из корзины
+     *
      * @param sessionId сессия клиента
      * @param productId id продукта
      */
@@ -142,8 +139,9 @@ public class ClientService extends GeneralService {
 
     /**
      * Изменяет количество товара в корзине
+     *
      * @param sessionId сессия клиент
-     * @param product информация о товаре
+     * @param product   информация о товаре
      * @return содержание корзины
      */
     public List<ProductDto> editProductCount(String sessionId, ProductDto product) throws ServiceException {
@@ -167,6 +165,7 @@ public class ClientService extends GeneralService {
 
     /**
      * Получает содержимое корзины клиента
+     *
      * @param sessionId сессия клиента
      * @return содержимое корзины
      */
@@ -182,9 +181,9 @@ public class ClientService extends GeneralService {
 
     /**
      * Выкупает товар из корзины
-     * @param sessionId сессия клиента
-     * @param toBuy список товаров для покупки
      *
+     * @param sessionId сессия клиента
+     * @param toBuy     список товаров для покупки
      * @return пара из двух коллекций. Первая коллекция содержит список купленных товаров, а
      * вторая коллекция содержит список оставшихся в корзине товаров
      */
@@ -241,7 +240,8 @@ public class ClientService extends GeneralService {
     /**
      * Убирает из списка покупок все товары, которые не соответсвуют требованиям.
      * (к примеру товары, которых нет в БД или нет в текущей корзине клиента и т.д.)
-     * @param toBuy список покупок
+     *
+     * @param toBuy  список покупок
      * @param basket корзина клиента
      */
     private void removeInvalidProducts(List<ProductDto> toBuy, List<Basket> basket) {
@@ -298,7 +298,8 @@ public class ClientService extends GeneralService {
 
     /**
      * Сравнивает информацию о товаре из БД с информацией в запросе.
-     * @param product товар из бд
+     *
+     * @param product    товар из бд
      * @param buyProduct товар из запроса
      * @throws ServiceException если данные о товарах не совпадают
      */

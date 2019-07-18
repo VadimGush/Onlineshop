@@ -27,34 +27,59 @@ public class ProductDao implements Dao {
         this.manager = manager;
     }
 
+    /**
+     * Записывает товар в БД
+     *
+     * @param product товар
+     */
     public void insert(Product product) {
         manager.persist(product);
     }
 
+    /**
+     * Обновляем товар в БД
+     *
+     * @param product товар
+     */
     public void update(Product product) {
         manager.merge(product);
     }
 
+    /**
+     * Помечает товар как удалённый.
+     * <br>
+     * Удалённый товар далее исключается из любых запросов выборки, но остаётся в БД.
+     *
+     * @param product товар
+     */
     public void delete(Product product) {
-        // Товар не удаляется из БД, но помечается удалённым
-        // по той причине, что ТЗ требует чтобы клиент мог хранить в корзине
-        // уже удалённые товары
-        // manager.remove(manager.merge(product));
         product.setDeleted(true);
         manager.merge(product);
     }
 
+    /**
+     * Добавляет категорию товара
+     *
+     * @param productCategory категория товара
+     */
     public void insertCategory(ProductCategory productCategory) {
         manager.persist(productCategory);
     }
 
+    /**
+     * Удаляет категорию товара
+     *
+     * @param productCategory категория товара
+     */
     public void deleteCategory(ProductCategory productCategory) {
         manager.remove(manager.merge(productCategory));
     }
 
     /**
+     * Получает список категорий, к которым принадлежит данный товар
+     *
      * @param productId id товара
-     * @return список категорий для данного товара
+     * @return список категорий
      */
     public List<ProductCategory> getCategories(long productId) {
         CriteriaBuilder builder = manager.getCriteriaBuilder();
@@ -71,6 +96,8 @@ public class ProductDao implements Dao {
     }
 
     /**
+     * Получает товар по id
+     *
      * @param id id товара
      * @return товар по указанному id. null - если товар не найден
      */
@@ -91,7 +118,9 @@ public class ProductDao implements Dao {
     }
 
     /**
-     * @return возвращает весь список товаров
+     * Получает весь список товаров (за исключением удалённых)
+     *
+     * @return список товаров
      */
     public List<Product> getAll() {
         CriteriaBuilder builder = manager.getCriteriaBuilder();
@@ -106,6 +135,8 @@ public class ProductDao implements Dao {
     }
 
     /**
+     * Список всех товаров (за исключением удалённых) без категорий
+     *
      * @return список всех товаров, у которых нет не одной категории
      */
     public List<Product> getAllWithoutCategory() {
@@ -119,6 +150,8 @@ public class ProductDao implements Dao {
     }
 
     /**
+     * Список всех товаров (за исключением удалённых) хотя бы с одной категорией
+     *
      * @return список товаров, у которых есть хотя бы одна категория
      */
     public List<ProductCategory> getAllWithCategory() {
@@ -142,6 +175,9 @@ public class ProductDao implements Dao {
         return result;
     }
 
+    /**
+     * Удаляет таблицы категорий и товаров из БД
+     */
     public void clear() {
         manager.createNativeQuery("delete from productcategory")
                 .executeUpdate();

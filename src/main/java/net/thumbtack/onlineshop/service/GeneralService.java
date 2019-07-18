@@ -4,7 +4,10 @@ import net.thumbtack.onlineshop.database.dao.SessionDao;
 import net.thumbtack.onlineshop.database.models.Account;
 import net.thumbtack.onlineshop.database.models.Session;
 
-public class GeneralService {
+/**
+ * Абстрактный сервис с набором методов идентификации пользователей
+ */
+public abstract class GeneralService {
 
     private SessionDao sessionDao;
 
@@ -12,6 +15,13 @@ public class GeneralService {
         this.sessionDao = sessionDao;
     }
 
+    /**
+     * Получает аккаунт администратора, если пользователь не является клиентом
+     *
+     * @param sessionId сессия пользователя
+     * @return аккаунт администратора
+     * @throws ServiceException если пользователь не администратор
+     */
     Account getAdmin(String sessionId) throws ServiceException {
         Account account = getAccount(sessionId);
 
@@ -22,6 +32,13 @@ public class GeneralService {
         return account;
     }
 
+    /**
+     * Получает аккаунт клиента, если пользователь не является администратором
+     *
+     * @param sessionId сессия пользователя
+     * @return аккаунт клиента
+     * @throws ServiceException если пользователь является администратором
+     */
     Account getClient(String sessionId) throws ServiceException {
         Account account = getAccount(sessionId);
 
@@ -32,6 +49,13 @@ public class GeneralService {
         return account;
     }
 
+    /**
+     * Получает аккаунт
+     *
+     * @param sessionId сессия пользователя
+     * @return аккаунт пользователя
+     * @throws ServiceException если сессия недействительна или отсутствует
+     */
     public Account getAccount(String sessionId) throws ServiceException {
         Session session = sessionDao.get(sessionId);
 

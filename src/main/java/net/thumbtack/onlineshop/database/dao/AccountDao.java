@@ -24,14 +24,31 @@ public class AccountDao implements Dao {
         this.manager = manager;
     }
 
+    /**
+     * Добавлет аккаунт в базу данных
+     *
+     * @param account аккаунт пользователя
+     */
     public void insert(Account account) {
         manager.persist(account);
     }
 
+    /**
+     * Обновляет данные об аккаунте в БД
+     *
+     * @param account аккаунт пользователя
+     */
     public void update(Account account) {
         manager.merge(account);
     }
 
+    /**
+     * Ищет пользователя в БД под данным логином и паролем
+     *
+     * @param login    логин
+     * @param password пароль
+     * @return аккаунт пользователя или null, если пользователь с данной парой не найден
+     */
     public Account get(String login, String password) {
         CriteriaBuilder builder = manager.getCriteriaBuilder();
         CriteriaQuery<Account> criteria = builder.createQuery(Account.class);
@@ -50,6 +67,12 @@ public class AccountDao implements Dao {
         }
     }
 
+    /**
+     * Проверяет наличие пользователя с данным логином в БД
+     *
+     * @param login логин пользователя
+     * @return true - если такой пользователь уже есть
+     */
     public boolean exists(String login) {
         CriteriaBuilder builder = manager.getCriteriaBuilder();
         CriteriaQuery<Long> criteria = builder.createQuery(Long.class);
@@ -67,6 +90,11 @@ public class AccountDao implements Dao {
         manager.remove(manager.merge(account));
     }
 
+    /**
+     * Полуает список всех клиентов
+     *
+     * @return список клиентов
+     */
     public List<Account> getClients() {
         CriteriaBuilder builder = manager.getCriteriaBuilder();
 
@@ -80,6 +108,9 @@ public class AccountDao implements Dao {
         return typed.getResultList();
     }
 
+    /**
+     * Удаляет таблицу аккаунтов из БД
+     */
     public void clear() {
         manager.createNativeQuery("delete from account")
                 .executeUpdate();

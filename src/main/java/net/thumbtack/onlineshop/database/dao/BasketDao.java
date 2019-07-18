@@ -25,18 +25,49 @@ public class BasketDao implements Dao {
         this.manager = manager;
     }
 
+    /**
+     * Сохраняет в БД запись в корзине
+     *
+     * @param basket запись в корзине
+     */
     public void insert(Basket basket) {
         manager.persist(basket);
     }
 
+    /**
+     * Обновляет запись в корзине
+     *
+     * @param basket запись в корзине
+     */
     public void update(Basket basket) {
         manager.merge(basket);
     }
 
+    /**
+     * Удаляет запись в корзине
+     *
+     * @param basket запись в корзине
+     */
     public void delete(Basket basket) {
         manager.remove(manager.merge(basket));
     }
 
+    /**
+     * Получает запись из корзины
+     * <br>
+     * <b>Внимание:</b> в записи корзины указывается ссылка на продукт в БД и рядом поле
+     * с количеством этого продукта, который заказывал клиент. Получается что у нас
+     * два поля с количеством. Один из таблицы product, который говорит сколько у нас
+     * товара на складе, а другой в таблице basket, который говорит
+     * сколько товара клиент положил в свою корзину.
+     * <br>
+     * Поэтому количество товара в корзине надо получать только через Basket.getCount()
+     * (Никакого Basket.getProduct().getCount() - это количество товара на складе!)
+     *
+     * @param account   пользователь, которому принадлежит корзина
+     * @param productId id товара
+     * @return запись из корзины
+     */
     public Basket get(Account account, long productId) {
 
         CriteriaBuilder builder = manager.getCriteriaBuilder();
@@ -59,6 +90,12 @@ public class BasketDao implements Dao {
     }
 
 
+    /**
+     * Получает весь список записей в корзине
+     *
+     * @param account пользователь, которому принадлежит корзина
+     * @return содержимое корзины
+     */
     public List<Basket> get(Account account) {
 
         CriteriaBuilder builder = manager.getCriteriaBuilder();
@@ -76,6 +113,9 @@ public class BasketDao implements Dao {
 
     }
 
+    /**
+     * Удаляет всю таблицу записей в корзинах
+     */
     public void clear() {
         manager.createNativeQuery("delete from basket")
                 .executeUpdate();

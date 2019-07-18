@@ -10,6 +10,9 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Сервис для работы с категориями
+ */
 @Service
 public class CategoriesService extends GeneralService {
 
@@ -23,8 +26,9 @@ public class CategoriesService extends GeneralService {
 
     /**
      * Добавляет новую категорию
+     *
      * @param sessionId сессия админа
-     * @param category информация о категории
+     * @param category  информация о категории
      * @return добавленная категория
      */
     public CategoryDto addCategory(String sessionId, CategoryDto category) throws ServiceException {
@@ -59,8 +63,9 @@ public class CategoriesService extends GeneralService {
 
     /**
      * Получает информацию о категории
+     *
      * @param sessionId сессия админа
-     * @param id id категории
+     * @param id        id категории
      * @return категория из БД
      */
     public CategoryDto getCategory(String sessionId, long id) throws ServiceException {
@@ -77,9 +82,10 @@ public class CategoriesService extends GeneralService {
 
     /**
      * Изменяет информацию о категории
-     * @param sessionId сессия админа
+     *
+     * @param sessionId   сессия админа
      * @param categoryDto новая инфа о категории
-     * @param id id категории
+     * @param id          id категории
      * @return изменённая категория
      */
     public CategoryDto editCategory(String sessionId, CategoryDto categoryDto, long id) throws ServiceException {
@@ -126,8 +132,9 @@ public class CategoriesService extends GeneralService {
 
     /**
      * Удаляет категорию
+     *
      * @param sessionId сессия админа
-     * @param id id категории
+     * @param id        id категории
      */
     public void deleteCategory(String sessionId, long id) throws ServiceException {
 
@@ -144,6 +151,7 @@ public class CategoriesService extends GeneralService {
 
     /**
      * Получает список всех категорий
+     *
      * @param sessionId сессия админа
      * @return список категорий
      */

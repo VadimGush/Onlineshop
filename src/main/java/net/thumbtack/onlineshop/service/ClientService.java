@@ -63,7 +63,7 @@ public class ClientService extends GeneralService {
         Account account = getClient(sessionId);
         Product product = productDao.get(buyProduct.getId());
 
-        checkProducts(product, buyProduct);
+        compareProducts(product, buyProduct);
 
         if (buyProduct.getCount() > product.getCount()) {
             throw new ServiceException(ServiceException.ErrorCode.NOT_ENOUGH_PRODUCT, "count");
@@ -95,7 +95,7 @@ public class ClientService extends GeneralService {
         Account account = getClient(sessionId);
         Product product = productDao.get(buyProduct.getId());
 
-        checkProducts(product, buyProduct);
+        compareProducts(product, buyProduct);
 
         Basket already = basketDao.get(account, product.getId());
 
@@ -153,7 +153,7 @@ public class ClientService extends GeneralService {
             throw new ServiceException(ServiceException.ErrorCode.PRODUCT_NOT_FOUND, "id");
         }
 
-        checkProducts(basket.getProduct(), product);
+        compareProducts(basket.getProduct(), product);
         basket.setCount(product.getCount());
         basketDao.update(basket);
 
@@ -269,7 +269,7 @@ public class ClientService extends GeneralService {
             // Теперь сверяем что данные с бд совпадают
             // Еси нет, то выкидываем из список покупок
             try {
-                checkProducts(basketEntity.getProduct(), product);
+                compareProducts(basketEntity.getProduct(), product);
             } catch (ServiceException e) {
                 toBuy.remove(product);
                 continue;
@@ -303,7 +303,7 @@ public class ClientService extends GeneralService {
      * @param buyProduct товар из запроса
      * @throws ServiceException если данные о товарах не совпадают
      */
-    private void checkProducts(Product product, ProductDto buyProduct) throws ServiceException {
+    private void compareProducts(Product product, ProductDto buyProduct) throws ServiceException {
         if (product == null) {
             throw new ServiceException(ServiceException.ErrorCode.PRODUCT_NOT_FOUND, "id");
         }

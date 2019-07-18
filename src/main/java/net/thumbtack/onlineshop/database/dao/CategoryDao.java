@@ -24,18 +24,39 @@ public class CategoryDao implements Dao {
         this.manager = manager;
     }
 
+    /**
+     * Сохраняет категорию в БД
+     *
+     * @param category категория
+     */
     public void insert(Category category) {
         manager.persist(category);
     }
 
+    /**
+     * Обновляет категорию в БД
+     *
+     * @param category категория
+     */
     public void update(Category category) {
         manager.merge(category);
     }
 
+    /**
+     * Удаляет категорию из БД
+     *
+     * @param category категория
+     */
     public void delete(Category category) {
         manager.remove(manager.merge(category));
     }
 
+    /**
+     * Проверяет существует ли категория с данными именем
+     *
+     * @param name имя категории
+     * @return true - если категория с таким именем есть
+     */
     public boolean exists(String name) {
         CriteriaBuilder builder = manager.getCriteriaBuilder();
         CriteriaQuery<Long> criteria = builder.createQuery(Long.class);
@@ -49,6 +70,12 @@ public class CategoryDao implements Dao {
         return typed.getSingleResult() != 0;
     }
 
+    /**
+     * Получает категорию по её id
+     *
+     * @param id id категории
+     * @return категория
+     */
     public Category get(long id) {
         CriteriaBuilder builder = manager.getCriteriaBuilder();
         CriteriaQuery<Category> criteria = builder.createQuery(Category.class);
@@ -67,9 +94,9 @@ public class CategoryDao implements Dao {
     }
 
     /**
-     * Получает список всех
+     * Получает список всех категорий
      *
-     * @return
+     * @return список категорий
      */
     public List<Category> getAll() {
         CriteriaBuilder builder = manager.getCriteriaBuilder();
@@ -83,6 +110,9 @@ public class CategoryDao implements Dao {
         return typed.getResultList();
     }
 
+    /**
+     * Удаляет таблицу категорий из БД
+     */
     public void clear() {
         manager.createNativeQuery("delete from category")
                 .executeUpdate();

@@ -23,14 +23,37 @@ public class SessionDao implements Dao {
         this.manager = manager;
     }
 
+    /**
+     * Добавляет сессию в БД
+     * <br>
+     * Сессии могут совпадать по идентификаторам, так как пользователь может
+     * зайти с нескольких устройств одновременно.
+     *
+     * @param session сессия пользователя
+     */
     public void insert(Session session) {
         manager.persist(session);
     }
 
+    /**
+     * Удаляет сессию из БД
+     *
+     * @param session сессия пользователя
+     */
     public void delete(Session session) {
         manager.remove(manager.merge(session));
     }
 
+    /**
+     * Получает сессию пользователя по её ID.
+     * <br>
+     * Каждая сессия содержит в себе уникальный ключ сформированный по UUID.
+     * Сессия содержит в себе внутри UUID и ссылку на пользователя, которому принадлежит
+     * данная сессия.
+     *
+     * @param UUID идентификатор сессии
+     * @return экземпляр сессии
+     */
     public Session get(String UUID) {
         CriteriaBuilder builder = manager.getCriteriaBuilder();
         CriteriaQuery<Session> criteria = builder.createQuery(Session.class);
@@ -49,6 +72,9 @@ public class SessionDao implements Dao {
 
     }
 
+    /**
+     * Удаляет таблицу сессий из БД
+     */
     public void clear() {
         manager.createNativeQuery("delete from session")
                 .executeUpdate();

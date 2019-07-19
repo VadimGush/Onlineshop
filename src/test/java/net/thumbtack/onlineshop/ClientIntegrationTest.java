@@ -370,7 +370,7 @@ public class ClientIntegrationTest {
      */
     @Test
     public void testLogoutWithWrongSession() throws Exception {
-        utils.delete("/api/sessions", null)
+        utils.delete("/api/sessions", "wrewr")
                 .andExpect(status().isOk())
                 .andExpect(content().string("{}"));
     }
@@ -984,7 +984,7 @@ public class ClientIntegrationTest {
 
         node = utils.read(result);
         assertEquals(1, node.size());
-        assertEquals((int)toBasket.getCount() * 2, node.get(0).get("count").asInt());
+        assertEquals(toBasket.getCount() * 2, node.get(0).get("count").asInt());
     }
 
     /**

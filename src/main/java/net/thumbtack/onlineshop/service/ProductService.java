@@ -110,41 +110,37 @@ public class ProductService extends GeneralService {
 
         if (productDto.getCategories() != null) {
 
-            /*
-            TODO: Перепиши данный код
-                Он слишком долгий и затратный для большого списка категорий.
-                К тому же, списки категорий могут совпадать.
-             */
-
-            // Сохраняем список старых категорий товара
-            List<ProductCategory> oldCategories = productDao.getCategories(productId);
-
-            // Формируем новый список категорий
-            List<ProductCategory> newCategories = new ArrayList<>();
-
             // Избавляемся от повторений
-            Set<Long> categories = new HashSet<>(productDto.getCategories());
+            Set<ProductCategory> categories = new HashSet<>();
 
-            // Добавляем новые категории
-            for (long categoryId : categories) {
+            // Сформируем новый список категорий
+            for (long categoryId : productDto.getCategories()) {
                 Category category = categoryDao.get(categoryId);
 
                 if (category == null) {
                     throw new ServiceException(ServiceException.ErrorCode.CATEGORY_NOT_FOUND, "categories");
                 }
 
-                newCategories.add(new ProductCategory(product, category));
+                categories.add(new ProductCategory(product, category));
             }
 
-            // Если никаких ошибок не было, то удаляем старые
+            // Получаем список старых категорий
+            List<ProductCategory> oldCategories = productDao.getCategories(productId);
+
             for (ProductCategory category : oldCategories) {
-                productDao.deleteCategory(category);
+
+                // Если старой категории нет в новом списке, то удаляем
+                if (!categories.contains(category)) {
+                    productDao.deleteCategory(category);
+                } else {
+                    // Если она там есть, то просто оставим в БД как есть
+                    // и не будем добавлять снова
+                    categories.remove(category);
+                }
             }
 
-            // И добавляем новые
-            for (ProductCategory category : newCategories) {
-                productDao.insertCategory(category);
-            }
+            // Теперь добавим все новые, которые остались
+            categories.forEach(category -> productDao.insertCategory(category));
 
         }
 

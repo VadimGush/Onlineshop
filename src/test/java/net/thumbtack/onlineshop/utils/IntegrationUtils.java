@@ -171,6 +171,10 @@ public class IntegrationUtils {
         return read(result).get("id").asLong();
     }
 
+    public String registerDefaultAdmin() throws Exception {
+        return register(getDefaultAdmin());
+    }
+
     public AdminDto getDefaultAdmin() {
         AdminDto admin = new AdminDto();
         admin.setFirstName("Вадим");

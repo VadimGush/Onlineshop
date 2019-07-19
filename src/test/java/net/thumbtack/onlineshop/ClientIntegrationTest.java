@@ -16,8 +16,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -48,11 +50,13 @@ public class ClientIntegrationTest {
         utils = new IntegrationUtils(mvc);
     }
 
+    /**
+     * Успешная регистрация клиента
+     */
     @Test
     public void testRegisterClient() throws Exception {
-        // Успешная регистрациия клиента
-
         ClientDto client = utils.getDefaultClient();
+
         // Тире должны будут удалится из записи
         client.setPhone("+7-964-995-18-43");
 
@@ -76,10 +80,11 @@ public class ClientIntegrationTest {
         assertNull(node.get("password"));
     }
 
+    /**
+     * Проверяем, что логин администратора и клиента не могут совпадать
+     */
     @Test
     public void testRegisterClientWithSameAdminLogin() throws Exception {
-        // Нельзя зарегистрировать клиента под тем же логином, что и администратора
-
         utils.register(utils.getDefaultAdmin());
 
         ClientDto client = utils.getDefaultClient();
@@ -92,10 +97,11 @@ public class ClientIntegrationTest {
         utils.assertError(result, Pair.of("LoginInUse", "login"));
     }
 
+    /**
+     * Нельзя создать двух клиентов с одинаковыми логинами
+     */
     @Test
     public void testRegisterClientWithSameLogin() throws Exception {
-        // Нельзя регистрировать клиента с занятым логином
-
         utils.register(utils.getDefaultClient());
 
         ClientDto client = utils.getDefaultClient();
@@ -107,10 +113,11 @@ public class ClientIntegrationTest {
         utils.assertError(result, Pair.of("LoginInUse", "login"));
     }
 
+    /**
+     * Нельзя получить список товаров с неверной сессией
+     */
     @Test
     public void testGetProductWithoutLogin() throws Exception {
-        // Пытаемся получить данные о товаре без логина
-
         MvcResult result = utils.get("/api/products/3", "werew")
                 .andExpect(status().isBadRequest())
                 .andReturn();
@@ -118,10 +125,11 @@ public class ClientIntegrationTest {
         utils.assertErrorCode(result, "NotLogin");
     }
 
+    /**
+     * Проверяем получение информации о несуществующем товаре
+     */
     @Test
     public void testGetProductNotExist() throws Exception {
-        // Пытаемся получить информацию о несуществующей товаре
-
         String session = utils.register(utils.getDefaultClient());
 
         MvcResult result = utils.get("/api/products/3", session)
@@ -131,6 +139,9 @@ public class ClientIntegrationTest {
         utils.assertErrorCode(result, "ProductNotFound");
     }
 
+    /**
+     * Получение информации о товарах
+     */
     @Test
     public void testGetProduct() throws Exception {
         // Получем полную информацию о товаре
@@ -163,10 +174,11 @@ public class ClientIntegrationTest {
 
     }
 
+    /**
+     * Проверяем что нельзя зарегестрироваться с пустым отчеством
+     */
     @Test
     public void testRegisterWithoutPatronymic() throws Exception {
-
-        // Отчество может отсутствовать, но не может быть пустым
         ClientDto client = utils.getDefaultClient();
         client.setPatronymic("");
 
@@ -177,10 +189,11 @@ public class ClientIntegrationTest {
         utils.assertError(result, Pair.of("OptionalRussianName", "patronymic"));
     }
 
+    /**
+     * Проверяем что можно зарегистрироваться без отчества
+     */
     @Test
     public void testRegisterWithoutPatronymicNull() throws Exception {
-
-        // Отчество может отсутствовать
         ClientDto client = utils.getDefaultClient();
         client.setPatronymic(null);
 
@@ -192,17 +205,17 @@ public class ClientIntegrationTest {
         assertNull(node.get("patronymic"));
     }
 
+    /**
+     * Проверяем валидацию по обязательным полям (они не могут быть пустыми)
+     */
     @Test
     public void testRegisterWithRequiredFields() throws Exception {
-
         ClientDto client = new ClientDto();
         client.setFirstName("");
         client.setLastName("");
-
         client.setEmail("");
         client.setAddress("");
         client.setPhone("");
-
         client.setLogin("");
         client.setPassword("");
 
@@ -221,9 +234,11 @@ public class ClientIntegrationTest {
         ));
     }
 
+    /**
+     * Проверяем валидацию формата полей
+     */
     @Test
     public void testRegistrationWithWrongFields() throws Exception {
-
         ClientDto client = new ClientDto();
         // Неверный формат почты
         client.setEmail("vadim.");
@@ -258,9 +273,11 @@ public class ClientIntegrationTest {
         ));
     }
 
+    /**
+     * Логин и логаут клиента
+     */
     @Test
     public void testLoginAndLogout() throws Exception {
-
         // Этот самый клиент, который будет зареган через registerClient()
         ClientDto client = utils.getDefaultClient();
         // Региструем пользователя под логином DeNis
@@ -292,12 +309,13 @@ public class ClientIntegrationTest {
 
         assertNull(node.get("login"));
         assertNull(node.get("password"));
-
     }
 
+    /**
+     * Проверем логин с неверным паролем
+     */
     @Test
     public void testLoginWithWrongPassword() throws Exception {
-
         utils.register(utils.getDefaultClient());
 
         MvcResult result = utils.post("/api/sessions", null, new LoginDto(
@@ -308,20 +326,24 @@ public class ClientIntegrationTest {
         utils.assertErrorCode(result, "UserNotFound");
     }
 
+    /**
+     * Проверяем логин с неверным логином
+     */
     @Test
     public void testLoginWithWrongLogin() throws Exception {
-
-        MvcResult result = utils.post("/api/sessions", null, new LoginDto(
-                "ewrw1", "wer2343242"))
+        MvcResult result = utils.post("/api/sessions", null,
+                new LoginDto("ewrw1", "wer2343242"))
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
         utils.assertErrorCode(result, "UserNotFound");
     }
 
+    /**
+     * Проверяем что нельзя войти без логина и пароля
+     */
     @Test
     public void testLoginWithEmptyFields() throws Exception {
-
         MvcResult result = utils.post("/api/sessions", null, new LoginDto())
                 .andExpect(status().isBadRequest())
                 .andReturn();
@@ -333,18 +355,31 @@ public class ClientIntegrationTest {
 
     }
 
+    /**
+     * Проверяем что выход без сессии работает
+     */
     @Test
     public void testLogoutWithoutSession() throws Exception {
-
-        // Выход без сессии тоже работает
         utils.delete("/api/sessions", null)
                 .andExpect(status().isOk())
                 .andExpect(content().string("{}"));
     }
 
+    /**
+     * Проверяем что выход с неверной сессией тоже работает
+     */
+    @Test
+    public void testLogoutWithWrongSession() throws Exception {
+        utils.delete("/api/sessions", null)
+                .andExpect(status().isOk())
+                .andExpect(content().string("{}"));
+    }
+
+    /**
+     * Получение информации о текущем аккаунте
+     */
     @Test
     public void testGetAccount() throws Exception {
-
         ClientDto client = utils.getDefaultClient();
         String session = utils.register(client);
 
@@ -366,6 +401,10 @@ public class ClientIntegrationTest {
         assertNull(node.get("password"));
     }
 
+    /**
+     * Проверяем что получить информацию об аккаунте с неверной сессией
+     * нельзя
+     */
     @Test
     public void testGetAccountWithoutLogin() throws Exception {
         // Проверяем что с неверной сессией мы данные не получим
@@ -376,9 +415,11 @@ public class ClientIntegrationTest {
         utils.assertErrorCode(result, "NotLogin");
     }
 
+    /**
+     * Проверяем получение информации о счёте клиента
+     */
     @Test
     public void testGetDeposit() throws Exception {
-
         ClientDto client = utils.getDefaultClient();
         String session = utils.register(client);
 
@@ -406,9 +447,11 @@ public class ClientIntegrationTest {
         assertNull(node.get("password"));
     }
 
+    /**
+     * Занесение денег на счёт клиента
+     */
     @Test
     public void testAddDeposit() throws Exception {
-
         ClientDto client = utils.getDefaultClient();
         String session = utils.register(client);
 
@@ -430,6 +473,9 @@ public class ClientIntegrationTest {
         assertNull(node.get("password"));
     }
 
+    /**
+     * Нельзя положить на счёт клиента отрицательное количество денег
+     */
     @Test
     public void testAddDepositNegative() throws Exception {
 
@@ -442,6 +488,9 @@ public class ClientIntegrationTest {
         utils.assertError(result, Pair.of("DecimalMin", "deposit"));
     }
 
+    /**
+     * Нельзя получить информацию о счёте с неверной сессией
+     */
     @Test
     public void testGetDepositWithoutLogin() throws Exception {
         MvcResult result = utils.get("/api/deposits", "erew")
@@ -451,6 +500,9 @@ public class ClientIntegrationTest {
         utils.assertErrorCode(result, "NotLogin");
     }
 
+    /**
+     * Нельзя положить деньги на счёт с неверной сессией
+     */
     @Test
     public void testPutDepositWithoutLogin() throws Exception {
         MvcResult result = utils.put("/api/deposits", "rwer", new DepositDto(34))
@@ -460,9 +512,11 @@ public class ClientIntegrationTest {
         utils.assertErrorCode(result, "NotLogin");
     }
 
+    /**
+     * Нельзя купить товар с неверной сессией
+     */
     @Test
     public void testBuyProductWithoutLogin() throws Exception {
-
         ProductDto product = utils.getProduct("product", 1, null);
 
         MvcResult result = utils.post("/api/purchases", "rwe", product)
@@ -472,10 +526,11 @@ public class ClientIntegrationTest {
         utils.assertErrorCode(result, "NotLogin");
     }
 
+    /**
+     * Нельзя купить товар, которого нет в БД
+     */
     @Test
     public void testBuyProductNotExist() throws Exception {
-        // Пытаемся купить товар, которого нет в БД
-
         String session = utils.register(utils.getDefaultClient());
 
         ProductDto product = new ProductDto();
@@ -490,10 +545,11 @@ public class ClientIntegrationTest {
         utils.assertError(result, Pair.of("ProductNotFound", "id"));
     }
 
+    /**
+     * Нельзя купить товар если данные о нём указаны неверно
+     */
     @Test
     public void testBuyProductWithWrongInfo() throws Exception {
-        // Пытаемся купить товар, но неверно указываем данные о нём
-
         // Создадим товар от имени администратора
         String adminSession = utils.register(utils.getDefaultAdmin());
         ProductDto product = new ProductDto();
@@ -528,10 +584,11 @@ public class ClientIntegrationTest {
         utils.assertError(result, Pair.of("WrongProductInfo", "price"));
     }
 
+    /**
+     * Нельзя купить товар если его недостаточно на складе
+     */
     @Test
     public void testBuyProductNotEnough() throws Exception {
-        // Пытаемся купить товара больше чем есть на складе
-
         // Создадим товар
         String adminSession = utils.register(utils.getDefaultAdmin());
         ProductDto product = new ProductDto();
@@ -557,10 +614,11 @@ public class ClientIntegrationTest {
 
     }
 
+    /**
+     * Нельзя купить товар если сумма покупки превышает количество денег на счету
+     */
     @Test
     public void testBuyProductNotEnoughMoney() throws Exception {
-        // Пытаемся купить товара на сумму больше чем наш депозит
-
         // Создадим товар
         String adminSession = utils.register(utils.getDefaultAdmin());
         ProductDto product = new ProductDto();
@@ -588,6 +646,9 @@ public class ClientIntegrationTest {
         utils.assertErrorCode(result, "NotEnoughMoney");
     }
 
+    /**
+     * Успешная покупка товара
+     */
     @Test
     public void testBuyProduct() throws Exception {
         // Покупаем товар
@@ -755,36 +816,30 @@ public class ClientIntegrationTest {
         String adminSession = utils.register(utils.getDefaultAdmin());
         String session = utils.register(utils.getDefaultClient());
 
-        // Подгатавливаем список
-        long pen = utils.register(adminSession,
-                utils.getProduct("pen", 10_000, null));
-
-        long array = utils.register(adminSession,
-                utils.getProduct("array", 10_000, null));
+        // Подгатавливаем список товаров
+        long pen = utils.register(adminSession, utils.getProduct("pen", 10_000, null));
+        long array = utils.register(adminSession, utils.getProduct("array", 10_000, null));
 
         // Список категорий для товаров
         long bat = utils.register(adminSession, new CategoryDto("bat"));
         long wat = utils.register(adminSession, new CategoryDto("wat"));
         long at = utils.register(adminSession, new CategoryDto("at"));
 
-        // И пару товаров зависящих от категорий
-        utils.register(adminSession,
-                utils.getProduct("xen", 10_000, Collections.singletonList(at)));
+        // И список товаров с категориями
+        utils.register(adminSession, utils.getProduct("xen", 10_000, Collections.singletonList(at)));
+        utils.register(adminSession, utils.getProduct("apple", 10_000, Collections.singletonList(wat)));
 
-        utils.register(adminSession,
-                utils.getProduct("apple", 10_000, Collections.singletonList(wat)));
-
+        // Id одного товара обязательно запомним
         long berretta = utils.register(adminSession,
                 utils.getProduct("berretta", 10_000, Arrays.asList(at, wat)));
 
-        utils.register(adminSession,
-                utils.getProduct("warcraft", 10_000, Collections.singletonList(bat)));
+        // И ещё один товар
+        utils.register(adminSession, utils.getProduct("warcraft", 10_000, Collections.singletonList(bat)));
 
         // И теперь получем списки от имени клиента
         MvcResult result = utils.get("/api/products?order=category", session)
                 .andExpect(status().isOk())
                 .andReturn();
-
         JsonNode node = utils.read(result);
 
         /*
@@ -803,7 +858,6 @@ public class ClientIntegrationTest {
          */
 
         // Проверяем первые два продукта без категорий
-
         assertEquals(array, node.get(0).get("id").asLong());
         assertEquals("array", node.get(0).get("name").asText());
         assertEquals(10_000, node.get(0).get("price").asInt());
@@ -876,9 +930,11 @@ public class ClientIntegrationTest {
     }
 
 
+    /**
+     * Нельзя добавить товар в корзину с неверной сессией
+     */
     @Test
     public void testAddProductToBasketWithoutLogin() throws Exception {
-
         ProductDto product = utils.getProduct("product", 1, null);
 
         MvcResult result = utils.post("/api/baskets", "erwe", product)
@@ -888,9 +944,11 @@ public class ClientIntegrationTest {
         utils.assertErrorCode(result, "NotLogin");
     }
 
+    /**
+     * Успешное добавление товара
+     */
     @Test
     public void testAddProduct() throws Exception {
-
         String session = utils.register(utils.getDefaultClient());
         String adminSession = utils.register(utils.getDefaultAdmin());
 
@@ -904,6 +962,7 @@ public class ClientIntegrationTest {
         toBasket.setPrice(product.getPrice());
         // Добавим больше товара чем есть на складе
         toBasket.setCount(10);
+
         // Денег у клиента тоже нет, но это не должно помешать
         // добавить товар в корзину
 
@@ -920,10 +979,11 @@ public class ClientIntegrationTest {
 
     }
 
+    /**
+     * Нельзя добавить товар в корзину с неверной информацией
+     */
     @Test
     public void testAddProductWrongInfo() throws Exception {
-        // Попытаемся добавить товар в корзину с неверными данными
-
         String session = utils.register(utils.getDefaultClient());
         String adminSession = utils.register(utils.getDefaultAdmin());
 
@@ -965,6 +1025,9 @@ public class ClientIntegrationTest {
         utils.assertError(result, Pair.of("WrongProductInfo", "price"));
     }
 
+    /**
+     * Проверяем что по умолчанию количество товара равно единице
+     */
     @Test
     public void testAddProductWithDefaultCount() throws Exception {
         // По умолчанию количество товаар равно единицы
@@ -990,10 +1053,11 @@ public class ClientIntegrationTest {
         assertEquals(1, node.get(0).get("count").asInt());
     }
 
+    /**
+     * Проверяем что нельзя добавить товар с отрицательным количеством
+     */
     @Test
     public void testAddProductWithNegativeCount() throws Exception {
-        // Нельзя добавить товар с отрицательным количеством
-
         String session = utils.register(utils.getDefaultClient());
 
         ProductDto toBasket = new ProductDto();
@@ -1012,9 +1076,11 @@ public class ClientIntegrationTest {
         ));
     }
 
+    /**
+     * Удаление товара из корзины
+     */
     @Test
     public void testDeleteFromBasket() throws Exception {
-
         String adminSession = utils.register(utils.getDefaultAdmin());
         String session = utils.register(utils.getDefaultClient());
 
@@ -1049,9 +1115,11 @@ public class ClientIntegrationTest {
     }
 
 
+    /**
+     * Нельзя удалить товар из корзины с неверной сессией
+     */
     @Test
     public void testDeleteFromBasketWithoutLogin() throws Exception {
-
         MvcResult result = utils.delete("/api/baskets/3", "wrew")
                 .andExpect(status().isBadRequest())
                 .andReturn();
@@ -1059,9 +1127,11 @@ public class ClientIntegrationTest {
         utils.assertErrorCode(result, "NotLogin");
     }
 
+    /**
+     * Нельзя изменить количество товара в корзине с неверной сессией
+     */
     @Test
     public void testEditProductCountWithoutLogin() throws Exception {
-
         ProductDto product = utils.getProduct("product", null, null);
 
         MvcResult result = utils.put("/api/baskets", "werwe", product)
@@ -1071,9 +1141,11 @@ public class ClientIntegrationTest {
         utils.assertErrorCode(result, "NotLogin");
     }
 
+    /**
+     * Нельзя изменить количество товара в корзине не указав количество в запросе
+     */
     @Test
     public void testEditCountWithoutCount() throws Exception {
-
         String session = utils.register(utils.getDefaultClient());
 
         // Добавлаем товар
@@ -1098,12 +1170,17 @@ public class ClientIntegrationTest {
 
     }
 
+    /**
+     * Нельзя изменить количество товара в корзине указав неверные данные
+     */
     @Test
     public void testEditCountProductWithWrongInfo() throws Exception {
-
         String session = utils.register(utils.getDefaultClient());
+        // Регистрируем товар
+        String adminSession = utils.registerDefaultAdmin();
+        long productId = utils.register(adminSession, utils.getProduct("product", 100, null));
 
-        // id не найден
+        // id не найден, потому что товара ещё нет в корзине
         ProductDto product = new ProductDto();
         product.setId(1L);
 
@@ -1113,18 +1190,132 @@ public class ClientIntegrationTest {
 
         utils.assertError(result, Pair.of("ProductNotFound", "id"));
 
-        // Регистрируем товар
+        // Добавляем товар в корзину
+        utils.post("/api/baskets", session, new ProductDto(productId, "product", 100, 100));
 
         // Название неверно
+        product = new ProductDto();
+        product.setId(productId);
+        product.setName("produc234jt");
+        product.setPrice(product.getPrice());
+        product.setCount(10);
+
+        result = utils.put("/api/baskets", session, product)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertError(result, Pair.of("WrongProductInfo", "name"));
 
         // Цена товара не верно
+        product = new ProductDto();
+        product.setId(productId);
+        product.setName("product");
+        product.setPrice(1);
+        product.setCount(11);
+
+        result = utils.put("/api/baskets", session, product)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertError(result, Pair.of("WrongProductInfo", "price"));
+
+        // Нельзя отрицательное количество
+        product = new ProductDto();
+        product.setId(productId);
+        product.setName("product");
+        product.setPrice(1);
+        product.setCount(-1);
+
+        result = utils.put("/api/baskets", session, product)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertError(result, Pair.of("DecimalMin", "count"));
     }
 
+    /**
+     * Изменение количества товара в корзине
+     */
+    @Test
+    public void testEditProductCount() throws Exception {
+        String session = utils.register(utils.getDefaultClient());
+        String adminSession = utils.registerDefaultAdmin();
 
+        // Создаём два товара
+        long product1 = utils.register(adminSession, new ProductDto("product1", 100, 100));
+        long product2 = utils.register(adminSession, new ProductDto("product2", 100, 100));
 
+        // Добавляем товары в корзину
+        utils.post("/api/baskets", session, new ProductDto(product1, "product1", 100, 100));
+        utils.post("/api/baskets", session, new ProductDto(product2, "product2", 100, 100));
+
+        // Проверим что можно изменить количество
+        // вне зависимости от того, сколько есть его на складе
+        MvcResult result = utils.put("/api/baskets", session,
+                new ProductDto(product1, "product1", 100, 1000))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        // Проверяем что запрос возвращает содержимое корзины
+        JsonNode node = utils.read(result);
+        assertEquals(2, node.size());
+        assertEquals(product1, node.get(0).get("id").asLong());
+        assertEquals("product1", node.get(0).get("name").asText());
+        assertEquals(100, node.get(0).get("price").asInt());
+        assertEquals(1000, node.get(0).get("count").asInt());
+
+        assertEquals(product2, node.get(1).get("id").asLong());
+        assertEquals("product2", node.get(1).get("name").asText());
+        assertEquals(100, node.get(1).get("price").asInt());
+        assertEquals(100, node.get(1).get("count").asInt());
+    }
+
+    /**
+     * Можно изменить количество удалённого товара в корзине
+     * (удалённого из списка товаров, а не из корзины)
+     */
+    @Test
+    public void testEditProductCountDeleted() throws Exception {
+        String session = utils.register(utils.getDefaultClient());
+        String adminSession = utils.registerDefaultAdmin();
+
+        // Создаём два товара
+        long product1 = utils.register(adminSession, new ProductDto("product1", 100, 100));
+        long product2 = utils.register(adminSession, new ProductDto("product2", 100, 100));
+
+        // Добавляем товары в корзину
+        utils.post("/api/baskets", session, new ProductDto(product1, "product1", 100, 100));
+        utils.post("/api/baskets", session, new ProductDto(product2, "product2", 100, 100));
+
+        // Удаляем второй товар
+        utils.delete("/api/products/" + product1, adminSession)
+                .andExpect(status().isOk());
+
+        // Проверим что можно изменить количество удалённого товара
+        MvcResult result = utils.put("/api/baskets", session,
+                new ProductDto(product1, "product1", 100, 1000))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        // Проверяем что запрос возвращает содержимое корзины
+        JsonNode node = utils.read(result);
+        assertEquals(2, node.size());
+        assertEquals(product1, node.get(0).get("id").asLong());
+        assertEquals("product1", node.get(0).get("name").asText());
+        assertEquals(100, node.get(0).get("price").asInt());
+        assertEquals(1000, node.get(0).get("count").asInt());
+
+        assertEquals(product2, node.get(1).get("id").asLong());
+        assertEquals("product2", node.get(1).get("name").asText());
+        assertEquals(100, node.get(1).get("price").asInt());
+        assertEquals(100, node.get(1).get("count").asInt());
+    }
+
+    /**
+     * Нельзя получить содержимое корзины без логина
+     */
     @Test
     public void testGetBasketWithoutLogin() throws Exception {
-
         MvcResult result = utils.get("/api/baskets", "werwe")
                 .andExpect(status().isBadRequest())
                 .andReturn();
@@ -1132,9 +1323,11 @@ public class ClientIntegrationTest {
         utils.assertErrorCode(result, "NotLogin");
     }
 
+    /**
+     * Получение содержимого корзины (и удалённых товаров в том числе)
+     */
     @Test
     public void testGetBasket() throws Exception {
-
         // Добавим два товара
         String adminSession = utils.register(utils.getDefaultAdmin());
 
@@ -1179,6 +1372,9 @@ public class ClientIntegrationTest {
         assertEquals(15, node.get(1).get("count").asInt());
     }
 
+    /**
+     * Нельзя выкупить корзине с неверной сессией
+     */
     @Test
     public void testBuyBasketWithoutLogin() throws Exception {
 
@@ -1188,6 +1384,128 @@ public class ClientIntegrationTest {
                 .andReturn();
 
         utils.assertErrorCode(result, "NotLogin");
+    }
+
+    /**
+     * Покупка товаров из корзины
+     */
+    @Test
+    public void testBuyBasket() throws Exception {
+
+        // Сначала создадим товары
+        String adminSession = utils.registerDefaultAdmin();
+
+        List<Long> products = new ArrayList<>();
+        for (int i = 0; i < 7; ++i) {
+            products.add(
+                    utils.register(adminSession, new ProductDto("product" + i, 12, 100))
+            );
+        }
+
+        // Все товары добавляем в корзину
+        String session = utils.register(utils.getDefaultClient());
+
+        for (int i = 0; i < products.size(); ++i) {
+            utils.post("/api/baskets", session, new ProductDto(products.get(i), "product" + i, 12, 100))
+                    .andExpect(status().isOk());
+        }
+
+        // Одного товара у нас будет больше чем на складе
+        // Пусть это будет пятый товар
+        utils.put("/api/baskets", session, new ProductDto(products.get(4), "product4", 12, 1000))
+                .andExpect(status().isOk());
+        // Один товар был удалён из базы данных (пусть будет шестой)
+        utils.delete("/api/products/" + products.get(5), adminSession)
+                .andExpect(status().isOk());
+
+        // Теперь начнём составлять корзину
+        List<ProductDto> toBuy = new ArrayList<>();
+        // (успешный) первый товар мы выкупим частично
+        toBuy.add(new ProductDto(products.get(0), "product0", 12, 50));
+        // (успешный) второй товар выкупил полностью
+        toBuy.add(new ProductDto(products.get(1), "product1", 12, 100));
+        // (успешный) третий товар без количество (будет выкуплен полностью, сколько указано в корзине)
+        toBuy.add(new ProductDto(products.get(2), "product2", 12, null));
+        // (успешный) четвёртый товар количество больше чем в корзине
+        // будет куплено столько, сколько есть в корзине
+        toBuy.add(new ProductDto(products.get(3), "product3", 12, 120));
+
+        // (отклонён) пятый товар выкупит сколько в корзине, а в корзине больше чем на складе
+        toBuy.add(new ProductDto(products.get(4), "product4", 12, null));
+        // (отклёнён) шестой товар удалён из базы данных
+        toBuy.add(new ProductDto(products.get(5), "product5", 12, 100));
+        // (отклёнён) товар с неверными данным
+        toBuy.add(new ProductDto(products.get(6), "prdct6", 13, 100));
+
+        // Теперь выполняем запрос на покупку товаров
+        MvcResult result = utils.post("/api/purchases/baskets", session, toBuy)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        // Денег-то у нас нет!
+        utils.assertErrorCode(result, "NotEnoughMoney");
+
+        // Теперь положим деньги на счёт и заново выполним запрос
+        utils.put("/api/deposits", session, new DepositDto(100_000))
+                .andExpect(status().isOk());
+
+        // И выполним запрос снова
+        result = utils.post("/api/purchases/baskets", session, toBuy)
+                .andExpect(status().isOk())
+                .andReturn();
+
+        // Запрос вернёт нам два списка, вот их отдельно и будет обрабатывать
+        JsonNode bought = utils.read(result).get("bought");
+        JsonNode remaining = utils.read(result).get("remaining");
+
+        // У нас куплено четыре товара
+        assertEquals(4, bought.size());
+
+        // Первый товар
+        assertEquals((long)products.get(0), bought.get(0).get("id").asLong());
+        assertEquals("product0", bought.get(0).get("name").asText());
+        assertEquals(12, bought.get(0).get("price").asInt());
+        assertEquals(50, bought.get(0).get("count").asInt());
+
+        // Другие трое с одинаковым количеством
+        for (int i = 1; i <= 3; ++i) {
+            assertEquals((long) products.get(i), bought.get(i).get("id").asLong());
+            assertEquals("product" + i, bought.get(i).get("name").asText());
+            assertEquals(12, bought.get(i).get("price").asInt());
+            assertEquals(100, bought.get(i).get("count").asInt());
+        }
+
+        // Теперь проверяем что осталось в корзине
+        // Должно остаться четыре наименования
+        assertEquals(4, remaining.size());
+
+        // Первый товар мы не выкупили полностью
+        assertEquals((long)products.get(0), remaining.get(0).get("id").asLong());
+        assertEquals("product0", remaining.get(0).get("name").asText());
+        assertEquals(12, remaining.get(0).get("price").asInt());
+        assertEquals(50, remaining.get(0).get("count").asInt());
+
+        assertEquals((long)products.get(4), remaining.get(1).get("id").asLong());
+        assertEquals("product4", remaining.get(1).get("name").asText());
+        assertEquals(12, remaining.get(1).get("price").asInt());
+        assertEquals(1000, remaining.get(1).get("count").asInt());
+
+        // Остальные два товара без изменений с одинаковым количеством
+        for (int i = 2; i <= 3; ++i) {
+            assertEquals((long)products.get(i+3), remaining.get(i).get("id").asLong());
+            assertEquals("product" + (i+3), remaining.get(i).get("name").asText());
+            assertEquals(12, remaining.get(i).get("price").asInt());
+            assertEquals(100, remaining.get(i).get("count").asInt());
+        }
+
+        // Проверим что деньги на счету были сняты
+        result = utils.get("/api/deposits", session)
+                .andExpect(status().isOk())
+                .andReturn();
+
+        JsonNode node = utils.read(result);
+        assertEquals(100_000 - 350 * 12, node.get("deposit").asInt());
+
     }
 
 }

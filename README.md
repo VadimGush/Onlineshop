@@ -4,12 +4,15 @@
 ## Сборка и запуск
 
 ### База данных
-Логин, пароль пользователя и имя базы данных можно указать ``config.properties``
+Логин, пароль пользователя и имя базы данных можно указать ``main/resources/config.properties``.
+
+Для тестирования системы используйте отдельную базу данных и укажите её настройки в 
+``test/resources/config-test.properties``.
 
 **Внимание**: база данных должна иметь кодировку UTF-8. Установить данную кодировку
 можно использовав команду ниже (MySQL):
 ```sql
-alter database `onlineshop` character set utf8 collate utf8_general_ci
+alter database `<database_name>` character set utf8 collate utf8_general_ci
 ```
 
 ### Сервер

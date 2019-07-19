@@ -17,7 +17,8 @@ public class ServiceException extends Exception {
         SAME_CATEGORY_NAME      ("SameCategoryName", "Категория с таким именем уже существует"),
         SECOND_SUBCATEGORY      ("SecondSubcategory", "Родитель категории не может быть подкатегорией"),
         CATEGORY_TO_SUBCATEGORY ("CategoryToSubcategory", "Нельзя изменить категорию на подкатегорию"),
-        EDIT_CATEGORY_EMPTY     ("EditCategoryEmpty", "Хотя бы одно поле должно быть заполнено");
+        EDIT_CATEGORY_EMPTY     ("EditCategoryEmpty", "Хотя бы одно поле должно быть заполнено"),
+        REQUIRED_COUNT          ("RequiredCount", "Не указано количество товара");
 
         private String errorCode;
         private String message;

@@ -889,6 +889,167 @@ public class ClientIntegrationTest {
     }
 
     @Test
+    public void testAddProduct() throws Exception {
+
+        String session = utils.register(utils.getDefaultClient());
+        String adminSession = utils.register(utils.getDefaultAdmin());
+
+        // По умолчанию количество товара = 0
+        ProductDto product = utils.getProduct("product", 100, null);
+        long productId = utils.register(adminSession, product);
+
+        ProductDto toBasket = new ProductDto();
+        toBasket.setId(productId);
+        toBasket.setName(product.getName());
+        toBasket.setPrice(product.getPrice());
+        // Добавим больше товара чем есть на складе
+        toBasket.setCount(10);
+        // Денег у клиента тоже нет, но это не должно помешать
+        // добавить товар в корзину
+
+        MvcResult result = utils.post("/api/baskets", session, toBasket)
+                .andExpect(status().isOk())
+                .andReturn();
+
+        JsonNode node = utils.read(result);
+        assertEquals(1, node.size());
+        assertEquals(productId, node.get(0).get("id").asLong());
+        assertEquals(product.getName(), node.get(0).get("name").asText());
+        assertEquals((int)product.getPrice(), node.get(0).get("price").asInt());
+        assertEquals((int)toBasket.getCount(), node.get(0).get("count").asInt());
+
+    }
+
+    @Test
+    public void testAddProductWrongInfo() throws Exception {
+        // Попытаемся добавить товар в корзину с неверными данными
+
+        String session = utils.register(utils.getDefaultClient());
+        String adminSession = utils.register(utils.getDefaultAdmin());
+
+        ProductDto product = utils.getProduct("product", 100, null);
+        long productId = utils.register(adminSession, product);
+
+        // Товар с неверным Id
+        ProductDto toBasket = new ProductDto();
+        toBasket.setId(-1L);
+        toBasket.setName(product.getName());
+        toBasket.setPrice(product.getPrice());
+
+        MvcResult result = utils.post("/api/baskets", session, toBasket)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertError(result, Pair.of("ProductNotFound", "id"));
+
+        // Товар с неверным именем
+        toBasket.setId(productId);
+        toBasket.setName("something");
+        toBasket.setPrice(product.getPrice());
+
+        result = utils.post("/api/baskets", session, toBasket)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertError(result, Pair.of("WrongProductInfo", "name"));
+
+        // Товар с неверной ценою
+        toBasket.setId(productId);
+        toBasket.setName(product.getName());
+        toBasket.setPrice(123);
+
+        result = utils.post("/api/baskets", session, toBasket)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertError(result, Pair.of("WrongProductInfo", "price"));
+    }
+
+    @Test
+    public void testAddProductWithDefaultCount() throws Exception {
+        // По умолчанию количество товаар равно единицы
+
+        String session = utils.register(utils.getDefaultClient());
+        String adminSession = utils.register(utils.getDefaultAdmin());
+
+        ProductDto product = utils.getProduct("product", 100, null);
+        long productId = utils.register(adminSession, product);
+
+        ProductDto toBasket = new ProductDto();
+        toBasket.setId(productId);
+        toBasket.setName(product.getName());
+        toBasket.setPrice(product.getPrice());
+        toBasket.setCount(null);
+
+        MvcResult result = utils.post("/api/baskets", session, toBasket)
+                .andExpect(status().isOk())
+                .andReturn();
+
+        JsonNode node = utils.read(result);
+        assertEquals(1, node.size());
+        assertEquals(1, node.get(0).get("count").asInt());
+    }
+
+    @Test
+    public void testAddProductWithNegativeCount() throws Exception {
+        // Нельзя добавить товар с отрицательным количеством
+
+        String session = utils.register(utils.getDefaultClient());
+
+        ProductDto toBasket = new ProductDto();
+        toBasket.setName(null);
+        toBasket.setPrice(null);
+        toBasket.setCount(-2);
+
+        MvcResult result = utils.post("/api/baskets", session, toBasket)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrors(result, Arrays.asList(
+                Pair.of("DecimalMin", "count"),
+                Pair.of("NotNull", "price"),
+                Pair.of("RequiredName", "name")
+        ));
+    }
+
+    @Test
+    public void testDeleteFromBasket() throws Exception {
+
+        String adminSession = utils.register(utils.getDefaultAdmin());
+        String session = utils.register(utils.getDefaultClient());
+
+        long productId = utils.register(adminSession, utils.getProduct("name", 1, null));
+
+        // Добавляем в коризну
+        ProductDto product = new ProductDto();
+        product.setId(productId);
+        product.setName("name");
+        product.setPrice(1);
+        utils.post("/api/baskets", session, product)
+                .andExpect(status().isOk());
+
+        // Нельзя удалить несуществующий
+        MvcResult result = utils.delete("/api/baskets/" + (productId + 1), session)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertErrorCode(result, "ProductNotFound");
+
+        // После удаляем товар из корзины (он у нас один
+        utils.delete("/api/baskets/" + productId, session)
+                .andExpect(status().isOk());
+
+        // Проверяем что в корзине ничего не осталоьс
+        result = utils.get("/api/baskets", session)
+                .andExpect(status().isOk())
+                .andReturn();
+
+        JsonNode node = utils.read(result);
+        assertEquals(0, node.size());
+    }
+
+
+    @Test
     public void testDeleteFromBasketWithoutLogin() throws Exception {
 
         MvcResult result = utils.delete("/api/baskets/3", "wrew")
@@ -911,6 +1072,57 @@ public class ClientIntegrationTest {
     }
 
     @Test
+    public void testEditCountWithoutCount() throws Exception {
+
+        String session = utils.register(utils.getDefaultClient());
+
+        // Добавлаем товар
+        String adminSession = utils.register(utils.getDefaultAdmin());
+        long product = utils.register(adminSession, utils.getProduct("product", 1, null));
+        // Добавляем товар в корзину
+        utils.post("/api/baskets", session, new ProductDto(product, "product", 1, 10))
+                .andExpect(status().isOk());
+
+        // Пытаемся изменить количество без указания количества
+        ProductDto edit = new ProductDto();
+        edit.setId(product);
+        edit.setName("product");
+        edit.setPrice(1);
+        edit.setCount(null);
+
+        MvcResult result = utils.put("/api/baskets", session, edit)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertError(result, Pair.of("RequiredCount", "count"));
+
+    }
+
+    @Test
+    public void testEditCountProductWithWrongInfo() throws Exception {
+
+        String session = utils.register(utils.getDefaultClient());
+
+        // id не найден
+        ProductDto product = new ProductDto();
+        product.setId(1L);
+
+        MvcResult result = utils.put("/api/baskets", session, product)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertError(result, Pair.of("ProductNotFound", "id"));
+
+        // Регистрируем товар
+
+        // Название неверно
+
+        // Цена товара не верно
+    }
+
+
+
+    @Test
     public void testGetBasketWithoutLogin() throws Exception {
 
         MvcResult result = utils.get("/api/baskets", "werwe")
@@ -918,6 +1130,53 @@ public class ClientIntegrationTest {
                 .andReturn();
 
         utils.assertErrorCode(result, "NotLogin");
+    }
+
+    @Test
+    public void testGetBasket() throws Exception {
+
+        // Добавим два товара
+        String adminSession = utils.register(utils.getDefaultAdmin());
+
+        ProductDto product = new ProductDto();
+        product.setName("product");
+        product.setPrice(1);
+        long productId = utils.register(adminSession, product);
+
+        ProductDto deleted = new ProductDto();
+        deleted.setName("deleted");
+        deleted.setPrice(2);
+        long deletedId = utils.register(adminSession, deleted);
+
+        // Добавляем оба товаара в корзину
+        String session = utils.register(utils.getDefaultClient());
+        utils.post("/api/baskets", session, new ProductDto(
+                productId, product.getName(), product.getPrice(), 10
+        )).andExpect(status().isOk());
+
+        utils.post("/api/baskets", session, new ProductDto(
+                deletedId, deleted.getName(), deleted.getPrice(), 15
+        )).andExpect(status().isOk());
+
+        // Удаляем второй товар
+        utils.delete("/api/products/" + deletedId, adminSession)
+                .andExpect(status().isOk());
+
+        // Проверям список товаров
+        MvcResult result = utils.get("/api/baskets", session)
+                .andExpect(status().isOk())
+                .andReturn();
+
+        JsonNode node = utils.read(result);
+        assertEquals(productId, node.get(0).get("id").asLong());
+        assertEquals(product.getName(), node.get(0).get("name").asText());
+        assertEquals((int)product.getPrice(), node.get(0).get("price").asInt());
+        assertEquals(10, node.get(0).get("count").asInt());
+
+        assertEquals(deletedId, node.get(1).get("id").asLong());
+        assertEquals(deleted.getName(), node.get(1).get("name").asText());
+        assertEquals((int)deleted.getPrice(), node.get(1).get("price").asInt());
+        assertEquals(15, node.get(1).get("count").asInt());
     }
 
     @Test

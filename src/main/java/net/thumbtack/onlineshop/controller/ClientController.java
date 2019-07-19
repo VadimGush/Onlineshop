@@ -4,6 +4,7 @@ import net.thumbtack.onlineshop.dto.AccountDto;
 import net.thumbtack.onlineshop.dto.DepositDto;
 import net.thumbtack.onlineshop.dto.ProductDto;
 import net.thumbtack.onlineshop.dto.ResultBasketDto;
+import net.thumbtack.onlineshop.dto.actions.Edit;
 import net.thumbtack.onlineshop.dto.actions.Register;
 import net.thumbtack.onlineshop.dto.validation.ValidationException;
 import net.thumbtack.onlineshop.service.AccountService;
@@ -103,18 +104,22 @@ public class ClientController {
         return "{}";
     }
 
-    // TODO: Здесь поле количества должно быть обязательным
-
     @PutMapping("baskets")
     @ResponseStatus(HttpStatus.OK)
     public List<ProductDto> editProductCount(
             @CookieValue("JAVASESSIONID") String session,
-            @RequestBody @Valid ProductDto product,
+            @RequestBody @Validated(Edit.class) ProductDto product,
             BindingResult result) throws Exception {
 
         if (result.hasErrors()) {
             throw new ValidationException(result);
         }
+
+        /*
+        Здесь поле количества в product должно быть обязательно,
+        но чтобы не засорять код лишним DTO, то проверку на данное поле
+        выполним в сервисы
+         */
 
         return clientService.editProductCount(session, product);
     }

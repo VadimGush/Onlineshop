@@ -93,8 +93,12 @@ public class ClientService extends GeneralService {
     public List<ProductDto> addToBasket(String sessionId, ProductDto buyProduct) throws ServiceException {
 
         Account account = getClient(sessionId);
-        Product product = productDao.get(buyProduct.getId());
 
+        if (buyProduct.getId() == null) {
+            throw new ServiceException(ServiceException.ErrorCode.PRODUCT_NOT_FOUND, "id");
+        }
+
+        Product product = productDao.get(buyProduct.getId());
         compareProducts(product, buyProduct);
 
         Basket already = basketDao.get(account, product.getId());
@@ -147,10 +151,19 @@ public class ClientService extends GeneralService {
     public List<ProductDto> editProductCount(String sessionId, ProductDto product) throws ServiceException {
 
         Account account = getClient(sessionId);
+
+        if (product.getId() == null) {
+            throw new ServiceException(ServiceException.ErrorCode.PRODUCT_NOT_FOUND, "id");
+        }
+
         Basket basket = basketDao.get(account, product.getId());
 
         if (basket == null) {
             throw new ServiceException(ServiceException.ErrorCode.PRODUCT_NOT_FOUND, "id");
+        }
+
+        if (product.getCount() == null) {
+            throw new ServiceException(ServiceException.ErrorCode.REQUIRED_COUNT, "count");
         }
 
         compareProducts(basket.getProduct(), product);

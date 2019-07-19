@@ -47,10 +47,11 @@ public class AdministratorIntegrationTest {
         utils = new IntegrationUtils(mvc);
     }
 
+    /**
+     * Регистрация администратора
+     */
     @Test
     public void testRegistration() throws Exception {
-
-        // Регистриуем администратора
         AdminDto admin = utils.getDefaultAdmin();
 
         MvcResult result = utils.post("/api/admins", null, admin)
@@ -70,10 +71,11 @@ public class AdministratorIntegrationTest {
 
     }
 
+    /**
+     * Проверяем что нельзя зарегать с занятым логином
+     */
     @Test
     public void testRegistrationWithSameLogin() throws Exception {
-
-        // Регистрация будет с логином "Vadim"
         utils.register(utils.getDefaultAdmin());
 
         // Логин не чувствителен к регистру, поэтому регистрация не пройдёт
@@ -90,11 +92,12 @@ public class AdministratorIntegrationTest {
 
     }
 
+    /**
+     * Проверяем что нельзя зарегать со слишком длинными именами
+     * и коротким паролем
+     */
     @Test
     public void testFailedRegistrationLongFieldsShortPassword() throws Exception {
-
-        // Пытаемся зарегистрироваться с маленьким паролем
-        // и слишком длинными именами
         AdminDto admin = utils.getDefaultAdmin();
         admin.setFirstName("eewrewrjlewkjrewrklwerjew");
         admin.setLastName("eewrewrjlewkjrewrklwerjew");
@@ -119,12 +122,13 @@ public class AdministratorIntegrationTest {
 
     }
 
+    /**
+     * Проверяем валидацию формата полей
+     */
     @Test
     public void testFailedRegistrationWrongNamesFormat() throws Exception {
-
-        // Имя не может состоять из английских букв, цифр и знаков препинания
-
         AdminDto admin = utils.getDefaultAdmin();
+        // Имя не может состоять из английских букв, цифр и знаков препинания
         admin.setFirstName("Vadim");
         admin.setLastName("234234");
         admin.setPatronymic("Ar.- ");
@@ -141,7 +145,6 @@ public class AdministratorIntegrationTest {
                 Pair.of("RequiredRussianName", "lastName"),
                 Pair.of("OptionalRussianName", "patronymic")
         ));
-
     }
 
     /**
@@ -149,9 +152,6 @@ public class AdministratorIntegrationTest {
      */
     @Test
     public void testFailedRegistrationEmptyFields() throws Exception {
-
-        // Пытаемся зарегаться с пустыми полями
-
         AdminDto admin = utils.getDefaultAdmin();
         admin.setFirstName("");
         admin.setLastName("");
@@ -174,6 +174,9 @@ public class AdministratorIntegrationTest {
         ));
     }
 
+    /**
+     * Проверяем валидацию формата поля логина
+     */
     @Test
     public void testFailedRegistrationWrongLoginFormat() throws Exception {
 
@@ -196,9 +199,11 @@ public class AdministratorIntegrationTest {
 
     }
 
+    /**
+     * Проверяем что можно зарегаться без отчества
+     */
     @Test
     public void testRegistrationWithoutPatronymic() throws Exception {
-
         // Теперь проверяем что регистрация без отчества пройдёт успешно
         AdminDto admin = utils.getDefaultAdmin();
         admin.setPatronymic(null);
@@ -219,9 +224,11 @@ public class AdministratorIntegrationTest {
         assertNull(node.get("password"));
     }
 
+    /**
+     * Проверяем что нельзя войти с неверным паролем
+     */
     @Test
     public void testLoginWithWrongPassword() throws Exception {
-
         utils.register(utils.getDefaultAdmin());
 
         // Неверный пароль
@@ -234,6 +241,9 @@ public class AdministratorIntegrationTest {
 
     }
 
+    /**
+     * Проверяем что нельзя войти с неверным логином
+     */
     @Test
     public void testLoginWithWrongLogin() throws Exception {
         // Неверный логин
@@ -246,9 +256,11 @@ public class AdministratorIntegrationTest {
         utils.assertErrorsCodes(result, Collections.singletonList("UserNotFound"));
     }
 
+    /**
+     * Проверяем что нельзя войти без логина и пароля
+     */
     @Test
     public void testLoginWithEmptyFields() throws Exception {
-
         MvcResult result = utils.post("/api/sessions", null, new LoginDto())
                 .andExpect(status().isBadRequest())
                 .andReturn();
@@ -259,36 +271,42 @@ public class AdministratorIntegrationTest {
         ));
     }
 
+    /**
+     * Проверяем что выход из аккаунта без сессии тоже работает
+     */
     @Test
     public void testLogoutWithoutSession() throws Exception {
-
-        // Выход без сессии тоже работает
         utils.delete("/api/sessions", null)
-                .andExpect(status().isOk()).andExpect(content().string("{}"));
-
+                .andExpect(status().isOk())
+                .andExpect(content().string("{}"));
     }
 
+    /**
+     * Проверяем вход и выход из аккаунта
+     */
     @Test
     public void testLoginAndLogout() throws Exception {
-
         // Регистрируем администратора
         AdminDto admin = utils.getDefaultAdmin();
 
         MvcResult result = utils.post("/api/admins", null, admin)
-                .andExpect(status().isOk()).andReturn();
+                .andExpect(status().isOk())
+                .andReturn();
 
         String session = utils.getSession(result);
 
         // И выходим из аккунта по прошлой сессии
         utils.delete("/api/sessions", session)
-                .andExpect(status().isOk()).andExpect(content().string("{}"));
+                .andExpect(status().isOk())
+                .andExpect(content().string("{}"));
 
 
         // Делаем успешный логин
         LoginDto login = new LoginDto("vadIm", "Iddqd225");
 
         result = utils.post("/api/sessions", null, login)
-                .andExpect(status().isOk()).andReturn();
+                .andExpect(status().isOk())
+                .andReturn();
 
         // Проверяем что login вернул информацию об аккаунте
         JsonNode node = utils.read(result);
@@ -303,17 +321,21 @@ public class AdministratorIntegrationTest {
         // С помощью полученной сессии мы должны успешно выполнить какой-нибудь запрос
         session = utils.getSession(result);
 
-        utils.get("/api/clients", session).andExpect(status().isOk());
+        utils.get("/api/clients", session)
+                .andExpect(status().isOk());
     }
 
+    /**
+     * Получение информации о текущем аккаунте
+     */
     @Test
     public void testGetAccount() throws Exception {
-
         String session = utils.register(utils.getDefaultAdmin());
         AdminDto admin = utils.getDefaultAdmin();
 
         MvcResult result = utils.get("/api/accounts", session)
-                .andExpect(status().isOk()).andReturn();
+                .andExpect(status().isOk())
+                .andReturn();
 
         // Проверяем что данные правильные
         JsonNode node = utils.read(result);
@@ -327,33 +349,48 @@ public class AdministratorIntegrationTest {
 
     }
 
+    /**
+     * Проверяем что нельзя получить текущую инфу об аккаунте
+     * с неверной сессией
+     */
     @Test
     public void testGetAccountWithoutLogin() throws Exception {
         // Проверяем что с неверной сессией мы данные не получим
         MvcResult result = utils.get("/api/accounts", "erew")
-                .andExpect(status().isBadRequest()).andReturn();
+                .andExpect(status().isBadRequest())
+                .andReturn();
 
         utils.assertErrorsCodes(result, Collections.singletonList("NotLogin"));
-
     }
 
+    /**
+     * Нельзя получить список клиентов с неверной сессией
+     */
     @Test
-    public void testGetClientsEmpty() throws Exception {
-
-        // Проверяем что без логина не получится вызвать метод
+    public void testGetClientsWithoutLogin() throws Exception {
         MvcResult result = utils.get("/api/clients", "werew")
-                .andExpect(status().isBadRequest()).andReturn();
+                .andExpect(status().isBadRequest())
+                .andReturn();
 
         utils.assertErrorsCodes(result, Collections.singletonList("NotLogin"));
+    }
 
+    /**
+     * Получение пустого списка клиентов
+     */
+    @Test
+    public void testGetClientsEmpty() throws Exception {
         String session = utils.register(utils.getDefaultAdmin());
 
         // Получаем пустой список
         utils.get("/api/clients", session)
-                .andExpect(status().isOk()).andExpect(content().string("[]"));
-
+                .andExpect(status().isOk())
+                .andExpect(content().string("[]"));
     }
 
+    /**
+     * Получение списка клиентов
+     */
     @Test
     public void testGetClients() throws Exception {
 
@@ -370,7 +407,8 @@ public class AdministratorIntegrationTest {
 
         // Получаем уже не пустой список
         MvcResult result = utils.get("/api/clients", session)
-                .andExpect(status().isOk()).andReturn();
+                .andExpect(status().isOk())
+                .andReturn();
 
         // Проверяем этот список
         ClientDto client = utils.getDefaultClient();
@@ -395,9 +433,11 @@ public class AdministratorIntegrationTest {
         }
     }
 
+    /**
+     * Нельзя изменить инфу об аккаунте c неверной сессией
+     */
     @Test
     public void testEditAccountWithoutLogin() throws Exception {
-
         AdminDto info = new AdminDto();
         info.setFirstName("Денис");
         info.setLastName("Овчаров");
@@ -408,11 +448,16 @@ public class AdministratorIntegrationTest {
 
         // Проверяем что редактирование без логина не пройдёт
         MvcResult result = utils.put("/api/admins", "erwe", info)
-                .andExpect(status().isBadRequest()).andReturn();
+                .andExpect(status().isBadRequest())
+                .andReturn();
 
         utils.assertErrorsCodes(result, Collections.singletonList("NotLogin"));
     }
 
+    /**
+     * Нельзя изменить инфу об аккаунте с неверным старым паролем
+     * и пустым новым паролем
+     */
     @Test
     public void testEditAccountWithWrongPassword() throws Exception {
 
@@ -428,7 +473,8 @@ public class AdministratorIntegrationTest {
 
         // Сначала пытаемся изменить инфу с неверным старым паролем
         MvcResult result = utils.put("/api/admins", session, info)
-                .andExpect(status().isBadRequest()).andReturn();
+                .andExpect(status().isBadRequest())
+                .andReturn();
 
         utils.assertErrors(result, Collections.singletonList(Pair.of("WrongPassword", "oldPassword")));
 
@@ -437,14 +483,17 @@ public class AdministratorIntegrationTest {
         info.setNewPassword("");
 
         result = utils.put("/api/admins", session, info)
-                .andExpect(status().isBadRequest()).andReturn();
+                .andExpect(status().isBadRequest())
+                .andReturn();
 
         utils.assertErrors(result, Collections.singletonList(Pair.of("Password", "newPassword")));
     }
 
+    /**
+     * Редактирование аккаунта
+     */
     @Test
     public void testEditAccount() throws Exception {
-
         String session = utils.register(utils.getDefaultAdmin());
 
         AdminDto info = new AdminDto();
@@ -456,7 +505,8 @@ public class AdministratorIntegrationTest {
         info.setNewPassword("VadimGush225");
 
         MvcResult result = utils.put("/api/admins", session, info)
-                .andExpect(status().isOk()).andReturn();
+                .andExpect(status().isOk())
+                .andReturn();
 
         // Теперь проверяем что вернул верные данные
         JsonNode node = utils.read(result);
@@ -470,11 +520,11 @@ public class AdministratorIntegrationTest {
 
     }
 
+    /**
+     * Нельзя с помощью редактирование сделать все поля пустыми
+     */
     @Test
     public void testFailedEditAccountWithEmptyFields() throws Exception {
-
-        // Пытаемся сделать поля пустыми
-
         String session = utils.register(utils.getDefaultAdmin());
 
         AdminDto admin = new AdminDto();
@@ -497,6 +547,9 @@ public class AdministratorIntegrationTest {
 
     }
 
+    /**
+     * Нельзя изменить поля на сликшом длинные или на короткий пароль
+     */
     @Test
     public void testFailedEditAccountWithLongNamesShortPassword() throws Exception {
         String session = utils.register(utils.getDefaultAdmin());
@@ -509,7 +562,7 @@ public class AdministratorIntegrationTest {
         admin.setPatronymic("eewrewrjlewkjrewrklwerjew");
         admin.setPosition("eewrewrjlewkjrewrklwerjew");
         admin.setOldPassword("Iddqd225");
-        admin.setNewPassword("Iddqd225");
+        admin.setNewPassword("Id");
 
         MvcResult result = utils.put("/api/admins", session, admin)
                 .andExpect(status().isBadRequest())
@@ -519,14 +572,17 @@ public class AdministratorIntegrationTest {
                 Pair.of("RequiredRussianName", "firstName"),
                 Pair.of("RequiredRussianName", "lastName"),
                 Pair.of("RequiredName", "position"),
-                Pair.of("OptionalRussianName", "patronymic")
+                Pair.of("OptionalRussianName", "patronymic"),
+                Pair.of("Password", "newPassword")
         ));
 
     }
 
+    /**
+     * Нельзя изменить поля на неверные форматом
+     */
     @Test
     public void testFailedEditAccountWithWrongNameFormat() throws Exception {
-
         String session = utils.register(utils.getDefaultAdmin());
 
         // Имя не может состоять из английских букв, цифр и знаков препинания
@@ -547,9 +603,11 @@ public class AdministratorIntegrationTest {
                 Pair.of("RequiredRussianName", "lastName"),
                 Pair.of("OptionalRussianName", "patronymic")
         ));
-
     }
 
+    /**
+     * Нельзя добавить категорию с неверной сессией
+     */
     @Test
     public void testAddCategoryWithoutLogin() throws Exception {
         // Добавление категории без логина
@@ -557,11 +615,15 @@ public class AdministratorIntegrationTest {
         category.setName("apple");
 
         MvcResult result = utils.post("/api/categories", "rewr", category)
-                .andExpect(status().isBadRequest()).andReturn();
+                .andExpect(status().isBadRequest())
+                .andReturn();
 
         utils.assertErrorsCodes(result, Collections.singletonList("NotLogin"));
     }
 
+    /**
+     * Нельзя добавить категорию без имени
+     */
     @Test
     public void testAddCategoryWithoutName() throws Exception {
         String session = utils.register(utils.getDefaultAdmin());
@@ -570,14 +632,17 @@ public class AdministratorIntegrationTest {
         CategoryDto category = new CategoryDto();
         category.setName(null);
         MvcResult result = utils.post("/api/categories", session, category)
-                .andExpect(status().isBadRequest()).andReturn();
+                .andExpect(status().isBadRequest())
+                .andReturn();
 
         utils.assertError(result, Pair.of("NotBlank", "name"));
     }
 
+    /**
+     * Добавление категории и подкатегории
+     */
     @Test
     public void testAddCategory() throws Exception {
-
         String session = utils.register(utils.getDefaultAdmin());
 
         // Сначала попытаемся добавить категорию без имени
@@ -585,7 +650,8 @@ public class AdministratorIntegrationTest {
         category.setName("apple");
 
         MvcResult result = utils.post("/api/categories", session, category)
-                .andExpect(status().isOk()).andReturn();
+                .andExpect(status().isOk())
+                .andReturn();
 
         JsonNode node = utils.read(result);
         assertNotNull(node.get("id"));
@@ -599,7 +665,8 @@ public class AdministratorIntegrationTest {
         category.setParentId(-1L);
 
         result = utils.post("/api/categories", session, category)
-                .andExpect(status().isBadRequest()).andReturn();
+                .andExpect(status().isBadRequest())
+                .andReturn();
 
         utils.assertError(result, Pair.of("CategoryNotFound", "parentId"));
 
@@ -607,7 +674,8 @@ public class AdministratorIntegrationTest {
         category.setParentId(parentId);
 
         result = utils.post("/api/categories", session, category)
-                .andExpect(status().isOk()).andReturn();
+                .andExpect(status().isOk())
+                .andReturn();
 
         node = utils.read(result);
         assertNotNull(node.get("id"));
@@ -617,11 +685,11 @@ public class AdministratorIntegrationTest {
 
     }
 
+    /**
+     * Нельзя добавить категорию с тем же именем
+     */
     @Test
     public void testAddCategoryWithSameName() throws Exception {
-
-        // Нельзя добавить категорию с тем же именем
-
         String session = utils.register(utils.getDefaultAdmin());
         registerCategory(session, "apple", null);
 
@@ -630,31 +698,35 @@ public class AdministratorIntegrationTest {
         category.setParentId(null);
 
         MvcResult result = utils.post("/api/categories", session, category)
-                .andExpect(status().isBadRequest()).andReturn();
+                .andExpect(status().isBadRequest())
+                .andReturn();
 
         utils.assertError(result, Pair.of("SameCategoryName", "name"));
-
     }
 
+    /**
+     * Нельзя получить информацию о категории с неверной сессией
+     */
     @Test
     public void testGetCategoryWithoutLogin() throws Exception {
-
-        // Получение категорий без логина
         MvcResult result = utils.get("/api/categories/1", "ere")
-                .andExpect(status().isBadRequest()).andReturn();
+                .andExpect(status().isBadRequest())
+                .andReturn();
 
         utils.assertErrorCode(result, "NotLogin");
-
     }
 
+    /**
+     * Получение информации о категориях и подкатегориях
+     */
     @Test
     public void testGetCategory() throws Exception {
-
         String session = utils.register(utils.getDefaultAdmin());
 
         // Получение категории, которой нет в БД
         MvcResult result = utils.get("/api/categories/1", session)
-                .andExpect(status().isBadRequest()).andReturn();
+                .andExpect(status().isBadRequest())
+                .andReturn();
 
         utils.assertErrorCode(result, "CategoryNotFound");
 
@@ -663,7 +735,8 @@ public class AdministratorIntegrationTest {
 
         // Получаем данные о родительской категории
         result = utils.get("/api/categories/" + id, session)
-                .andExpect(status().isOk()).andReturn();
+                .andExpect(status().isOk())
+                .andReturn();
 
         JsonNode node = utils.read(result);
         assertNotNull(node.get("id"));
@@ -677,7 +750,8 @@ public class AdministratorIntegrationTest {
 
         // Получаем инфу о дочерней
         result = utils.get("/api/categories/" + childId, session)
-                .andExpect(status().isOk()).andReturn();
+                .andExpect(status().isOk())
+                .andReturn();
 
         node = utils.read(result);
         assertNotNull(node.get("id"));
@@ -687,9 +761,11 @@ public class AdministratorIntegrationTest {
         assertEquals("apple", node.get("parentName").asText());
     }
 
+    /**
+     * Нельзя редактировать категорию с неверной сессией
+     */
     @Test
     public void testEditCategoryWithoutLogin() throws Exception {
-
         CategoryDto info = new CategoryDto();
         info.setName("ikea");
 
@@ -701,6 +777,9 @@ public class AdministratorIntegrationTest {
         utils.assertErrorCode(result, "NotLogin");
     }
 
+    /**
+     * Нельзя редактировать несуществующую категорию
+     */
     @Test
     public void testEditCategoryNotFound() throws Exception {
 
@@ -717,9 +796,11 @@ public class AdministratorIntegrationTest {
         utils.assertErrorCode(result, "CategoryNotFound");
     }
 
+    /**
+     * Нельзя изменить имя категории на уже занятое
+     */
     @Test
     public void testEditCategoryWithSameName() throws Exception {
-
         // Пытаемся изменить категорию на имя, которое уже занято
         // другой категорией
 
@@ -739,11 +820,12 @@ public class AdministratorIntegrationTest {
 
     }
 
+    /**
+     * Проверяем что при редактировании категории оба поля
+     * не могут быть пустыми
+     */
     @Test
     public void testEditCategoryEmptyField() throws Exception {
-
-        // Теперь делаем оба поля пустыми
-
         String session = utils.register(utils.getDefaultAdmin());
         long apple = registerCategory(session, "apple", null);
 
@@ -756,12 +838,13 @@ public class AdministratorIntegrationTest {
                 .andReturn();
 
         utils.assertErrorCode(result, "EditCategoryEmpty");
-
     }
 
+    /**
+     * Редактирование категории
+     */
     @Test
     public void testEditCategory() throws Exception {
-
         String session = utils.register(utils.getDefaultAdmin());
 
         CategoryDto info = new CategoryDto();
@@ -806,7 +889,6 @@ public class AdministratorIntegrationTest {
         assertEquals("new", node.get("name").asText());
         assertNull(node.get("parentName"));
         assertNull(node.get("parentId"));
-
     }
 
     /**
@@ -851,6 +933,9 @@ public class AdministratorIntegrationTest {
 
     }
 
+    /**
+     * Нельзя удалить категорию с неверной сессией
+     */
     @Test
     public void testDeleteCategoryWithoutLogin() throws Exception {
         // Удаление без логина
@@ -859,9 +944,11 @@ public class AdministratorIntegrationTest {
                 .andReturn();
 
         utils.assertErrorCode(result, "NotLogin");
-
     }
 
+    /**
+     * Нельзя удалить несуществующую категорию
+     */
     @Test
     public void testDeleteCategoryNotFound() throws Exception {
         String session = utils.register(utils.getDefaultAdmin());
@@ -872,12 +959,13 @@ public class AdministratorIntegrationTest {
                 .andReturn();
 
         utils.assertErrorCode(result, "CategoryNotFound");
-
     }
 
+    /**
+     * Удаление категории
+     */
     @Test
     public void testDeleteCategory() throws Exception {
-
         String session = utils.register(utils.getDefaultAdmin());
 
         // Создаём категорию и удаляем её сразу
@@ -920,9 +1008,11 @@ public class AdministratorIntegrationTest {
                 .andExpect(content().string("[]"));
     }
 
+    /**
+     * Нельзя получить инфу о категории с неверной сесссией
+     */
     @Test
     public void testGetCategoriesWithoutLogin() throws Exception {
-
         // Получение списка категорий без логина
         MvcResult result = utils.get("/api/categories", "ewrew")
                 .andExpect(status().isBadRequest())
@@ -984,9 +1074,11 @@ public class AdministratorIntegrationTest {
         assertEquals(msi, node.get(4).get("parentId").asLong());
     }
 
+    /**
+     * Нельзя добавить товар с неверной сессией
+     */
     @Test
     public void testAddProductWithoutLogin() throws Exception {
-
         ProductDto product = new ProductDto();
         product.setName("table");
         product.setPrice(1000);
@@ -997,12 +1089,13 @@ public class AdministratorIntegrationTest {
                 .andReturn();
 
         utils.assertErrorCode(result, "NotLogin");
-
     }
 
+    /**
+     * Нельзя добавить товар без полей
+     */
     @Test
     public void testAddProductWithoutFields() throws Exception {
-
         String session = utils.register(utils.getDefaultAdmin());
 
         // Проверяем что нельзя добавить продукт без имени и цены
@@ -1017,9 +1110,11 @@ public class AdministratorIntegrationTest {
                 Pair.of("NotNull", "price"),
                 Pair.of("RequiredName", "name")
         ));
-
     }
 
+    /**
+     * Нельзя добавить товар с отрицаительным количеством и ценою
+     */
     @Test
     public void testAddProductWithNegativePriceAndCount() throws Exception {
         String session = utils.register(utils.getDefaultAdmin());
@@ -1040,9 +1135,11 @@ public class AdministratorIntegrationTest {
         ));
     }
 
+    /**
+     * Нельзя добавить товар с категорией, которой не существует
+     */
     @Test
     public void testAddProductWithWrongCategory() throws Exception {
-
         String session = utils.register(utils.getDefaultAdmin());
 
         // Указываем категорию, которая не существует
@@ -1056,7 +1153,6 @@ public class AdministratorIntegrationTest {
                 .andReturn();
 
         utils.assertError(result, Pair.of("CategoryNotFound", "categories"));
-
     }
 
     /**
@@ -1064,7 +1160,6 @@ public class AdministratorIntegrationTest {
      */
     @Test
     public void testAddProduct() throws Exception {
-
         String session = utils.register(utils.getDefaultAdmin());
 
         ProductDto product = new ProductDto();
@@ -1103,6 +1198,9 @@ public class AdministratorIntegrationTest {
         assertEquals(category, node.get("categories").get(0).asLong());
     }
 
+    /**
+     * Нельзя редактировать товар с неверной сессией
+     */
     @Test
     public void testEditProductWithoutLogin() throws Exception {
         ProductDto product = new ProductDto();
@@ -1115,9 +1213,11 @@ public class AdministratorIntegrationTest {
         utils.assertErrorCode(result, "NotLogin");
     }
 
+    /**
+     * Нельзя редактировать несуществующий товар
+     */
     @Test
     public void testEditProductNotFound() throws Exception {
-
         String session = utils.register(utils.getDefaultAdmin());
 
         // Изменение несуществующего товара
@@ -1130,9 +1230,11 @@ public class AdministratorIntegrationTest {
         utils.assertErrorCode(result, "ProductNotFound");
     }
 
+    /**
+     * Нельзя изменть цену и количество товара на отрицательную
+     */
     @Test
     public void testEditProductWithNegativeCountAndPrice() throws Exception {
-
         String session = utils.register(utils.getDefaultAdmin());
 
         ProductDto product = new ProductDto();
@@ -1149,9 +1251,11 @@ public class AdministratorIntegrationTest {
         ));
     }
 
+    /**
+     * Нельзя изменить инфу несуществующего товара
+     */
     @Test
     public void testEditProductCategoryNotFound() throws Exception {
-
         String session = utils.register(utils.getDefaultAdmin());
 
         // Проверим что нельзя изменить с несуществующей категорией
@@ -1238,9 +1342,11 @@ public class AdministratorIntegrationTest {
         assertNull(node.get("categories"));
     }
 
+    /**
+     * Нельзя удалить товар с неверной сессией
+     */
     @Test
     public void testDeleteProductWithoutLogin() throws Exception {
-
         // Удаление товара без логина
         MvcResult result = utils.delete("/api/products/3", "erwer")
                 .andExpect(status().isBadRequest())
@@ -1248,16 +1354,17 @@ public class AdministratorIntegrationTest {
         utils.assertErrorCode(result, "NotLogin");
     }
 
+    /**
+     * Нельзя удалить несуществующий товар
+     */
     @Test
     public void testDeleteProductNotFound() throws Exception {
-
         String session = utils.register(utils.getDefaultAdmin());
 
         // Удаляем несуществующий
         MvcResult result = utils.delete("/api/products/3", session)
                 .andExpect(status().isBadRequest())
                 .andReturn();
-
         utils.assertErrorCode(result, "ProductNotFound");
     }
 
@@ -1286,17 +1393,21 @@ public class AdministratorIntegrationTest {
                 .andExpect(content().string("{}"));
     }
 
+    /**
+     * Нельзя получить инфу о товара с неверной сессией
+     */
     @Test
     public void testGetProductWithoutLogin() throws Exception {
-
         // Получение данных без логина
         MvcResult result = utils.get("/api/products/3", "ewrwe")
                 .andExpect(status().isBadRequest())
                 .andReturn();
-
         utils.assertErrorCode(result, "NotLogin");
     }
 
+    /**
+     * Нельзя получить инфу о несуществующем товаре
+     */
     @Test
     public void testGetProductNotFound() throws Exception {
         String session = utils.register(utils.getDefaultAdmin());
@@ -1305,13 +1416,14 @@ public class AdministratorIntegrationTest {
         MvcResult result = utils.get("/api/products/3", session)
                 .andExpect(status().isBadRequest())
                 .andReturn();
-
         utils.assertErrorCode(result, "ProductNotFound");
     }
 
+    /**
+     * Получение инфы о товаре
+     */
     @Test
     public void testGetProduct() throws Exception {
-
         String session = utils.register(utils.getDefaultAdmin());
 
         // Создаём товар
@@ -1342,10 +1454,11 @@ public class AdministratorIntegrationTest {
         assertEquals(category, node.get("categories").get(0).asLong());
     }
 
+    /**
+     * Нельзя получить список товаров с неверной сессией
+     */
     @Test
     public void testGetProductsWithoutLogin() throws Exception {
-
-        // Получение списка товаров без логина
         MvcResult result = utils.get("/api/products", "erew")
                 .andExpect(status().isBadRequest())
                 .andReturn();

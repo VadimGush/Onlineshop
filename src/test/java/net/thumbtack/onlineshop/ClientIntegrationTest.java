@@ -977,6 +977,14 @@ public class ClientIntegrationTest {
         assertEquals((int)product.getPrice(), node.get(0).get("price").asInt());
         assertEquals((int)toBasket.getCount(), node.get(0).get("count").asInt());
 
+        // Добавим тот же самый товар и проверим что просто увеличилось количество старого
+        result = utils.post("/api/baskets", session, toBasket)
+                .andExpect(status().isOk())
+                .andReturn();
+
+        node = utils.read(result);
+        assertEquals(1, node.size());
+        assertEquals((int)toBasket.getCount() * 2, node.get(0).get("count").asInt());
     }
 
     /**
@@ -1139,6 +1147,24 @@ public class ClientIntegrationTest {
                 .andReturn();
 
         utils.assertErrorCode(result, "NotLogin");
+    }
+
+    /**
+     * Проверим что нельзя редактировать количество товара без указания id
+     */
+    @Test
+    public void testEditProductWithoutId() throws Exception {
+        String session = utils.register(utils.getDefaultClient());
+        ProductDto product = new ProductDto();
+        product.setName("product");
+        product.setPrice(10);
+        product.setCount(100);
+
+        MvcResult result = utils.put("/api/baskets", session, product)
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        utils.assertError(result, Pair.of("ProductNotFound", "id"));
     }
 
     /**

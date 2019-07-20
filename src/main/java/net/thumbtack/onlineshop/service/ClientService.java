@@ -10,6 +10,10 @@ import net.thumbtack.onlineshop.database.models.Product;
 import net.thumbtack.onlineshop.dto.AccountDto;
 import net.thumbtack.onlineshop.dto.ProductDto;
 import net.thumbtack.onlineshop.dto.ResultBasketDto;
+import net.thumbtack.onlineshop.service.events.BasketPurchaseEvent;
+import net.thumbtack.onlineshop.service.events.ProductPurchaseEvent;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -21,16 +25,20 @@ import java.util.List;
 @Service
 public class ClientService extends GeneralService {
 
+    private ApplicationEventPublisher eventPublisher;
     private AccountDao accountDao;
     private ProductDao productDao;
     private BasketDao basketDao;
 
+    @Autowired
     public ClientService(
             AccountDao accountDao,
             SessionDao sessionDao,
             ProductDao productDao,
-            BasketDao basketDao) {
+            BasketDao basketDao,
+            ApplicationEventPublisher eventPublisher) {
         super(sessionDao);
+        this.eventPublisher = eventPublisher;
         this.accountDao = accountDao;
         this.productDao = productDao;
         this.basketDao = basketDao;
@@ -65,19 +73,28 @@ public class ClientService extends GeneralService {
 
         compareProducts(product, buyProduct);
 
+        // Товара мало
         if (buyProduct.getCount() > product.getCount()) {
             throw new ServiceException(ServiceException.ErrorCode.NOT_ENOUGH_PRODUCT, "count");
         }
 
+        // Денег не хватает
         if (buyProduct.getCount() * buyProduct.getPrice() > account.getDeposit()) {
             throw new ServiceException(ServiceException.ErrorCode.NOT_ENOUGH_MONEY);
         }
 
+        // Обновляем количество товара на складе
         product.setCount(product.getCount() - buyProduct.getCount());
         productDao.update(product);
 
+        // Обновляем количество денег на счету клиента
         account.setDeposit(account.getDeposit() - buyProduct.getCount() * buyProduct.getPrice());
         accountDao.update(account);
+
+        // Создаём событие о покупке товара
+        eventPublisher.publishEvent(
+                new ProductPurchaseEvent(this, account, product, buyProduct.getCount(), product.getPrice())
+        );
 
         return buyProduct;
 
@@ -102,7 +119,6 @@ public class ClientService extends GeneralService {
         compareProducts(product, buyProduct);
 
         Basket already = basketDao.get(account, product.getId());
-
         if (already != null) {
             // Если продукт уже добавлен в корзину, то просто прибавим его количество
 
@@ -116,6 +132,7 @@ public class ClientService extends GeneralService {
             basketDao.insert(basket);
         }
 
+        // Вернём корзину
         List<ProductDto> result = new ArrayList<>();
         basketDao.get(account).forEach(b -> result.add(new ProductDto(b)));
 
@@ -166,10 +183,12 @@ public class ClientService extends GeneralService {
             throw new ServiceException(ServiceException.ErrorCode.REQUIRED_COUNT, "count");
         }
 
+        // Проверяем и если всё верно, то изменим количество
         compareProducts(basket.getProduct(), product);
         basket.setCount(product.getCount());
         basketDao.update(basket);
 
+        // Возвращаем корзину
         List<ProductDto> result = new ArrayList<>();
         basketDao.get(account).forEach(b -> result.add(new ProductDto(b)));
 
@@ -227,6 +246,9 @@ public class ClientService extends GeneralService {
         account.setDeposit(account.getDeposit() - sum);
         accountDao.update(account);
 
+        // Событие о покупке корзины
+        BasketPurchaseEvent event = new BasketPurchaseEvent(this, account);
+
         for (ProductDto product : toBuy) {
 
             // Уменьшаем количество товаров на складе
@@ -244,7 +266,12 @@ public class ClientService extends GeneralService {
                 basketDao.update(basketEntity);
             }
 
+            // Теперь добавляем в событие информацию о купленном товаре
+            event.put(currentProduct, product.getCount(), product.getPrice());
         }
+
+        // Отправляем событие
+        eventPublisher.publishEvent(event);
 
         // Возвращаем инфу сколько мы купили и сколько в корзине осталось
         return new ResultBasketDto(toBuy, basketDao.get(account));

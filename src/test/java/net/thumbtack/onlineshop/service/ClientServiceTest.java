@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.*;
 
@@ -37,6 +38,9 @@ public class ClientServiceTest {
     @Mock
     private BasketDao mockBasketDao;
 
+    @Mock
+    private ApplicationEventPublisher mockEventPublisher;
+
     @Before
     public void setUpClass() {
         MockitoAnnotations.initMocks(this);
@@ -44,7 +48,9 @@ public class ClientServiceTest {
                 mockAccountDao,
                 mockSessionDao,
                 mockProductDao,
-                mockBasketDao);
+                mockBasketDao,
+                mockEventPublisher
+        );
     }
 
     @Test()
@@ -73,9 +79,8 @@ public class ClientServiceTest {
 
         when(mockSessionDao.get("token")).thenReturn(new Session("token", client));
 
-        Product product = new Product(
-                "product", 5,10
-        );
+        Product product = new Product("product", 5,10);
+        product.setId(0L);
 
         when(mockProductDao.get(0)).thenReturn(product);
 
@@ -106,9 +111,8 @@ public class ClientServiceTest {
 
         when(mockSessionDao.get("token")).thenReturn(new Session("token", client));
 
-        Product product = new Product(
-                "product", 5,10
-        );
+        Product product = new Product("product", 5,10);
+        product.setId(0L);
 
         when(mockProductDao.get(0)).thenReturn(product);
 
@@ -605,7 +609,6 @@ public class ClientServiceTest {
         client.setDeposit(30_024);
         when(mockSessionDao.get("token")).thenReturn(new Session("token", client));
 
-
         // Подготавливем список продуктов
         List<Product> products = new ArrayList<>();
         for (int i = 0; i < 8; ++i) {
@@ -850,9 +853,11 @@ public class ClientServiceTest {
 
 
     private Account generateClient() {
-        return AccountFactory.createClient(
+        Account account = AccountFactory.createClient(
                 "234324", "234324", "wereww1", "werewr1",
                 "wrewf3", "werwer235", "werw23", "ewr23423"
         );
+        account.setId(1L);
+        return account;
     }
 }

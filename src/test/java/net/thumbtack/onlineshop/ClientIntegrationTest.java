@@ -651,8 +651,6 @@ public class ClientIntegrationTest {
      */
     @Test
     public void testBuyProduct() throws Exception {
-        // Покупаем товар
-
         // Создадим товар
         String adminSession = utils.register(utils.getDefaultAdmin());
         ProductDto product = new ProductDto();

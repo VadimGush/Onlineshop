@@ -68,6 +68,28 @@ public class AccountDao implements Dao {
     }
 
     /**
+     * Получает польователя по его Id
+     *
+     * @param accountId id пользователя
+     * @return аккаунт пользователя или null, если он не найден
+     */
+    public Account get(long accountId) {
+        CriteriaBuilder builder = manager.getCriteriaBuilder();
+        CriteriaQuery<Account> criteria = builder.createQuery(Account.class);
+        Root<Account> from = criteria.from(Account.class);
+
+        criteria.select(from);
+        criteria.where(builder.equal(from.get("id"), accountId));
+
+        TypedQuery<Account> typed = manager.createQuery(criteria);
+        try {
+            return typed.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
+
+    /**
      * Проверяет наличие пользователя с данным логином в БД
      *
      * @param login логин пользователя

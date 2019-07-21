@@ -1,4 +1,4 @@
-package net.thumbtack.onlineshop.database.dao;
+package net.thumbtack.onlineshop.domain.dao;
 
 import org.springframework.stereotype.Repository;
 

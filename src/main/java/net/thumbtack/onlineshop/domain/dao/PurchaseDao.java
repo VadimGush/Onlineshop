@@ -1,6 +1,6 @@
-package net.thumbtack.onlineshop.database.dao;
+package net.thumbtack.onlineshop.domain.dao;
 
-import net.thumbtack.onlineshop.database.models.HistoryEntry;
+import net.thumbtack.onlineshop.domain.models.Purchase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -14,19 +14,19 @@ import java.util.List;
 
 @Transactional
 @Repository
-public class HistoryDao implements Dao {
+public class PurchaseDao implements Dao {
 
     private EntityManager manager;
 
     @Autowired
-    public HistoryDao(EntityManager manager) {
+    public PurchaseDao(EntityManager manager) {
         this.manager = manager;
     }
 
     /**
      * Добавить запись в историю покупок
      */
-    public void insert(HistoryEntry entry) {
+    public void insert(Purchase entry) {
         manager.persist(entry);
     }
 
@@ -35,17 +35,17 @@ public class HistoryDao implements Dao {
      * @param productId id товара
      * @return история покупок
      */
-    public List<HistoryEntry> getProductHistory(long productId) {
+    public List<Purchase> getProductPurchases(long productId) {
         CriteriaBuilder builder = manager.getCriteriaBuilder();
-        CriteriaQuery<HistoryEntry> criteria = builder.createQuery(HistoryEntry.class);
-        Root<HistoryEntry> from = criteria.from(HistoryEntry.class);
+        CriteriaQuery<Purchase> criteria = builder.createQuery(Purchase.class);
+        Root<Purchase> from = criteria.from(Purchase.class);
 
         criteria.select(from);
         criteria.where(
                 builder.equal(from.get("product"), productId)
         );
 
-        TypedQuery<HistoryEntry> typed = manager.createQuery(criteria);
+        TypedQuery<Purchase> typed = manager.createQuery(criteria);
         return typed.getResultList();
     }
 
@@ -54,17 +54,17 @@ public class HistoryDao implements Dao {
      * @param clientId клиента
      * @return история покупок
      */
-    public List<HistoryEntry> getClientHistory(long clientId) {
+    public List<Purchase> getClientPurchases(long clientId) {
         CriteriaBuilder builder = manager.getCriteriaBuilder();
-        CriteriaQuery<HistoryEntry> criteria = builder.createQuery(HistoryEntry.class);
-        Root<HistoryEntry> from = criteria.from(HistoryEntry.class);
+        CriteriaQuery<Purchase> criteria = builder.createQuery(Purchase.class);
+        Root<Purchase> from = criteria.from(Purchase.class);
 
         criteria.select(from);
         criteria.where(
                 builder.equal(from.get("account"), clientId)
         );
 
-        TypedQuery<HistoryEntry> typed = manager.createQuery(criteria);
+        TypedQuery<Purchase> typed = manager.createQuery(criteria);
         return typed.getResultList();
     }
 

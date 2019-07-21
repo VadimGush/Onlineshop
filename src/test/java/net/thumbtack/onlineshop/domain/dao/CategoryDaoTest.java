@@ -1,6 +1,6 @@
-package net.thumbtack.onlineshop.database.dao;
+package net.thumbtack.onlineshop.domain.dao;
 
-import net.thumbtack.onlineshop.database.models.Category;
+import net.thumbtack.onlineshop.domain.models.Category;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;

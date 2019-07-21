@@ -1,4 +1,4 @@
-package net.thumbtack.onlineshop.database.models;
+package net.thumbtack.onlineshop.domain.models;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;

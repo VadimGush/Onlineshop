@@ -1,7 +1,7 @@
 package net.thumbtack.onlineshop.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import net.thumbtack.onlineshop.database.models.Account;
+import net.thumbtack.onlineshop.domain.models.Account;
 
 /**
  * AccountDto - DTO только для сериализации на отправку клиенту

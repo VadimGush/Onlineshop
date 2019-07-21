@@ -1,6 +1,6 @@
 package net.thumbtack.onlineshop.service;
 
-import net.thumbtack.onlineshop.database.dao.Dao;
+import net.thumbtack.onlineshop.domain.dao.Dao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -1,7 +1,7 @@
 package net.thumbtack.onlineshop.service.events;
 
-import net.thumbtack.onlineshop.database.models.Account;
-import net.thumbtack.onlineshop.database.models.Product;
+import net.thumbtack.onlineshop.domain.models.Account;
+import net.thumbtack.onlineshop.domain.models.Product;
 import org.springframework.context.ApplicationEvent;
 
 import java.util.Date;
@@ -22,7 +22,7 @@ public class ProductPurchaseEvent extends ApplicationEvent {
     // По какой цене был куплен товар
     private int price;
 
-    public ProductPurchaseEvent(Object source, Account client, Product product, int count, int price) {
+    public ProductPurchaseEvent(Object source, Product product, Account client, int count, int price) {
         super(source);
         this.client = client;
         this.product = product;

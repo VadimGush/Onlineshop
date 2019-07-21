@@ -1,6 +1,6 @@
 package net.thumbtack.onlineshop.controller;
 
-import net.thumbtack.onlineshop.database.models.Account;
+import net.thumbtack.onlineshop.domain.models.Account;
 import net.thumbtack.onlineshop.dto.AccountDto;
 import net.thumbtack.onlineshop.dto.AdminDto;
 import net.thumbtack.onlineshop.dto.ClientDto;

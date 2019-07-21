@@ -1,11 +1,11 @@
 package net.thumbtack.onlineshop.service;
 
-import net.thumbtack.onlineshop.database.dao.CategoryDao;
-import net.thumbtack.onlineshop.database.dao.SessionDao;
-import net.thumbtack.onlineshop.database.models.Account;
-import net.thumbtack.onlineshop.database.models.AccountFactory;
-import net.thumbtack.onlineshop.database.models.Category;
-import net.thumbtack.onlineshop.database.models.Session;
+import net.thumbtack.onlineshop.domain.dao.CategoryDao;
+import net.thumbtack.onlineshop.domain.dao.SessionDao;
+import net.thumbtack.onlineshop.domain.models.Account;
+import net.thumbtack.onlineshop.domain.models.AccountFactory;
+import net.thumbtack.onlineshop.domain.models.Category;
+import net.thumbtack.onlineshop.domain.models.Session;
 import net.thumbtack.onlineshop.dto.CategoryDto;
 import org.junit.Before;
 import org.junit.Test;

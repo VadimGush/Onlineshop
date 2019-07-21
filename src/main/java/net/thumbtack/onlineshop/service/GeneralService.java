@@ -1,8 +1,8 @@
 package net.thumbtack.onlineshop.service;
 
-import net.thumbtack.onlineshop.database.dao.SessionDao;
-import net.thumbtack.onlineshop.database.models.Account;
-import net.thumbtack.onlineshop.database.models.Session;
+import net.thumbtack.onlineshop.domain.dao.SessionDao;
+import net.thumbtack.onlineshop.domain.models.Account;
+import net.thumbtack.onlineshop.domain.models.Session;
 
 /**
  * Абстрактный сервис с набором методов идентификации пользователей

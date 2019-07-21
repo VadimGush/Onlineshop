@@ -1,7 +1,7 @@
 package net.thumbtack.onlineshop.service;
 
-import net.thumbtack.onlineshop.database.dao.AccountDao;
-import net.thumbtack.onlineshop.database.dao.ProductDao;
+import net.thumbtack.onlineshop.domain.dao.AccountDao;
+import net.thumbtack.onlineshop.domain.dao.ProductDao;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;

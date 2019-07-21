@@ -1,7 +1,7 @@
 package net.thumbtack.onlineshop.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import net.thumbtack.onlineshop.database.models.Basket;
+import net.thumbtack.onlineshop.domain.models.Basket;
 
 import java.util.ArrayList;
 import java.util.List;

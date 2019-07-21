@@ -1,7 +1,7 @@
 package net.thumbtack.onlineshop.service.events;
 
-import net.thumbtack.onlineshop.database.models.Account;
-import net.thumbtack.onlineshop.database.models.Product;
+import net.thumbtack.onlineshop.domain.models.Account;
+import net.thumbtack.onlineshop.domain.models.Product;
 import org.springframework.context.ApplicationEvent;
 
 import java.util.ArrayList;

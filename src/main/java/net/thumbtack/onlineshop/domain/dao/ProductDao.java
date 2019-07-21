@@ -1,7 +1,7 @@
-package net.thumbtack.onlineshop.database.dao;
+package net.thumbtack.onlineshop.domain.dao;
 
-import net.thumbtack.onlineshop.database.models.Product;
-import net.thumbtack.onlineshop.database.models.ProductCategory;
+import net.thumbtack.onlineshop.domain.models.Product;
+import net.thumbtack.onlineshop.domain.models.ProductCategory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 

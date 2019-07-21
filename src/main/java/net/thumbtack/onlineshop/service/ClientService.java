@@ -1,23 +1,22 @@
 package net.thumbtack.onlineshop.service;
 
-import net.thumbtack.onlineshop.database.dao.AccountDao;
-import net.thumbtack.onlineshop.database.dao.BasketDao;
-import net.thumbtack.onlineshop.database.dao.ProductDao;
-import net.thumbtack.onlineshop.database.dao.SessionDao;
-import net.thumbtack.onlineshop.database.models.Account;
-import net.thumbtack.onlineshop.database.models.Basket;
-import net.thumbtack.onlineshop.database.models.Product;
+import net.thumbtack.onlineshop.domain.dao.AccountDao;
+import net.thumbtack.onlineshop.domain.dao.BasketDao;
+import net.thumbtack.onlineshop.domain.dao.ProductDao;
+import net.thumbtack.onlineshop.domain.dao.SessionDao;
+import net.thumbtack.onlineshop.domain.models.Account;
+import net.thumbtack.onlineshop.domain.models.Basket;
+import net.thumbtack.onlineshop.domain.models.Product;
 import net.thumbtack.onlineshop.dto.AccountDto;
 import net.thumbtack.onlineshop.dto.ProductDto;
 import net.thumbtack.onlineshop.dto.ResultBasketDto;
-import net.thumbtack.onlineshop.service.events.BasketPurchaseEvent;
-import net.thumbtack.onlineshop.service.events.ProductPurchaseEvent;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Сервис клиентского функционала
@@ -25,7 +24,8 @@ import java.util.List;
 @Service
 public class ClientService extends GeneralService {
 
-    private ApplicationEventPublisher eventPublisher;
+    private PurchasesService purchasesService;
+
     private AccountDao accountDao;
     private ProductDao productDao;
     private BasketDao basketDao;
@@ -36,12 +36,12 @@ public class ClientService extends GeneralService {
             SessionDao sessionDao,
             ProductDao productDao,
             BasketDao basketDao,
-            ApplicationEventPublisher eventPublisher) {
+            PurchasesService purchasesService) {
         super(sessionDao);
-        this.eventPublisher = eventPublisher;
         this.accountDao = accountDao;
         this.productDao = productDao;
         this.basketDao = basketDao;
+        this.purchasesService = purchasesService;
     }
 
     /**
@@ -91,10 +91,8 @@ public class ClientService extends GeneralService {
         account.setDeposit(account.getDeposit() - buyProduct.getCount() * buyProduct.getPrice());
         accountDao.update(account);
 
-        // Создаём событие о покупке товара
-        eventPublisher.publishEvent(
-                new ProductPurchaseEvent(this, account, product, buyProduct.getCount(), product.getPrice())
-        );
+        // Сохраняем покупку в историю покупок
+        purchasesService.saveProductPurchase(account, product, buyProduct.getCount());
 
         return buyProduct;
 
@@ -246,8 +244,8 @@ public class ClientService extends GeneralService {
         account.setDeposit(account.getDeposit() - sum);
         accountDao.update(account);
 
-        // Событие о покупке корзины
-        BasketPurchaseEvent event = new BasketPurchaseEvent(this, account);
+        // Формируем список покупок
+        Map<Product, Integer> productsPurchases = new HashMap<>();
 
         for (ProductDto product : toBuy) {
 
@@ -266,12 +264,12 @@ public class ClientService extends GeneralService {
                 basketDao.update(basketEntity);
             }
 
-            // Теперь добавляем в событие информацию о купленном товаре
-            event.put(currentProduct, product.getCount(), product.getPrice());
+            // Сохраняем покупку в историю покупок
+            productsPurchases.put(currentProduct, product.getCount());
         }
 
-        // Отправляем событие
-        eventPublisher.publishEvent(event);
+        // Сохраняем информацию о покупке корзины
+        purchasesService.saveBasketPurchase(account, productsPurchases);
 
         // Возвращаем инфу сколько мы купили и сколько в корзине осталось
         return new ResultBasketDto(toBuy, basketDao.get(account));

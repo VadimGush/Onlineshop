@@ -1,4 +1,4 @@
-package net.thumbtack.onlineshop.database.models;
+package net.thumbtack.onlineshop.domain.models;
 
 public class AccountFactory {
 

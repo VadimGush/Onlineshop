@@ -1,8 +1,8 @@
 package net.thumbtack.onlineshop.service.listeners;
 
-import net.thumbtack.onlineshop.database.dao.HistoryDao;
-import net.thumbtack.onlineshop.database.models.HistoryEntry;
-import net.thumbtack.onlineshop.database.models.Product;
+import net.thumbtack.onlineshop.domain.dao.PurchaseDao;
+import net.thumbtack.onlineshop.domain.models.Product;
+import net.thumbtack.onlineshop.domain.models.Purchase;
 import net.thumbtack.onlineshop.service.MailService;
 import net.thumbtack.onlineshop.service.events.BasketPurchaseEvent;
 import net.thumbtack.onlineshop.service.events.ProductPurchaseEvent;
@@ -17,12 +17,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class PurchaseListener {
 
-    private HistoryDao historyDao;
+    private PurchaseDao purchaseDao;
     private MailService mailService;
 
     @Autowired
-    public PurchaseListener(HistoryDao historyDao, MailService mailService) {
-        this.historyDao = historyDao;
+    public PurchaseListener(PurchaseDao purchaseDao, MailService mailService) {
+        this.purchaseDao = purchaseDao;
         this.mailService = mailService;
     }
 
@@ -34,8 +34,8 @@ public class PurchaseListener {
     @EventListener
     public void saveProductPurchaseInHistory(ProductPurchaseEvent event) {
         // Теперь делаем запись в историю покупок
-        historyDao.insert(
-                new HistoryEntry(
+        purchaseDao.insert(
+                new Purchase(
                         event.getProduct(),
                         event.getClient(),
                         event.getDate(),
@@ -54,8 +54,8 @@ public class PurchaseListener {
     public void saveBasketPurchaseInHistory(BasketPurchaseEvent event) {
         // Делаем запись в истории покупок о каждой позиции в списке
         for (BasketPurchaseEvent.Entry entry : event.getList()) {
-            historyDao.insert(
-                    new HistoryEntry(
+            purchaseDao.insert(
+                    new Purchase(
                             entry.getProduct(),
                             event.getClient(),
                             event.getDate(),

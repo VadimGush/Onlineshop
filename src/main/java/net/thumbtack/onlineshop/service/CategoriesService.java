@@ -1,8 +1,8 @@
 package net.thumbtack.onlineshop.service;
 
-import net.thumbtack.onlineshop.database.dao.CategoryDao;
-import net.thumbtack.onlineshop.database.dao.SessionDao;
-import net.thumbtack.onlineshop.database.models.Category;
+import net.thumbtack.onlineshop.domain.dao.CategoryDao;
+import net.thumbtack.onlineshop.domain.dao.SessionDao;
+import net.thumbtack.onlineshop.domain.models.Category;
 import net.thumbtack.onlineshop.dto.CategoryDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

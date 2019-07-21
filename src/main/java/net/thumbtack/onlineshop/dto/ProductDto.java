@@ -1,9 +1,9 @@
 package net.thumbtack.onlineshop.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import net.thumbtack.onlineshop.database.models.Basket;
-import net.thumbtack.onlineshop.database.models.Product;
-import net.thumbtack.onlineshop.database.models.ProductCategory;
+import net.thumbtack.onlineshop.domain.models.Basket;
+import net.thumbtack.onlineshop.domain.models.Product;
+import net.thumbtack.onlineshop.domain.models.ProductCategory;
 import net.thumbtack.onlineshop.dto.actions.Edit;
 import net.thumbtack.onlineshop.dto.actions.Register;
 import net.thumbtack.onlineshop.dto.validation.RequiredName;

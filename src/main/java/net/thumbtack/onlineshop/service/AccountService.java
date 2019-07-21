@@ -1,10 +1,10 @@
 package net.thumbtack.onlineshop.service;
 
-import net.thumbtack.onlineshop.database.dao.AccountDao;
-import net.thumbtack.onlineshop.database.dao.SessionDao;
-import net.thumbtack.onlineshop.database.models.Account;
-import net.thumbtack.onlineshop.database.models.AccountFactory;
-import net.thumbtack.onlineshop.database.models.Session;
+import net.thumbtack.onlineshop.domain.dao.AccountDao;
+import net.thumbtack.onlineshop.domain.dao.SessionDao;
+import net.thumbtack.onlineshop.domain.models.Account;
+import net.thumbtack.onlineshop.domain.models.AccountFactory;
+import net.thumbtack.onlineshop.domain.models.Session;
 import net.thumbtack.onlineshop.dto.AccountDto;
 import net.thumbtack.onlineshop.dto.AdminDto;
 import net.thumbtack.onlineshop.dto.ClientDto;

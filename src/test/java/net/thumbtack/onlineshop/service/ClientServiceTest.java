@@ -1,10 +1,10 @@
 package net.thumbtack.onlineshop.service;
 
-import net.thumbtack.onlineshop.database.dao.AccountDao;
-import net.thumbtack.onlineshop.database.dao.BasketDao;
-import net.thumbtack.onlineshop.database.dao.ProductDao;
-import net.thumbtack.onlineshop.database.dao.SessionDao;
-import net.thumbtack.onlineshop.database.models.*;
+import net.thumbtack.onlineshop.domain.dao.AccountDao;
+import net.thumbtack.onlineshop.domain.dao.BasketDao;
+import net.thumbtack.onlineshop.domain.dao.ProductDao;
+import net.thumbtack.onlineshop.domain.dao.SessionDao;
+import net.thumbtack.onlineshop.domain.models.*;
 import net.thumbtack.onlineshop.dto.AccountDto;
 import net.thumbtack.onlineshop.dto.ProductDto;
 import net.thumbtack.onlineshop.dto.ResultBasketDto;
@@ -12,7 +12,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.*;
 
@@ -39,7 +38,7 @@ public class ClientServiceTest {
     private BasketDao mockBasketDao;
 
     @Mock
-    private ApplicationEventPublisher mockEventPublisher;
+    private PurchasesService mockPurchasesService;
 
     @Before
     public void setUpClass() {
@@ -49,10 +48,13 @@ public class ClientServiceTest {
                 mockSessionDao,
                 mockProductDao,
                 mockBasketDao,
-                mockEventPublisher
+                mockPurchasesService
         );
     }
 
+    /**
+     * Проверяем пополнение счёта клиента
+     */
     @Test()
     public void testPutDeposit() throws ServiceException {
 
@@ -69,11 +71,11 @@ public class ClientServiceTest {
 
     }
 
+    /**
+     * Проверяем покупку всех доступных товаров
+     */
     @Test
     public void testBuyProduct1() throws ServiceException {
-
-        // Клиент покупает ровно весь товар, который есть
-
         Account client = generateClient();
         client.setDeposit(52);
 
@@ -90,6 +92,8 @@ public class ClientServiceTest {
         // Количество товара должно будет изменится
         verify(mockProductDao).update(product);
         verify(mockProductDao, never()).delete(product);
+        // Сервис должен сохранить инфу о покупке данного товара
+        verify(mockPurchasesService).saveProductPurchase(client, product, request.getCount());
         // А запись о клиенте должна изменится
         verify(mockAccountDao).update(client);
 
@@ -101,11 +105,11 @@ public class ClientServiceTest {
 
     }
 
+    /**
+     * Проверяем покупку небольшой части товаров
+     */
     @Test
     public void testBuyProduct2() throws ServiceException {
-
-        // Клиент выкупает часть товара
-
         Account client = generateClient();
         client.setDeposit(52);
 
@@ -122,6 +126,8 @@ public class ClientServiceTest {
         // Количество товара просто должно изменится
         verify(mockProductDao).update(product);
         verify(mockProductDao, never()).delete(product);
+        // Сервис должен сохранить инфу о покупке данного товара
+        verify(mockPurchasesService).saveProductPurchase(client, product, request.getCount());
         // А запись о клиенте должна изменится
         verify(mockAccountDao).update(client);
 
@@ -136,6 +142,9 @@ public class ClientServiceTest {
 
     }
 
+    /**
+     * Нельзя купить товар указав неверный ID
+     */
     @Test(expected = ServiceException.class)
     public void testBuyProductWithWrongId() throws ServiceException {
 
@@ -144,9 +153,7 @@ public class ClientServiceTest {
 
         when(mockSessionDao.get("token")).thenReturn(new Session("token", client));
 
-        Product product = new Product(
-                "product", 5,10
-        );
+        Product product = new Product("product", 5,10);
 
         when(mockProductDao.get(0)).thenReturn(product);
 
@@ -163,6 +170,9 @@ public class ClientServiceTest {
 
     }
 
+    /**
+     * Нельзя добавить в корзину указав неверный id
+     */
     @Test(expected = ServiceException.class)
     public void testAddToBasketWithWrongId() throws ServiceException {
 
@@ -170,9 +180,7 @@ public class ClientServiceTest {
 
         when(mockSessionDao.get("token")).thenReturn(new Session("token", client));
 
-        Product product = new Product(
-                "product", 5,10
-        );
+        Product product = new Product("product", 5,10);
 
         when(mockProductDao.get(0)).thenReturn(product);
 
@@ -190,6 +198,9 @@ public class ClientServiceTest {
 
     }
 
+    /**
+     * Нельзя добавить в корзину указав неверное имя
+     */
     @Test(expected = ServiceException.class)
     public void testAddToBasketWithWrongName() throws ServiceException {
 
@@ -197,9 +208,7 @@ public class ClientServiceTest {
 
         when(mockSessionDao.get("token")).thenReturn(new Session("token", client));
 
-        Product product = new Product(
-                "product", 5,10
-        );
+        Product product = new Product("product", 5,10);
 
         when(mockProductDao.get(0)).thenReturn(product);
 
@@ -217,6 +226,9 @@ public class ClientServiceTest {
 
     }
 
+    /**
+     * Нельзя добавить в корзину указав неверную цену
+     */
     @Test(expected = ServiceException.class)
     public void testAddToBasketWithWrongPrice() throws ServiceException {
 
@@ -224,9 +236,7 @@ public class ClientServiceTest {
 
         when(mockSessionDao.get("token")).thenReturn(new Session("token", client));
 
-        Product product = new Product(
-                "product", 5,10
-        );
+        Product product = new Product("product", 5,10);
 
         when(mockProductDao.get(0)).thenReturn(product);
 
@@ -244,6 +254,9 @@ public class ClientServiceTest {
 
     }
 
+    /**
+     * Нельзя купить товар указав неверное имя
+     */
     @Test(expected = ServiceException.class)
     public void testBuyProductWithWrongName() throws ServiceException {
 
@@ -252,9 +265,7 @@ public class ClientServiceTest {
 
         when(mockSessionDao.get("token")).thenReturn(new Session("token", client));
 
-        Product product = new Product(
-                "product", 5,10
-        );
+        Product product = new Product("product", 5,10);
 
         when(mockProductDao.get(0)).thenReturn(product);
 
@@ -271,6 +282,9 @@ public class ClientServiceTest {
 
     }
 
+    /**
+     * Нельзя купить товар указав неверную цену
+     */
     @Test(expected = ServiceException.class)
     public void testBuyProductWithWrongPrice() throws ServiceException {
 
@@ -279,9 +293,7 @@ public class ClientServiceTest {
 
         when(mockSessionDao.get("token")).thenReturn(new Session("token", client));
 
-        Product product = new Product(
-                "product", 5,10
-        );
+        Product product = new Product("product", 5,10);
 
         when(mockProductDao.get(0)).thenReturn(product);
 

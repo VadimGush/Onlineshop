@@ -1,4 +1,4 @@
-package net.thumbtack.onlineshop.database.models;
+package net.thumbtack.onlineshop.domain.models;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -14,8 +14,8 @@ import java.util.Objects;
  * по какой цене и в каком количестве. Используется затем для формирования сводной ведомости.
  */
 @Entity
-@Table(name = "history")
-public class HistoryEntry {
+@Table(name = "purchase")
+public class Purchase {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,11 +39,11 @@ public class HistoryEntry {
     @Column(nullable = false)
     private Integer price;
 
-    public HistoryEntry() {
+    public Purchase() {
 
     }
 
-    public HistoryEntry(Product product, Account account, Date date, int count, int price) {
+    public Purchase(Product product, Account account, Date date, int count, int price) {
         this.product = product;
         this.account = account;
         this.date = date;
@@ -102,8 +102,8 @@ public class HistoryEntry {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof HistoryEntry)) return false;
-        HistoryEntry history = (HistoryEntry) o;
+        if (!(o instanceof Purchase)) return false;
+        Purchase history = (Purchase) o;
         return Objects.equals(id, history.id) &&
                 Objects.equals(product, history.product) &&
                 Objects.equals(account, history.account) &&

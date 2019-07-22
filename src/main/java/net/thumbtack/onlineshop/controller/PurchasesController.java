@@ -1,5 +1,6 @@
 package net.thumbtack.onlineshop.controller;
 
+import net.thumbtack.onlineshop.dto.PurchasesDto;
 import net.thumbtack.onlineshop.service.PurchasesService;
 import net.thumbtack.onlineshop.service.PurchasesService.Target;
 import net.thumbtack.onlineshop.service.ServiceException;
@@ -16,7 +17,7 @@ public class PurchasesController {
     }
 
     @GetMapping("purchases")
-    public String getPurchases(
+    public PurchasesDto getPurchases(
             @CookieValue("JAVASESSIONID") String session,
             @RequestParam(name = "target") String target,
             @RequestParam(name = "offset", required = false, defaultValue = "0") int offset,

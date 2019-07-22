@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -31,48 +32,52 @@ public class PurchaseDao implements Dao {
     }
 
     /**
-     * Получет историю покупок для товара
-     * @param productId id товара
-     * @return история покупок
+     * Общее количество записей в истории покупок
+     *
+     * @return количество записей
      */
-    public List<Purchase> getProductPurchases(long productId) {
+    public Long getCount() {
         CriteriaBuilder builder = manager.getCriteriaBuilder();
-        CriteriaQuery<Purchase> criteria = builder.createQuery(Purchase.class);
+        CriteriaQuery<Long> criteria = builder.createQuery(Long.class);
         Root<Purchase> from = criteria.from(Purchase.class);
 
-        criteria.select(from);
-        criteria.where(
-                builder.equal(from.get("product"), productId)
-        );
+        criteria.select(builder.count(from));
 
-        TypedQuery<Purchase> typed = manager.createQuery(criteria);
-        return typed.getResultList();
+        TypedQuery<Long> typed = manager.createQuery(criteria);
+        return typed.getSingleResult();
     }
 
     /**
-     * Получает историю покупок для клиента
-     * @param clientId клиента
+     * Получет историю покупок отсортированных по товарам
+     *
      * @return история покупок
      */
-    public List<Purchase> getClientPurchases(long clientId) {
-        CriteriaBuilder builder = manager.getCriteriaBuilder();
-        CriteriaQuery<Purchase> criteria = builder.createQuery(Purchase.class);
-        Root<Purchase> from = criteria.from(Purchase.class);
+    public List<Purchase> getProductsPurchases(long limit, long offset) {
+        Query query = manager.createNativeQuery(
+                "select * from purchase order by product_id limit " + limit + " offset " + offset,
+                Purchase.class);
 
-        criteria.select(from);
-        criteria.where(
-                builder.equal(from.get("account"), clientId)
-        );
+        return query.getResultList();
+    }
 
-        TypedQuery<Purchase> typed = manager.createQuery(criteria);
-        return typed.getResultList();
+    /**
+     * Получает историю покупок отсортированных по клиентам
+     *
+     * @return история покупок
+     */
+    public List<Purchase> getClientsPurchases(long limit, long offset) {
+        Query query = manager.createNativeQuery(
+                "select * from purchase order by account_id limit " + limit + " offset " + offset,
+                Purchase.class);
+
+        return query.getResultList();
     }
 
     /**
      * Удалить всю историю покупок
      */
     public void clear() {
-        manager.createNativeQuery("delete from history")
+        manager.createNativeQuery("delete from purchase")
                 .executeUpdate();
     }
 }

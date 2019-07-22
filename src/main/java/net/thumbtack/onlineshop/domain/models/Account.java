@@ -188,6 +188,16 @@ public class Account {
         this.password = password;
     }
 
+    public String getFullName() {
+        String fullName = lastName + " " + firstName;
+
+        if (patronymic != null) {
+            fullName = fullName + " " + patronymic;
+        }
+
+        return fullName;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

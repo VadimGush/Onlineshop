@@ -17,53 +17,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class PurchaseListener {
 
-    private PurchaseDao purchaseDao;
     private MailService mailService;
 
     @Autowired
-    public PurchaseListener(PurchaseDao purchaseDao, MailService mailService) {
-        this.purchaseDao = purchaseDao;
+    public PurchaseListener(MailService mailService) {
         this.mailService = mailService;
-    }
-
-    /**
-     * Записывает информацию о покупке товара в историю покупок
-     *
-     * @param event событие покупки товара
-     */
-    @EventListener
-    public void saveProductPurchaseInHistory(ProductPurchaseEvent event) {
-        // Теперь делаем запись в историю покупок
-        purchaseDao.insert(
-                new Purchase(
-                        event.getProduct(),
-                        event.getClient(),
-                        event.getDate(),
-                        event.getCount(),
-                        event.getPrice()
-                )
-        );
-    }
-
-    /**
-     * Записываем информацию о покупке корзины в историю покупок
-     *
-     * @param event событие покупки корзины
-     */
-    @EventListener
-    public void saveBasketPurchaseInHistory(BasketPurchaseEvent event) {
-        // Делаем запись в истории покупок о каждой позиции в списке
-        for (BasketPurchaseEvent.Entry entry : event.getList()) {
-            purchaseDao.insert(
-                    new Purchase(
-                            entry.getProduct(),
-                            event.getClient(),
-                            event.getDate(),
-                            entry.getCount(),
-                            entry.getPrice()
-                    )
-            );
-        }
     }
 
     /**

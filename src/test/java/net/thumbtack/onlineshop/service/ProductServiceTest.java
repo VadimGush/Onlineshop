@@ -13,6 +13,7 @@ import org.mockito.stubbing.Answer;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 import static junit.framework.TestCase.assertEquals;
@@ -389,18 +390,21 @@ public class ProductServiceTest {
         assertNull(results.get(2).getCategories());
     }
 
+    /**
+     * Получаем список товаров, отсортированных по именам, которые принадлежат
+     * хотя бы одной из указанных категорий
+     */
     @Test
     public void testGetAllWithCategories() throws ServiceException {
         setAdmin();
 
-        // Получаем список товаров отсортированный по именам
-        // которые принадлежат хотя бы одной из указанных категорий
-
+        // Категории
         Category first = new Category("aa");
         first.setId(1L);
         Category second = new Category("bb");
         second.setId(2L);
 
+        // Товары
         Product product1 = new Product("warka", 1, 1);
         product1.setId(1L);
         Product product2 = new Product("amka", 1, 1);
@@ -408,23 +412,27 @@ public class ProductServiceTest {
         Product product3 = new Product("arka", 1, 1);
         product3.setId(3L);
 
+        // Категории товаров
         List<ProductCategory> productCategory = Arrays.asList(
                 new ProductCategory(product1, first),
                 new ProductCategory(product2, second),
                 new ProductCategory(product3, first)
         );
 
+        // Симулируем возврат списка категорий для каждого товара
         for (ProductCategory category : productCategory) {
             when(mockProductDao.getCategories(category.getProduct().getId()))
                     .thenReturn(Collections.singletonList(category));
         }
 
-        when(mockProductDao.getAllWithCategory()).thenReturn(productCategory);
+        // Симулириует возврат списка товаров, которые принадлежат данным категориям
+        when(mockProductDao.getAllWithCategories(Collections.singletonList(1L)))
+                .thenReturn(new HashSet<>(Arrays.asList(product3, product1)));
 
         List<ProductDto> results =
                 productService.getAll("token", Collections.singletonList(1L), ProductService.SortOrder.PRODUCT);
 
-        verify(mockProductDao).getAllWithCategory();
+        verify(mockProductDao).getAllWithCategories(Collections.singletonList(1L));
 
         assertEquals("arka", results.get(0).getName());
         assertEquals("warka", results.get(1).getName());

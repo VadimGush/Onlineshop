@@ -9,6 +9,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaDelete;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import java.util.List;
@@ -134,8 +135,12 @@ public class AccountDao implements Dao {
      * Удаляет таблицу аккаунтов из БД
      */
     public void clear() {
-        manager.createNativeQuery("delete from account")
-                .executeUpdate();
+        CriteriaBuilder builder = manager.getCriteriaBuilder();
+        CriteriaDelete<Account> criteria = builder.createCriteriaDelete(Account.class);
+
+        criteria.from(Account.class);
+
+        manager.createQuery(criteria).executeUpdate();
     }
 
 }

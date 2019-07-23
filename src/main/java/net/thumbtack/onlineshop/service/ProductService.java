@@ -257,7 +257,7 @@ public class ProductService extends GeneralService {
             return getAllProductsSortedByName(categories);
         } else {
             // Получаем все товары отсортированные по именам категорий
-            return getAllProductsCategorySorted(categories);
+            return getAllProductsSortedByCategory(categories);
         }
 
     }
@@ -270,7 +270,7 @@ public class ProductService extends GeneralService {
      *                   Без списка - все товары
      * @return выборка товаров отсортированных по именам категорий
      */
-    private List<ProductCategory> getAllProductsCategorySorted(List<Long> categories) {
+    private List<ProductCategory> getAllProductsSortedByCategory(List<Long> categories) {
 
         List<ProductCategory> result = new ArrayList<>();
 
@@ -346,16 +346,7 @@ public class ProductService extends GeneralService {
         } else {
 
             // Все товары которые содержат данные категории
-            List<ProductCategory> products = productDao.getAllWithCategory();
-            Set<Product> resultSet = new HashSet<>();
-
-            for (long category : categories) {
-                for (ProductCategory product : products) {
-                    if (product.getCategory().getId() == category) {
-                        resultSet.add(product.getProduct());
-                    }
-                }
-            }
+            Set<Product> resultSet = productDao.getAllWithCategories(categories);
 
             // Теперь переносим всё это в конечный результат
             resultSet.forEach((p) -> result.add(new ProductCategory(p, null)));

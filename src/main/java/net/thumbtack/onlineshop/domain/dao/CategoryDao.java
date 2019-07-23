@@ -8,6 +8,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaDelete;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
@@ -114,7 +115,11 @@ public class CategoryDao implements Dao {
      * Удаляет таблицу категорий из БД
      */
     public void clear() {
-        manager.createNativeQuery("delete from category")
-                .executeUpdate();
+        CriteriaBuilder builder = manager.getCriteriaBuilder();
+        CriteriaDelete<Category> criteria = builder.createCriteriaDelete(Category.class);
+
+        criteria.from(Category.class);
+
+        manager.createQuery(criteria).executeUpdate();
     }
 }

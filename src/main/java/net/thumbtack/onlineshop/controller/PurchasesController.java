@@ -6,6 +6,8 @@ import net.thumbtack.onlineshop.service.PurchasesService.Target;
 import net.thumbtack.onlineshop.service.ServiceException;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("api")
 public class PurchasesController {
@@ -21,7 +23,9 @@ public class PurchasesController {
             @CookieValue("JAVASESSIONID") String session,
             @RequestParam(name = "target") String target,
             @RequestParam(name = "offset", required = false, defaultValue = "0") int offset,
-            @RequestParam(name = "limit", required = false, defaultValue = "10") int limit
+            @RequestParam(name = "limit", required = false, defaultValue = "10") int limit,
+            @RequestParam(name = "id", required = false) Long id,
+            @RequestParam(name = "categories", required = false) List<Long> categories
     ) throws ServiceException {
 
         Target requestTarget = Target.CLIENT;
@@ -30,6 +34,7 @@ public class PurchasesController {
             requestTarget = Target.PRODUCT;
         }
 
-        return purchasesService.getPurchases(session, requestTarget, offset, limit);
+        return purchasesService.getPurchases(
+                session, requestTarget, offset, limit, id, categories);
     }
 }

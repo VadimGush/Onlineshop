@@ -11,10 +11,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import java.util.Arrays;
 import java.util.List;
 
@@ -207,14 +204,20 @@ public class AccountDaoTest {
     @Test
     public void testClear() {
 
+        CriteriaBuilder mockCriteriaBuilder = mock(CriteriaBuilder.class);
+        CriteriaDelete<Account> mockCriteria = (CriteriaDelete<Account>) mock(CriteriaDelete.class);
         Query mockQuery = mock(Query.class);
-        when(mockEntityManager.createNativeQuery(any()))
-                .thenReturn(mockQuery);
+
+        when(mockEntityManager.getCriteriaBuilder()).thenReturn(mockCriteriaBuilder);
+        when(mockCriteriaBuilder.createCriteriaDelete(Account.class)).thenReturn(mockCriteria);
+        when(mockEntityManager.createQuery(mockCriteria)).thenReturn(mockQuery);
 
         accountDao.clear();
 
-        verify(mockEntityManager).createNativeQuery("delete from account");
+        verify(mockCriteria).from(Account.class);
+        verify(mockEntityManager).createQuery(mockCriteria);
         verify(mockQuery).executeUpdate();
+
     }
 
     private Account generateAccount() {

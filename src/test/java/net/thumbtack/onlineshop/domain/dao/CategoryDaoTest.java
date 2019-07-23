@@ -10,10 +10,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import java.util.Arrays;
 import java.util.List;
 
@@ -195,14 +192,18 @@ public class CategoryDaoTest {
 
     @Test
     public void testClear() {
-
+        CriteriaBuilder mockCriteriaBuilder = mock(CriteriaBuilder.class);
+        CriteriaDelete<Category> mockCriteria = (CriteriaDelete<Category>) mock(CriteriaDelete.class);
         Query mockQuery = mock(Query.class);
-        when(mockEntityManager.createNativeQuery(any()))
-                .thenReturn(mockQuery);
+
+        when(mockEntityManager.getCriteriaBuilder()).thenReturn(mockCriteriaBuilder);
+        when(mockCriteriaBuilder.createCriteriaDelete(Category.class)).thenReturn(mockCriteria);
+        when(mockEntityManager.createQuery(mockCriteria)).thenReturn(mockQuery);
 
         categoryDao.clear();
 
-        verify(mockEntityManager).createNativeQuery("delete from category");
+        verify(mockCriteria).from(Category.class);
+        verify(mockEntityManager).createQuery(mockCriteria);
         verify(mockQuery).executeUpdate();
     }
 

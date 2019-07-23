@@ -10,11 +10,14 @@ import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaDelete;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Transactional
 @Repository
@@ -141,6 +144,7 @@ public class ProductDao implements Dao {
      */
     public List<Product> getAllWithoutCategory() {
 
+        // Использую чистый SQL, так как в EntityManager я не разобрался как сделать left join
         Query query = manager.createNativeQuery(
                 "select a.* from product a left join productcategory b on" +
                         " a.id = b.product_id where b.category_id is NULL and deleted = 0",
@@ -167,7 +171,6 @@ public class ProductDao implements Dao {
         // Вместо создания сложного запроса, мы вручную удалим
         // товары, которые были удалены. Это очень плохая практика, но как временное
         // решение пока сойдёт
-        // TODO: Переделать на запрос!
         typed.getResultList().stream()
                 .filter(productCategory -> !productCategory.getProduct().getDeleted())
                 .forEach(result::add);
@@ -176,14 +179,42 @@ public class ProductDao implements Dao {
     }
 
     /**
+     * Получает список всех товаров, которые принадлежат данным категориям
+     * (без повторений)
+     *
+     * @param categories список категорий
+     * @return список товаров (или пустую коллекцию, если categories == null)
+     */
+    public Set<Product> getAllWithCategories(List<Long> categories) {
+
+        if (categories == null || categories.isEmpty())
+            return new HashSet<>();
+
+        List<ProductCategory> products = getAllWithCategory();
+        Set<Product> result = new HashSet<>();
+
+        for (long category : categories) {
+            for (ProductCategory product : products) {
+                if (product.getCategory().getId() == category) {
+                    result.add(product.getProduct());
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
      * Удаляет таблицы категорий и товаров из БД
      */
     public void clear() {
-        manager.createNativeQuery("delete from productcategory")
-                .executeUpdate();
+        // Категории товаров тоже будут удалены, так как на них стоит OnDelete.CASCADE
+        CriteriaBuilder builder = manager.getCriteriaBuilder();
+        CriteriaDelete<Product> criteria = builder.createCriteriaDelete(Product.class);
 
-        manager.createNativeQuery("delete from product")
-                .executeUpdate();
+        criteria.from(Product.class);
+
+        manager.createQuery(criteria).executeUpdate();
     }
 
 }

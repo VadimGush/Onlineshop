@@ -19,7 +19,9 @@ public class PurchasesDto {
     // На какую сумму было выкуплено товара в выборке
     private Integer totalAmount = 0;
 
-    public PurchasesDto(Long searchResults) {
+    public PurchasesDto() {}
+
+    public void setSearchResults(Long searchResults) {
         this.searchResults = searchResults;
     }
 
@@ -28,6 +30,7 @@ public class PurchasesDto {
         totalCount += purchase.getCount();
         totalAmount += purchase.getTotalAmount();
     }
+
     public Long getSearchResults() {
         return searchResults;
     }

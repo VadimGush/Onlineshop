@@ -9,6 +9,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaDelete;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
@@ -76,7 +77,11 @@ public class SessionDao implements Dao {
      * Удаляет таблицу сессий из БД
      */
     public void clear() {
-        manager.createNativeQuery("delete from session")
-                .executeUpdate();
+        CriteriaBuilder builder = manager.getCriteriaBuilder();
+        CriteriaDelete<Session> criteria = builder.createCriteriaDelete(Session.class);
+
+        criteria.from(Session.class);
+
+        manager.createQuery(criteria).executeUpdate();
     }
 }

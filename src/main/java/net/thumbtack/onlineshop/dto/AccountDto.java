@@ -1,5 +1,6 @@
 package net.thumbtack.onlineshop.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import net.thumbtack.onlineshop.domain.models.Account;
 
@@ -131,5 +132,16 @@ public class AccountDto {
 
     public void setPosition(String position) {
         this.position = position;
+    }
+
+    @JsonIgnore
+    public String getFullName() {
+        String fullName = lastName + " " + firstName;
+
+        if (patronymic != null) {
+            fullName = fullName + " " + patronymic;
+        }
+
+        return fullName;
     }
 }

@@ -35,6 +35,10 @@ public class IntegrationUtils {
         this.mvc = mvc;
     }
 
+    public ObjectMapper getMapper() {
+        return mapper;
+    }
+
     public ResultActions post(String url, String session, Object content) throws Exception {
 
         MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.post(url);

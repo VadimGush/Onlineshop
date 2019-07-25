@@ -29,58 +29,6 @@ public class PurchaseDao implements Dao {
     }
 
     /**
-     * Общее количество записей в истории покупок
-     *
-     * @return количество записей
-     */
-    public Long getCount() {
-        CriteriaBuilder builder = manager.getCriteriaBuilder();
-        CriteriaQuery<Long> criteria = builder.createQuery(Long.class);
-        Root<Purchase> from = criteria.from(Purchase.class);
-
-        criteria.select(builder.count(from));
-
-        TypedQuery<Long> typed = manager.createQuery(criteria);
-        return typed.getSingleResult();
-    }
-
-    /**
-     * Общее количество записей в истории покупок для данного клиента
-     *
-     * @param id id клиента
-     * @return количество записей
-     */
-    public long getClientPurchasesCount(long id) {
-        CriteriaBuilder builder = manager.getCriteriaBuilder();
-        CriteriaQuery<Long> criteria = builder.createQuery(Long.class);
-        Root<Purchase> from = criteria.from(Purchase.class);
-
-        criteria.select(builder.count(from));
-        criteria.where(builder.equal(from.get("account"), id));
-
-        TypedQuery<Long> typed = manager.createQuery(criteria);
-        return typed.getSingleResult();
-    }
-
-    /**
-     * Общее число записей в истории покупок для данного товара
-     *
-     * @param id id товара
-     * @return количество записей
-     */
-    public long getProductPurchasesCount(long id) {
-        CriteriaBuilder builder = manager.getCriteriaBuilder();
-        CriteriaQuery<Long> criteria = builder.createQuery(Long.class);
-        Root<Purchase> from = criteria.from(Purchase.class);
-
-        criteria.select(builder.count(from));
-        criteria.where(builder.equal(from.get("product"), id));
-
-        TypedQuery<Long> typed = manager.createQuery(criteria);
-        return typed.getSingleResult();
-    }
-
-    /**
      * Получает историю покупок отсортированных по товарам
      *
      * @param limit количество записей
@@ -88,13 +36,6 @@ public class PurchaseDao implements Dao {
      * @return история покупок
      */
     public List<Purchase> getPurchasesSortedByProducts(int limit, int offset) {
-        /*
-        Query query = manager.createNativeQuery(
-                "select * from purchase order by product_id limit " + limit + " offset " + offset,
-                Purchase.class);
-
-        return query.getResultList();
-         */
         CriteriaBuilder builder = manager.getCriteriaBuilder();
         CriteriaQuery<Purchase> criteria = builder.createQuery(Purchase.class);
         Root<Purchase> from = criteria.from(Purchase.class);
@@ -114,13 +55,6 @@ public class PurchaseDao implements Dao {
      * @return история покупок
      */
     public List<Purchase> getPurchasesSortedByClients(int limit, int offset) {
-        /*
-        Query query = manager.createNativeQuery(
-                "select * from purchase order by account_id limit " + limit + " offset " + offset,
-                Purchase.class);
-        return query.getResultList();
-         */
-
         CriteriaBuilder builder = manager.getCriteriaBuilder();
         CriteriaQuery<Purchase> criteria = builder.createQuery(Purchase.class);
         Root<Purchase> from = criteria.from(Purchase.class);
@@ -141,12 +75,6 @@ public class PurchaseDao implements Dao {
      * @return история покупок
      */
     public List<Purchase> getClientPurchases(long id, int limit, int offset) {
-        /*
-        Query query = manager.createNativeQuery(
-                "select * from purchase where account_id = " + id + " limit " + limit + " offset " + offset,
-                Purchase.class);
-        return query.getResultList();
-         */
         CriteriaBuilder builder = manager.getCriteriaBuilder();
         CriteriaQuery<Purchase> criteria = builder.createQuery(Purchase.class);
         Root<Purchase> from = criteria.from(Purchase.class);
@@ -167,13 +95,6 @@ public class PurchaseDao implements Dao {
      * @return история покупок
      */
     public List<Purchase> getProductPurchases(long id, int limit, int offset) {
-        /*
-        Query query = manager.createNativeQuery(
-                "select * from purchase where product_id = " + id + " limit " + limit + " offset " + offset,
-                Purchase.class
-        );
-        return query.getResultList();
-         */
         CriteriaBuilder builder = manager.getCriteriaBuilder();
         CriteriaQuery<Purchase> criteria = builder.createQuery(Purchase.class);
         Root<Purchase> from = criteria.from(Purchase.class);

@@ -137,17 +137,10 @@ public class PurchasesService extends GeneralService {
         List<Purchase> purchases;
 
         if (id == null) {
-            // Если нет запроса на получение истории покупок одного товара,
-            // то получаем для всех
-            result.setSearchResults(purchaseDao.getCount());
-            purchases = purchaseDao.getPurchasesSortedByProducts(limit, offset);
 
-            /*
-            Мне жутко не нравится этот вариант формирования выборки, так как
-            вместо одного запроса в БД мы устраиваем целый pipeline, который жрёт не мало памяти
-            при большом количестве категорий и товаров в БД
-             */
+            // Выборка по категориям
             if (categories != null && !categories.isEmpty()) {
+
                 // Получаем список товаров, которые относяться к данным категориям
                 Set<Product> products = productDao.getAllWithCategories(categories);
 
@@ -160,6 +153,13 @@ public class PurchasesService extends GeneralService {
 
                 // Получаем историю покупок для данных товаров
                 purchases = purchaseDao.getProductsPurchases(productsId, limit, offset);
+
+            } else {
+
+                // Если нет запроса на получение истории покупок одного товара,
+                // то получаем для всех
+                purchases = purchaseDao.getPurchasesSortedByProducts(limit, offset);
+
             }
 
         } else {
@@ -195,7 +195,6 @@ public class PurchasesService extends GeneralService {
         if (id == null) {
             // Если нет запроса на получении истории покупок конкретного клиента,
             // то получаем все записи
-            result.setSearchResults(purchaseDao.getCount());
             purchases = purchaseDao.getPurchasesSortedByClients(limit, offset);
 
         } else {

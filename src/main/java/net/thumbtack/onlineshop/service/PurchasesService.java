@@ -49,15 +49,13 @@ public class PurchasesService extends GeneralService {
      */
     void saveProductPurchase(Account client, Product product, int count) {
 
+        Purchase purchase = new Purchase(product, client, new Date(), count, product.getPrice());
+
         // Сохраняем запись о покупке товара
-        purchaseDao.insert(
-                new Purchase(product, client, new Date(), count, product.getPrice())
-        );
+        purchaseDao.insert(purchase);
 
         // Создаём событие о покупке товара
-        eventPublisher.publishEvent(new ProductPurchaseEvent(
-                this, product, client, count, product.getPrice()
-        ));
+        eventPublisher.publishEvent(new ProductPurchaseEvent(this, purchase));
     }
 
     /**
@@ -68,23 +66,22 @@ public class PurchasesService extends GeneralService {
      */
     void saveBasketPurchase(Account client, Map<Product, Integer> products)  {
 
-        // Создаём событие о покупке товара
-        BasketPurchaseEvent event = new BasketPurchaseEvent(this, client);
+        List<Purchase> purchases = new ArrayList<>();
 
         // Сохраняем записи о покупке товаров
         products.forEach((product, count) -> {
 
+            Purchase purchase = new Purchase(product, client, new Date(), count, product.getPrice());
+
             // Записываем в БД инфу о покупке
-            purchaseDao.insert(
-                    new Purchase(product, client, new Date(), count, product.getPrice())
-            );
+            purchaseDao.insert(purchase);
 
             // Записываем в событие инфу о покупке одного товара
-            event.put(product, count, product.getPrice());
+            purchases.add(purchase);
         });
 
         // Создаём событие о покупке корзины
-        eventPublisher.publishEvent(event);
+        eventPublisher.publishEvent(new BasketPurchaseEvent(this, client, purchases));
     }
 
     /**

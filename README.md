@@ -16,17 +16,20 @@ alter database `<database_name>` character set utf8 collate utf8_general_ci
 ```
 
 ### Запуск
-Для начала собираем .jar файл:
+Собираем проект
 ```bash
-gradle jar
+gradle build
 ```
 
-Затем производим запуск:
+Создаём Docker image
 ```bash
-java -jar /build/classes/libs/onlineshop-1.0-SNAPSHOT.jar
+sudo docker build . -t onlineshop
 ```
 
-Сервер будет запущен на localhost по порту 8888 (иной порт можно указать в ``src/resources/config.properties``)
+Запускаем Docker контейнер
+```bash
+sudo docker run -p 80:80 -d onlineshop
+```
 
 ### Конфигурация сервера
 Конфигурацию сервера можно прописать в файле ``config.properties``. Сервер поддерживает 

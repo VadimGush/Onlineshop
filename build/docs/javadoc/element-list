@@ -1,0 +1,10 @@
+net.thumbtack.onlineshop
+net.thumbtack.onlineshop.controller
+net.thumbtack.onlineshop.database.dao
+net.thumbtack.onlineshop.database.models
+net.thumbtack.onlineshop.dto
+net.thumbtack.onlineshop.dto.actions
+net.thumbtack.onlineshop.dto.validation
+net.thumbtack.onlineshop.service
+net.thumbtack.onlineshop.service.events
+net.thumbtack.onlineshop.service.listeners

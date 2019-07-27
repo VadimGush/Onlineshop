@@ -121,6 +121,24 @@ public class ProductDao implements Dao {
     }
 
     /**
+     * Провряет, что товар с таким id существует
+     *
+     * @param id id товара
+     * @return true - если товар существует
+     */
+    public boolean exists(long id) {
+        CriteriaBuilder builder = manager.getCriteriaBuilder();
+        CriteriaQuery<Long> criteria = builder.createQuery(Long.class);
+        Root<Product> from = criteria.from(Product.class);
+
+        criteria.select(builder.count(from));
+        criteria.where(builder.equal(from.get("id"), id));
+
+        TypedQuery<Long> result = manager.createQuery(criteria);
+        return result.getSingleResult() != 0;
+    }
+
+    /**
      * Получает весь список товаров (за исключением удалённых)
      *
      * @return список товаров

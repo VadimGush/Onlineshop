@@ -24,7 +24,7 @@ public class PurchasesController {
             @RequestParam(name = "target") String target,
             @RequestParam(name = "offset", required = false, defaultValue = "0") int offset,
             @RequestParam(name = "limit", required = false, defaultValue = "10") int limit,
-            @RequestParam(name = "id", required = false) Long id,
+            @RequestParam(name = "id", required = false) List<Long> ids,
             @RequestParam(name = "categories", required = false) List<Long> categories
     ) throws ServiceException {
 
@@ -35,6 +35,6 @@ public class PurchasesController {
         }
 
         return purchasesService.getPurchases(
-                session, requestTarget, offset, limit, id, categories);
+                session, requestTarget, offset, limit, ids, categories);
     }
 }

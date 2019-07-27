@@ -91,7 +91,7 @@ public class PurchasesService extends GeneralService {
      * @param target целевая группа для выборки (клиенты или товары)
      * @param offset позиция начала выборки
      * @param limit размер выборки
-     * @param id id товара/клиента
+     * @param ids id товаров/клиентов
      * @return история покупок
      * @throws ServiceException если пользователь не является администратором или
      * указанный товар или клиент не найден
@@ -101,18 +101,18 @@ public class PurchasesService extends GeneralService {
             Target target,
             int offset,
             int limit,
-            Long id,
+            List<Long> ids,
             List<Long> categories) throws ServiceException {
 
         getAdmin(session);
 
         if (target == Target.CLIENT) {
             // Списки покупок для клиентов
-            return getClientPurchases(offset, limit, id);
+            return getClientPurchases(offset, limit, ids);
 
         } else {
             // Списки покупок для товаров
-            return getProductPurchases(offset, limit, id, categories);
+            return getProductPurchases(offset, limit, ids, categories);
         }
 
     }
@@ -123,17 +123,17 @@ public class PurchasesService extends GeneralService {
      *
      * @param offset позиция начала выборки
      * @param limit размер выборки
-     * @param id id товара (null - если нужно получить историю покупок для всех товаров)
+     * @param productsId список id товаров, для которых нужно получить историю покупок
      * @param categories список категорий, к которым должны принадлежать товары (null/empty - все товары)
      * @return история покупок
      * @throws ServiceException если товар под данным id не был найден
      */
-    private PurchasesDto getProductPurchases(int offset, int limit, Long id, List<Long> categories) throws ServiceException {
+    private PurchasesDto getProductPurchases(int offset, int limit, List<Long> productsId, List<Long> categories) throws ServiceException {
 
         PurchasesDto result = new PurchasesDto();
         List<Purchase> purchases;
 
-        if (id == null) {
+        if (productsId == null || productsId.isEmpty()) {
 
             // Выборка по категориям
             if (categories != null && !categories.isEmpty()) {
@@ -141,32 +141,30 @@ public class PurchasesService extends GeneralService {
                 // Получаем список товаров, которые относяться к данным категориям
                 Set<Product> products = productDao.getAllWithCategories(categories);
 
-                // После того, как получили список товаров, теперь можно
-                // найти в истории все записи, принадлежащие данным товарам
-
-                // Создаём список id
-                List<Long> productsId = new ArrayList<>();
-                products.forEach(p -> productsId.add(p.getId()));
+                // Формируем список их id-ов
+                List<Long> resultProductsId = new ArrayList<>();
+                products.forEach(p -> resultProductsId.add(p.getId()));
 
                 // Получаем историю покупок для данных товаров
-                purchases = purchaseDao.getProductsPurchases(productsId, limit, offset);
+                purchases = purchaseDao.getProductsPurchases(resultProductsId, limit, offset);
 
             } else {
 
-                // Если нет запроса на получение истории покупок одного товара,
-                // то получаем для всех
+                // Если список категорий не указан, то получаем для всех
                 purchases = purchaseDao.getPurchasesSortedByProducts(limit, offset);
-
             }
 
         } else {
-            // Проверяем что такой товар вообще есть
-            if (productDao.get(id) == null) {
-                throw new ServiceException(ServiceException.ErrorCode.PRODUCT_NOT_FOUND);
+
+            // Проверяем что каждый товар в списке существует
+            for (Long id : productsId) {
+                if (!productDao.exists(id)) {
+                    throw new ServiceException(ServiceException.ErrorCode.PRODUCT_NOT_FOUND);
+                }
             }
 
-            // Если указан, то для одного товара
-            purchases = purchaseDao.getProductPurchases(id, limit, offset);
+            // Получаем список покупок для товара/товаров
+            purchases = purchaseDao.getProductsPurchases(productsId, limit, offset);
         }
 
         purchases.forEach(purchase ->
@@ -180,28 +178,30 @@ public class PurchasesService extends GeneralService {
      *
      * @param offset позиция, с которой необходимо начать выборку
      * @param limit количество записей
-     * @param id id клиента (null - если нужно получить историю покупок всех клиентов)
+     * @param clientsId список id клиентов (клиента), для которых нужно получить историю покупок
      * @return история покупок
      * @throws ServiceException если клиент под указанным id не найден
      */
-    private PurchasesDto getClientPurchases(int offset, int limit, Long id) throws ServiceException {
+    private PurchasesDto getClientPurchases(int offset, int limit, List<Long> clientsId) throws ServiceException {
 
         PurchasesDto result = new PurchasesDto();
         List<Purchase> purchases;
 
-        if (id == null) {
-            // Если нет запроса на получении истории покупок конкретного клиента,
-            // то получаем все записи
+        if (clientsId == null || clientsId.isEmpty()) {
+
+            // Получаем историю покупок для всех клиентов
             purchases = purchaseDao.getPurchasesSortedByClients(limit, offset);
 
         } else {
-            // Проверям что такой аккаунт вообще есть
-            if (accountDao.get(id) == null) {
-                throw new ServiceException(ServiceException.ErrorCode.USER_NOT_FOUND);
+            // Проверяем что каждый клиент в списке существует
+            for (Long id : clientsId) {
+                if (!accountDao.exists(id)) {
+                    throw new ServiceException(ServiceException.ErrorCode.USER_NOT_FOUND);
+                }
             }
 
-            // Если id указан, значит получим для отдельного клиента
-            purchases = purchaseDao.getClientPurchases(id, limit, offset);
+            // Получаем список покупок для клиента/клиентов
+            purchases = purchaseDao.getClientsPurchases(clientsId, limit, offset);
         }
 
         purchases.forEach(purchase ->

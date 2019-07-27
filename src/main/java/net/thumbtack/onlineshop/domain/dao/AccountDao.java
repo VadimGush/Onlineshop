@@ -91,6 +91,24 @@ public class AccountDao implements Dao {
     }
 
     /**
+     * Проверяет существуют ли аккаунт под данным id
+     *
+     * @param id id аккаунта
+     * @return true - если пользователь существует
+     */
+    public boolean exists(long id) {
+        CriteriaBuilder builder = manager.getCriteriaBuilder();
+        CriteriaQuery<Long> criteria = builder.createQuery(Long.class);
+        Root<Account> from = criteria.from(Account.class);
+
+        criteria.select(builder.count(from));
+        criteria.where(builder.equal(from.get("id"), id));
+
+        TypedQuery<Long> typed = manager.createQuery(criteria);
+        return typed.getSingleResult() != 0;
+    }
+
+    /**
      * Проверяет наличие пользователя с данным логином в БД
      *
      * @param login логин пользователя

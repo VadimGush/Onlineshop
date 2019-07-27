@@ -272,16 +272,18 @@ public class PurchasesServiceTest {
                 new Purchase(product, client, new Date(), 3, 10)
         );
 
-        // Возвращаем клиента
-        when(mockAccountDao.get(3L)).thenReturn(client);
+        // Клиент существует
+        when(mockAccountDao.exists(3L)).thenReturn(true);
+
+        List<Long> ids = Collections.singletonList(3L);
 
         // Возвращаем список его покупок
-        when(mockPurchaseDao.getClientPurchases(3L, 3, 5))
+        when(mockPurchaseDao.getClientsPurchases(ids, 3, 5))
                 .thenReturn(purchases);
 
         // Получаем результат
         PurchasesDto result = service.getPurchases(
-                "token", PurchasesService.Target.CLIENT, 5, 3, 3L, null);
+                "token", PurchasesService.Target.CLIENT, 5, 3, ids, null);
 
         assertEquals((int)result.getTotalCount(), 15);
         assertEquals((int)result.getTotalAmount(), 150);
@@ -322,16 +324,18 @@ public class PurchasesServiceTest {
                 new Purchase(product, client, new Date(), 3, 10)
         );
 
-        // Возвращаем товар
-        when(mockProductDao.get(3L)).thenReturn(product);
+        // Товар существует
+        when(mockProductDao.exists(3L)).thenReturn(true);
+
+        List<Long> ids = Collections.singletonList(3L);
 
         // Возвращаем список его покупок
-        when(mockPurchaseDao.getProductPurchases(3L, 3, 5))
+        when(mockPurchaseDao.getProductsPurchases(ids, 3, 5))
                 .thenReturn(purchases);
 
         // Получаем результат
         PurchasesDto result = service.getPurchases(
-                "token", PurchasesService.Target.PRODUCT, 5, 3, 3L, null);
+                "token", PurchasesService.Target.PRODUCT, 5, 3, ids, null);
 
         assertEquals((int)result.getTotalCount(), 15);
         assertEquals((int)result.getTotalAmount(), 150);
@@ -360,10 +364,11 @@ public class PurchasesServiceTest {
     public void testGetPurchasesSingleProductNotFound() throws ServiceException {
         setAdmin();
 
-        when(mockProductDao.get(3L)).thenReturn(null);
+        List<Long> ids = Collections.singletonList(3L);
+        when(mockProductDao.exists(3L)).thenReturn(false);
 
         try {
-            service.getPurchases("token", PurchasesService.Target.PRODUCT, 5, 3, 3L, null);
+            service.getPurchases("token", PurchasesService.Target.PRODUCT, 5, 3, ids, null);
         } catch (ServiceException e) {
             assertEquals(ServiceException.ErrorCode.PRODUCT_NOT_FOUND, e.getErrorCode());
             throw e;
@@ -378,10 +383,11 @@ public class PurchasesServiceTest {
     public void testGetPurchasesSingleClientNotFound() throws ServiceException {
         setAdmin();
 
-        when(mockProductDao.get(3L)).thenReturn(null);
+        List<Long> ids = Collections.singletonList(3L);
+        when(mockAccountDao.exists(3L)).thenReturn(false);
 
         try {
-            service.getPurchases("token", PurchasesService.Target.CLIENT, 5, 3, 3L, null);
+            service.getPurchases("token", PurchasesService.Target.CLIENT, 5, 3, ids, null);
         } catch (ServiceException e) {
             assertEquals(ServiceException.ErrorCode.USER_NOT_FOUND, e.getErrorCode());
             throw e;

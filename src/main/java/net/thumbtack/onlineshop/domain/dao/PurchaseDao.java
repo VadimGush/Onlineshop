@@ -67,50 +67,10 @@ public class PurchaseDao implements Dao {
     }
 
     /**
-     * Получает историю покупок для определённого клиента
-     *
-     * @param id id клиента
-     * @param limit количество записей
-     * @param offset с какой записи начать выдачу
-     * @return история покупок
-     */
-    public List<Purchase> getClientPurchases(long id, int limit, int offset) {
-        CriteriaBuilder builder = manager.getCriteriaBuilder();
-        CriteriaQuery<Purchase> criteria = builder.createQuery(Purchase.class);
-        Root<Purchase> from = criteria.from(Purchase.class);
-
-        criteria.select(from);
-        criteria.where(builder.equal(from.get("account"), id));
-
-        TypedQuery<Purchase>  typed = manager.createQuery(criteria);
-        return typed.setFirstResult(offset).setMaxResults(limit).getResultList();
-    }
-
-    /**
-     * Получает историю покупок для определённого товара
-     *
-     * @param id id товара
-     * @param limit количество записей
-     * @param offset с какой записи начать выдачу
-     * @return история покупок
-     */
-    public List<Purchase> getProductPurchases(long id, int limit, int offset) {
-        CriteriaBuilder builder = manager.getCriteriaBuilder();
-        CriteriaQuery<Purchase> criteria = builder.createQuery(Purchase.class);
-        Root<Purchase> from = criteria.from(Purchase.class);
-
-        criteria.select(from);
-        criteria.where(builder.equal(from.get("product"), id));
-
-        TypedQuery<Purchase> typed = manager.createQuery(criteria);
-        return typed.setFirstResult(offset).setMaxResults(limit).getResultList();
-    }
-
-    /**
      * Получает историю покупок для указанных товаров. Список группируется
      * по товарам
      *
-     * @param products список id, товаров
+     * @param products список id товаров
      * @param limit количество записей
      * @param offset с какой записи начать выборку
      * @return история покупок
@@ -132,7 +92,34 @@ public class PurchaseDao implements Dao {
 
         TypedQuery<Purchase> typed = manager.createQuery(criteria);
         return typed.setFirstResult(offset).setMaxResults(limit).getResultList();
+    }
 
+    /**
+     * Получает историю покупок для указанных клиентов. Список группируется
+     * по клиентам
+     *
+     * @param clients список id клентов
+     * @param limit количество записей
+     * @param offset с какой записи начать выборку
+     * @return история покупок
+     */
+    public List<Purchase> getClientsPurchases(List<Long> clients, int limit, int offset) {
+        CriteriaBuilder builder = manager.getCriteriaBuilder();
+        CriteriaQuery<Purchase> criteria = builder.createQuery(Purchase.class);
+        Root<Purchase> from = criteria.from(Purchase.class);
+
+        // Делаем селект
+        criteria.select(from);
+
+        // Оператор IN
+        Expression<Long> expression = from.get("account");
+        criteria.where(expression.in(clients));
+
+        // Сортируем
+        criteria.orderBy(builder.asc(from.get("account")));
+
+        TypedQuery<Purchase> typed = manager.createQuery(criteria);
+        return typed.setFirstResult(offset).setMaxResults(limit).getResultList();
     }
 
     /**

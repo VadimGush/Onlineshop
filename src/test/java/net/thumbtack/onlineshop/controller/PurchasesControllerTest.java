@@ -14,7 +14,7 @@ import java.util.List;
 import static junit.framework.TestCase.assertEquals;
 import static org.mockito.Mockito.when;
 
-public class PurchaseControllerTest {
+public class PurchasesControllerTest {
 
     private PurchasesController controller;
 
@@ -37,12 +37,13 @@ public class PurchaseControllerTest {
         PurchasesDto expected = new PurchasesDto();
 
         List<Long> categories = Arrays.asList(1L, 2L, 3L);
+        List<Long> ids = Arrays.asList(1L, 3L);
 
-        when(mockService.getPurchases("token", PurchasesService.Target.CLIENT, 5, 10, 4L, categories))
+        when(mockService.getPurchases("token", PurchasesService.Target.CLIENT, 5, 10, ids, categories))
                 .thenReturn(expected);
 
         PurchasesDto result = controller.getPurchases(
-                "token", "werew", 5, 10, 4L, categories);
+                "token", "werew", 5, 10, ids, categories);
 
         assertEquals(expected, result);
     }
@@ -55,12 +56,13 @@ public class PurchaseControllerTest {
         PurchasesDto expected = new PurchasesDto();
 
         List<Long> categories = Arrays.asList(1L, 2L, 3L);
+        List<Long> ids = Arrays.asList(1L, 3L);
 
-        when(mockService.getPurchases("token", PurchasesService.Target.CLIENT, 5, 10, 4L, categories))
+        when(mockService.getPurchases("token", PurchasesService.Target.CLIENT, 5, 10, ids, categories))
                 .thenReturn(expected);
 
         PurchasesDto result = controller.getPurchases(
-                "token", "client", 5, 10, 4L, categories);
+                "token", "client", 5, 10, ids, categories);
 
         assertEquals(expected, result);
     }
@@ -73,12 +75,13 @@ public class PurchaseControllerTest {
         PurchasesDto expected = new PurchasesDto();
 
         List<Long> categories = Arrays.asList(1L, 2L, 3L);
+        List<Long> ids = Arrays.asList(1L, 3L);
 
-        when(mockService.getPurchases("token", PurchasesService.Target.PRODUCT, 5, 10, 4L, categories))
+        when(mockService.getPurchases("token", PurchasesService.Target.PRODUCT, 5, 10, ids, categories))
                 .thenReturn(expected);
 
         PurchasesDto result = controller.getPurchases(
-                "token", "product", 5, 10, 4L, categories);
+                "token", "product", 5, 10, ids, categories);
 
         assertEquals(expected, result);
     }
@@ -92,11 +95,13 @@ public class PurchaseControllerTest {
         ServiceException exception = new ServiceException(ServiceException.ErrorCode.NOT_ADMIN);
 
         List<Long> categories = Arrays.asList(1L, 2L, 3L);
-        when(mockService.getPurchases("token", PurchasesService.Target.PRODUCT, 5, 10, 4L, categories))
+        List<Long> ids = Arrays.asList(1L, 3L);
+
+        when(mockService.getPurchases("token", PurchasesService.Target.PRODUCT, 5, 10, ids, categories))
                 .thenThrow(exception);
 
         try {
-            controller.getPurchases("token", "product", 5, 10, 4L, categories);
+            controller.getPurchases("token", "product", 5, 10, ids, categories);
         } catch (ServiceException e) {
             assertEquals(exception, e);
             throw e;

@@ -39,12 +39,14 @@ public class AccountServiceTest {
         accountService = new AccountService(mockAccountDao, mockSessionDao);
     }
 
+    /**
+     * Регистрация администратора
+     */
     @Test
     public void testRegistration() throws ServiceException {
-
-        // Проверяем регистрацию администратора
+        // Создаём администратора
         Account admin = generateAdmin();
-
+        // Логин не занят
         when(mockAccountDao.exists(admin.getLogin())).thenReturn(false);
 
         Account result = accountService.register(new AdminDto(admin));
@@ -59,20 +61,31 @@ public class AccountServiceTest {
         assertEquals(admin.getLogin(), result.getLogin());
         assertEquals(admin.getPassword(), result.getPassword());
 
-        // Проверяем регистрацию без отчества
+    }
 
-        admin = generateAdmin();
+    /**
+     * Регистрация администратора без отчества
+     */
+    @Test
+    public void testRegistrationWithoutPatronymic() throws ServiceException {
+        // Создаём администратора
+        Account admin = generateAdmin();
         admin.setPatronymic(null);
-        result = accountService.register(new AdminDto(admin));
+        // Логин не занят
+        when(mockAccountDao.exists(admin.getLogin())).thenReturn(false);
 
-        verify(mockAccountDao, times(2)).insert(any());
+        Account result = accountService.register(new AdminDto(admin));
+
+        verify(mockAccountDao).insert(any());
 
         assertNull(result.getPatronymic());
     }
 
+    /**
+     * Нельзя создать админа с занятым логином
+     */
     @Test(expected = ServiceException.class)
     public void testRegisterWithSameLogin() throws ServiceException {
-        // Проверяем что администратора с тем же логином создать нельзя
         Account admin =  generateAdmin();
 
         try {
@@ -93,13 +106,18 @@ public class AccountServiceTest {
         }
     }
 
+    /**
+     * Редактирование профиля администратора
+     */
     @Test
     public void testEdit() throws ServiceException {
+        // Создаём админа
         Account admin = AccountFactory.createAdmin(
                 "werewrwe", "ewrwe", "werew", "erer2", "vadim", "23"
         );
         when(mockSessionDao.get("token")).thenReturn(new Session("token", admin));
 
+        // Изменяем аккаунт
         AccountDto result = accountService.edit("token", createAdminEditDto(
                 "name", "lastName", "patro", "pos", "23", "33"
         ));
@@ -112,15 +130,20 @@ public class AccountServiceTest {
         assertEquals("pos", result.getPosition());
     }
 
+    /**
+     * Нельзя редактировать с неверно указанным старым паролем
+     */
     @Test(expected = ServiceException.class)
     public void testEditWithWrongPassword() throws ServiceException {
 
+        // Создаём администратора
         Account admin = AccountFactory.createAdmin(
                 "werewrwe", "ewrwe", "werew", "erer2", "vadim", "23"
         );
         when(mockSessionDao.get("token")).thenReturn(new Session("token", admin));
 
         try {
+            // Редактируем аккаунт
             accountService.edit("token", createAdminEditDto(
                     "name", "lastName", "patro", "pos", "43", "33"
             ));
@@ -132,8 +155,12 @@ public class AccountServiceTest {
         }
     }
 
+    /**
+     * Получаем список всех клиентов
+     */
     @Test
     public void testGetAll() throws ServiceException {
+        // Создаём клиентов
         List<Account> clients = new ArrayList<>();
         clients.add(generateClient());
         clients.add(generateClient());
@@ -142,9 +169,11 @@ public class AccountServiceTest {
         Account admin = generateAdmin();
         when(mockSessionDao.get("token")).thenReturn(new Session("token", admin));
 
+        // Получаем список
         List<AccountDto> result = accountService.getAll("token");
         assertEquals(clients.size(), result.size());
-        // ТЗ пункт 3.7
+
+        // Каждый клиент должен содержать поле userType
         assertEquals("client", result.get(0).getUserType());
         assertEquals("client", result.get(1).getUserType());
         assertNull(result.get(0).getDeposit());
@@ -153,6 +182,9 @@ public class AccountServiceTest {
         verify(mockAccountDao).getClients();
     }
 
+    /**
+     * Нельзя редактировать аккаунт админа без логина
+     */
     @Test(expected = ServiceException.class)
     public void testNotLoginEdit() throws ServiceException {
         when(mockSessionDao.get("token")).thenReturn(null);
@@ -168,6 +200,9 @@ public class AccountServiceTest {
         }
     }
 
+    /**
+     * Нельзя редактировать аккаунт админа от имени клиента
+     */
     @Test(expected = ServiceException.class)
     public void testNotAdminEdit() throws ServiceException {
         when(mockSessionDao.get("token")).thenReturn(new Session("token", generateClient()));
@@ -183,6 +218,9 @@ public class AccountServiceTest {
         }
     }
 
+    /**
+     * Нельзя получить список всех клиентов без логина
+     */
     @Test(expected = ServiceException.class)
     public void testNotLoginGetAll() throws ServiceException {
         when(mockSessionDao.get("token")).thenReturn(null);
@@ -198,6 +236,9 @@ public class AccountServiceTest {
         }
     }
 
+    /**
+     * Нельзя получить список всех клиентов от имени клиента
+     */
     @Test(expected = ServiceException.class)
     public void testNotAdminGetAll() throws ServiceException {
         when(mockSessionDao.get("token")).thenReturn(new Session("token", generateClient()));
@@ -213,15 +254,18 @@ public class AccountServiceTest {
         }
     }
 
+    /**
+     * Регистрация клиента
+     */
     @Test
     public void testClientRegister() throws ServiceException {
 
-        // Проверяем регистрацию как обычно
-
+        // Создаём клиента
         Account client = generateClient();
-
+        // Логин свободен
         when(mockAccountDao.exists(client.getLogin())).thenReturn(false);
 
+        // Регаем
         Account result = accountService.register(new ClientDto(client));
 
         verify(mockAccountDao).insert(any());
@@ -235,18 +279,31 @@ public class AccountServiceTest {
         assertEquals(client.getPhone(), result.getPhone());
         assertFalse(result.isAdmin());
 
-        // Проверяем регистрацию без отчества
-
-        client = generateClient();
-        client.setPatronymic(null);
-
-        result = accountService.register(new ClientDto(client));
-
-        verify(mockAccountDao, times(2)).insert(any());
-
-        assertNull(result.getPatronymic());
     }
 
+    /**
+     * Регистрация клиента без отчества
+     */
+    @Test
+    public void testClientRegisterWithoutPatronymic() throws ServiceException {
+        // Создаём клиента
+        Account client = generateClient();
+        client.setPatronymic(null);
+        // Логин свободен
+        when(mockAccountDao.exists(client.getLogin())).thenReturn(false);
+
+        // Регаем
+        Account result = accountService.register(new ClientDto(client));
+
+        verify(mockAccountDao).insert(any());
+
+        assertNull(result.getPatronymic());
+
+    }
+
+    /**
+     * Нельзя зарегать клиента с занятым логином
+     */
     @Test(expected = ServiceException.class)
     public void testClientRegisterWithSameLogin() throws ServiceException {
         Account client = generateClient();
@@ -263,9 +320,11 @@ public class AccountServiceTest {
         }
     }
 
+    /**
+     * Редактирование аккаунта клиента
+     */
     @Test
     public void testClientEdit() throws ServiceException {
-
         Account client = generateClient();
 
         when(mockSessionDao.get("token")).thenReturn(new Session("token", client));
@@ -288,6 +347,9 @@ public class AccountServiceTest {
         assertEquals(edited.getPhone(), result.getPhone());
     }
 
+    /**
+     * Нельзя редактировать аккаунт клиента с неверным старым паролем
+     */
     @Test(expected = ServiceException.class)
     public void testClientEditWrongPassword() throws ServiceException {
 
@@ -311,6 +373,9 @@ public class AccountServiceTest {
         }
     }
 
+    /**
+     * Вход в аккаунт
+     */
     @Test
     public void testLogin() throws ServiceException {
         Account account = AccountFactory.createAdmin(
@@ -323,6 +388,9 @@ public class AccountServiceTest {
         assertNotNull(token);
     }
 
+    /**
+     * Нельзя залогиниться с неверным паролем или логином
+     */
     @Test(expected = ServiceException.class)
     public void testClientLoginWithWrongCred() throws ServiceException {
 
@@ -337,6 +405,9 @@ public class AccountServiceTest {
         }
     }
 
+    /**
+     * Выход из аккаунта
+     */
     @Test
     public void testLogout() {
         Session session = new Session();
@@ -347,6 +418,10 @@ public class AccountServiceTest {
         verify(mockSessionDao).delete(session);
     }
 
+    /**
+     * Выход из аккаунта работает даже если не было логина
+     * или сессия неверная
+     */
     @Test
     public void testLogoutWrongSession() {
         when(mockSessionDao.get("token")).thenReturn(null);
@@ -356,6 +431,9 @@ public class AccountServiceTest {
         verify(mockSessionDao, never()).delete(any());
     }
 
+    /**
+     * Получение информации об аккаунте
+     */
     @Test
     public void testGetAccount() throws ServiceException {
         Account account = AccountFactory.createAdmin(
@@ -364,11 +442,15 @@ public class AccountServiceTest {
         when(mockSessionDao.get("token")).thenReturn(new Session("token", account));
 
         AccountDto result = accountService.get("token");
+        // Логин и пароль не возвращаются
         assertEquals(account.getFirstName(), result.getFirstName());
         assertEquals(account.getLastName(), result.getLastName());
         assertEquals(account.getPosition(), result.getPosition());
     }
 
+    /**
+     * Нельзя получить информацию об аккаунте без логина
+     */
     @Test(expected = ServiceException.class)
     public void testGetAccountWrongSession() throws ServiceException {
         when(mockSessionDao.get("token")).thenReturn(null);

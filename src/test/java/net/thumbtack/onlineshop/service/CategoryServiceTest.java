@@ -40,10 +40,14 @@ public class CategoryServiceTest {
     }
 
 
+    /**
+     * Добавление категории
+     */
     @Test
     public void testAddCategory() throws ServiceException {
         setAdmin();
 
+        // Такой категории ещё не было
         when(mockCategoryDao.exists("category")).thenReturn(false);
 
         CategoryDto category = categoryService.addCategory("token", new CategoryDto(
@@ -57,6 +61,9 @@ public class CategoryServiceTest {
         assertNull(category.getParentName());
     }
 
+    /**
+     * Нельзя добавить категорию с тем же именем
+     */
     @Test(expected = ServiceException.class)
     public void testAddCategorySameName() throws ServiceException {
         setAdmin();
@@ -73,6 +80,9 @@ public class CategoryServiceTest {
         }
     }
 
+    /**
+     * Нельзя добавить категорию с несуществующим родителем
+     */
     @Test(expected = ServiceException.class)
     public void testAddCategoryWithWrongParent() throws ServiceException {
         setAdmin();
@@ -90,6 +100,9 @@ public class CategoryServiceTest {
         }
     }
 
+    /**
+     * Нельзя добавить подкатегорию для подкатегории (подкатегория второго уровня)
+     */
     @Test(expected = ServiceException.class)
     public void testAddSubcategoryOfSubcategory() throws ServiceException {
         setAdmin();
@@ -109,6 +122,9 @@ public class CategoryServiceTest {
         }
     }
 
+    /**
+     * Получение информации о категории
+     */
     @Test
     public void testGetCategory() throws ServiceException {
         setAdmin();
@@ -122,6 +138,9 @@ public class CategoryServiceTest {
         assertEquals("parent", result.getParentName());
     }
 
+    /**
+     * Нельзя получить информацию о несуществующей категории
+     */
     @Test(expected = ServiceException.class)
     public void testGetCategoryNotExist() throws ServiceException {
         setAdmin();
@@ -136,6 +155,9 @@ public class CategoryServiceTest {
         }
     }
 
+    /**
+     * Редактирование категории с переносом в другую категорию
+     */
     @Test
     public void testEditCategory() throws ServiceException {
         setAdmin();
@@ -157,6 +179,9 @@ public class CategoryServiceTest {
 
     }
 
+    /**
+     * Редактирование категории с простым изменением имени
+     */
     @Test
     public void testEditCategory2() throws ServiceException {
         setAdmin();
@@ -172,6 +197,9 @@ public class CategoryServiceTest {
         assertEquals("parent", result.getParentName());
     }
 
+    /**
+     * Редактирование родительской категории
+     */
     @Test
     public void testEditCategory3() throws ServiceException {
         setAdmin();
@@ -190,6 +218,9 @@ public class CategoryServiceTest {
 
     }
 
+    /**
+     * Нельзя редактировать несуществующую категорию
+     */
     @Test(expected = ServiceException.class)
     public void testEditCategoryNotFound() throws ServiceException {
         setAdmin();
@@ -205,6 +236,9 @@ public class CategoryServiceTest {
 
     }
 
+    /**
+     * Нельзя категории присвоить несуществующего родителя
+     */
     @Test(expected = ServiceException.class)
     public void testEditCategoryParentCategoryNotFound() throws ServiceException {
         setAdmin();
@@ -221,6 +255,9 @@ public class CategoryServiceTest {
         }
     }
 
+    /**
+     * Нельзя редактировать категорию без указания родительской
+     */
     @Test(expected = ServiceException.class)
     public void testEditCategoryParentCategoryEmpty() throws ServiceException {
         setAdmin();
@@ -237,6 +274,9 @@ public class CategoryServiceTest {
         }
     }
 
+    /**
+     * Нельзя родительскую категорию сделать подкатегорией
+     */
     @Test(expected = ServiceException.class)
     public void testEditCategoryCategoryToSubCategory() throws ServiceException {
         setAdmin();
@@ -254,6 +294,9 @@ public class CategoryServiceTest {
         }
     }
 
+    /**
+     * Удаление категории
+     */
     @Test
     public void testDeleteCategory() throws ServiceException {
         setAdmin();
@@ -265,6 +308,9 @@ public class CategoryServiceTest {
         verify(mockCategoryDao).delete(any());
     }
 
+    /**
+     * Нельзя удалить несуществующую категорию
+     */
     @Test(expected = ServiceException.class)
     public void testDeleteWrongCategory() throws ServiceException {
         setAdmin();
@@ -280,6 +326,9 @@ public class CategoryServiceTest {
         }
     }
 
+    /**
+     * Получаем список категорий
+     */
     @Test
     public void testGetCategories() throws ServiceException {
         setAdmin();
@@ -296,6 +345,9 @@ public class CategoryServiceTest {
     }
 
 
+    /**
+     * Нельзя вызвать методы без логина, которые требуют авторизации пользователя
+     */
     @Test
     public void testNotLogin() {
 
@@ -338,6 +390,9 @@ public class CategoryServiceTest {
 
     }
 
+    /**
+     * Нельзя вызвать методы изменения категорий от имени клиента
+     */
     @Test
     public void testNotAdmin() {
 

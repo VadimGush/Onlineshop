@@ -20,7 +20,7 @@ public class Product {
     @Column(nullable = false, columnDefinition = "int default 0")
     private Integer price;
 
-    @Column(nullable = false, columnDefinition = "boolean default 0")
+    @Column(nullable = false, columnDefinition = "bit default 0")
     private Boolean deleted = false;
 
     public Product() {

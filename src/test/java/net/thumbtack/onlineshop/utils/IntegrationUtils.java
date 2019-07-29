@@ -197,7 +197,7 @@ public class IntegrationUtils {
         client.setPatronymic("Сергеевич");
         client.setEmail("vadim.djuke@yandex.ru");
         client.setAddress("something very long");
-        client.setPhone("+79649951844");
+        client.setPhone("89649951844");
         client.setLogin("DeNis");
         client.setPassword("Denis225");
         return client;

@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS `account`
     `login`      varchar(255) DEFAULT NULL,
     `password`   varchar(255) DEFAULT NULL,
     `patronymic` varchar(255) DEFAULT NULL,
-    `phone`      varchar(255) DEFAULT NULL,
+    `phone`      varchar(11) DEFAULT NULL,
     `position`   varchar(255) DEFAULT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `k_login` (`login`)
@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS `purchase`
 CREATE TABLE IF NOT EXISTS `session`
 (
     `id`         bigint(20) NOT NULL AUTO_INCREMENT,
-    `uuid`       varchar(255) DEFAULT NULL,
+    `uuid`       varchar(36) DEFAULT NULL,
     `account_id` bigint(20)   DEFAULT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY  `k_uuid` (`uuid`),

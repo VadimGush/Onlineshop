@@ -72,7 +72,7 @@ public class ClientIntegrationTest {
         assertEquals(client.getLastName(), node.get("lastName").asText());
         assertEquals(client.getPatronymic(), node.get("patronymic").asText());
         assertEquals(client.getEmail(), node.get("email").asText());
-        assertEquals("+79649951843", node.get("phone").asText());
+        assertEquals("89649951843", node.get("phone").asText());
         assertEquals(client.getAddress(), node.get("address").asText());
         assertEquals(0, node.get("deposit").asInt());
 

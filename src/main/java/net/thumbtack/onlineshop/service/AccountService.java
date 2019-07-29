@@ -43,7 +43,7 @@ public class AccountService extends GeneralService {
             throw new ServiceException(ServiceException.ErrorCode.LOGIN_ALREADY_IN_USE, "login");
         }
 
-        client.setPhone(client.getPhone().replaceAll("-", ""));
+        client.setPhone(formatPhone(client.getPhone()));
 
         Account registeredClient = AccountFactory.createClient(
                 client.getFirstName(),
@@ -98,6 +98,8 @@ public class AccountService extends GeneralService {
         if (!account.getPassword().equals(client.getOldPassword())) {
             throw new ServiceException(ServiceException.ErrorCode.WRONG_PASSWORD, "oldPassword");
         }
+
+        client.setPhone(formatPhone(client.getPhone()));
 
         account.setFirstName(client.getFirstName());
         account.setLastName(client.getLastName());
@@ -201,6 +203,12 @@ public class AccountService extends GeneralService {
         if (session != null) {
             sessionDao.delete(session);
         }
+    }
+
+    private String formatPhone(String phone) {
+        return phone
+                .replaceAll("-", "")
+                .replace("+7", "8");
     }
 
 }

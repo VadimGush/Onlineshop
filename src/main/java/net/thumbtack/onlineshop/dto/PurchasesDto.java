@@ -3,8 +3,9 @@ package net.thumbtack.onlineshop.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import net.thumbtack.onlineshop.domain.models.Purchase;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -51,6 +52,8 @@ public class PurchasesDto {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class PurchaseDto {
 
+        private static DateFormat format = new SimpleDateFormat();
+
         // Id клиента, который совершил покупку
         private Long clientId;
         // Полное имя клиента
@@ -62,7 +65,7 @@ public class PurchasesDto {
         private String productName;
 
         // Время покупки
-        private Date date;
+        private String date;
         // Цена товара
         private Integer price;
         // Количество товаров
@@ -77,7 +80,7 @@ public class PurchasesDto {
             productId = purchase.getProduct().getId();
             productName = purchase.getProduct().getName();
 
-            date = purchase.getDate();
+            date = format.format(purchase.getDate());
             price = purchase.getPrice();
             count = purchase.getCount();
 
@@ -100,7 +103,7 @@ public class PurchasesDto {
             return productName;
         }
 
-        public Date getDate() {
+        public String getDate() {
             return date;
         }
 

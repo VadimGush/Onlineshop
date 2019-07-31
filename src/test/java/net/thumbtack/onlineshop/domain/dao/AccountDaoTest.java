@@ -114,6 +114,36 @@ public class AccountDaoTest {
     }
 
     @Test
+    public void testGetById() {
+        Account expected = new Account();
+        expected.setId(3L);
+
+        CriteriaBuilder mockCriteriaBuilder = mock(CriteriaBuilder.class);
+        CriteriaQuery<Account> mockCriteriaQuery = (CriteriaQuery<Account>) mock(CriteriaQuery.class);
+        TypedQuery<Account> mockTypedQuery = (TypedQuery<Account>) mock(TypedQuery.class);
+        Root<Account> mockRoot = (Root<Account>) mock(Root.class);
+
+        when(mockEntityManager.getCriteriaBuilder()).thenReturn(mockCriteriaBuilder);
+        when(mockCriteriaBuilder.createQuery(Account.class)).thenReturn(mockCriteriaQuery);
+        when(mockCriteriaQuery.from(Account.class)).thenReturn(mockRoot);
+        when(mockEntityManager.createQuery(mockCriteriaQuery)).thenReturn(mockTypedQuery);
+        when(mockTypedQuery.getSingleResult()).thenReturn(expected);
+
+        Account result = accountDao.get(3L);
+
+        // Вернул то, что надо
+        assertEquals(expected, result);
+
+        // Проверяем что был условный селект
+        verify(mockCriteriaQuery).from(Account.class);
+        verify(mockCriteriaQuery).select(any());
+        verify(mockCriteriaQuery).where(nullable(Predicate.class));
+
+        // Проверяем что реально сопостовлялся id
+        verify(mockCriteriaBuilder).equal(null, 3L);
+    }
+
+    @Test
     public void testExists() {
         CriteriaBuilder mockCriteriaBuilder = mock(CriteriaBuilder.class);
         CriteriaQuery<Long> mockCriteriaQuery = (CriteriaQuery<Long>) mock(CriteriaQuery.class);

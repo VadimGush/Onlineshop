@@ -45,17 +45,5 @@ public class ServerController {
         return "{}";
     }
 
-    /**
-     * Yandex Cloud для проверки работоспособности сервера делает GET /api/status
-     * каждую секунду.
-     *
-     * @return пустая строка
-     */
-    @GetMapping("status")
-    @ResponseStatus(HttpStatus.OK)
-    public String getStatus() {
-        return "";
-    }
-
 
 }

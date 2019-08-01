@@ -89,7 +89,7 @@ public class AccountServiceTest {
         Account admin =  generateAdmin();
 
         try {
-            // Login already in use
+            // RequiredLogin already in use
             when(mockAccountDao.exists("vadim")).thenReturn(true);
 
             accountService.register(new AdminDto(

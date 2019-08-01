@@ -7,14 +7,14 @@ import javax.validation.ConstraintValidatorContext;
 
 import static net.thumbtack.onlineshop.dto.validation.ValidatorUtils.setMessage;
 
-public class LoginValidator implements
-        ConstraintValidator<Login, String> {
+public class RequiredLoginValidator implements
+        ConstraintValidator<RequiredLogin, String> {
 
     @Value("${max_name_length}")
     private int maxNameLength;
 
     @Override
-    public void initialize(Login constraintAnnotation) {
+    public void initialize(RequiredLogin constraintAnnotation) {
 
     }
 

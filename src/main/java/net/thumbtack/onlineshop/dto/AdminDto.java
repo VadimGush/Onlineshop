@@ -5,8 +5,8 @@ import net.thumbtack.onlineshop.domain.models.Account;
 import net.thumbtack.onlineshop.dto.actions.Edit;
 import net.thumbtack.onlineshop.dto.actions.Register;
 import net.thumbtack.onlineshop.dto.validation.OptionalRussianName;
-import net.thumbtack.onlineshop.dto.validation.Password;
 import net.thumbtack.onlineshop.dto.validation.RequiredName;
+import net.thumbtack.onlineshop.dto.validation.RequiredPassword;
 import net.thumbtack.onlineshop.dto.validation.RequiredRussianName;
 
 import javax.validation.constraints.NotBlank;
@@ -31,7 +31,7 @@ public class AdminDto extends LoginDto {
     @NotBlank(groups = Edit.class)
     private String oldPassword;
 
-    @Password(groups = Edit.class)
+    @RequiredPassword(groups = Edit.class)
     private String newPassword;
 
     public AdminDto() {

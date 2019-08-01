@@ -7,14 +7,14 @@ import javax.validation.ConstraintValidatorContext;
 
 import static net.thumbtack.onlineshop.dto.validation.ValidatorUtils.setMessage;
 
-public class PasswordValidator implements
-        ConstraintValidator<Password, String> {
+public class RequiredPasswordValidator implements
+        ConstraintValidator<RequiredPassword, String> {
 
     @Value("${min_password_length}")
     private int minPasswordLength;
 
     @Override
-    public void initialize(Password constraintAnnotation) {
+    public void initialize(RequiredPassword constraintAnnotation) {
     }
 
     @Override

@@ -14,9 +14,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class PasswordValidatorTest {
+public class RequiredRequiredPasswordValidatorTest {
 
-    private PasswordValidator validator;
+    private RequiredPasswordValidator validator;
 
     @Mock
     private ConstraintValidatorContext mockContext;
@@ -30,7 +30,7 @@ public class PasswordValidatorTest {
         when(mockContext.buildConstraintViolationWithTemplate(any()))
                 .thenReturn(mockBuilder);
 
-        validator = new PasswordValidator();
+        validator = new RequiredPasswordValidator();
         ReflectionTestUtils.setField(
                 validator,
                 "minPasswordLength",

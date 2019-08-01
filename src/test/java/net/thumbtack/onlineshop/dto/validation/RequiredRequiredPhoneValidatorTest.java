@@ -13,9 +13,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class PhoneValidatorTest {
+public class RequiredRequiredPhoneValidatorTest {
 
-    private PhoneValidator validator;
+    private RequiredPhoneValidator validator;
 
     @Mock
     private ConstraintValidatorContext mockContext;
@@ -29,7 +29,7 @@ public class PhoneValidatorTest {
         when(mockContext.buildConstraintViolationWithTemplate(any()))
                 .thenReturn(mockBuilder);
 
-        validator = new PhoneValidator();
+        validator = new RequiredPhoneValidator();
     }
 
     @Test

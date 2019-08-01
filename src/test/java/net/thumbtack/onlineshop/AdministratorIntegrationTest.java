@@ -114,10 +114,10 @@ public class AdministratorIntegrationTest {
         utils.assertErrors(result, Arrays.asList(
                 Pair.of("RequiredRussianName", "firstName"),
                 Pair.of("RequiredRussianName", "lastName"),
-                Pair.of("Login", "login"),
+                Pair.of("RequiredLogin", "login"),
                 Pair.of("RequiredName", "position"),
                 Pair.of("OptionalRussianName", "patronymic"),
-                Pair.of("Password", "password")
+                Pair.of("RequiredPassword", "password")
         ));
 
     }
@@ -167,9 +167,9 @@ public class AdministratorIntegrationTest {
         utils.assertErrors(result, Arrays.asList(
                 Pair.of("RequiredRussianName", "firstName"),
                 Pair.of("RequiredRussianName", "lastName"),
-                Pair.of("Login", "login"),
+                Pair.of("RequiredLogin", "login"),
                 Pair.of("RequiredName", "position"),
-                Pair.of("Password", "password"),
+                Pair.of("RequiredPassword", "password"),
                 Pair.of("OptionalRussianName", "patronymic")
         ));
     }
@@ -187,7 +187,7 @@ public class AdministratorIntegrationTest {
         MvcResult result = utils.post("/api/admins", null, admin)
                 .andExpect(status().isBadRequest())
                 .andReturn();
-        utils.assertError(result, Pair.of("Login", "login"));
+        utils.assertError(result, Pair.of("RequiredLogin", "login"));
 
         admin = utils.getDefaultAdmin();
         admin.setLogin("vad im");
@@ -195,7 +195,7 @@ public class AdministratorIntegrationTest {
         result = utils.post("/api/admins", null, admin)
                 .andExpect(status().isBadRequest())
                 .andReturn();
-        utils.assertError(result, Pair.of("Login", "login"));
+        utils.assertError(result, Pair.of("RequiredLogin", "login"));
 
     }
 
@@ -266,8 +266,8 @@ public class AdministratorIntegrationTest {
                 .andReturn();
 
         utils.assertErrors(result, Arrays.asList(
-                Pair.of("Login", "login"),
-                Pair.of("Password", "password")
+                Pair.of("RequiredLogin", "login"),
+                Pair.of("RequiredPassword", "password")
         ));
     }
 
@@ -486,7 +486,7 @@ public class AdministratorIntegrationTest {
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
-        utils.assertErrors(result, Collections.singletonList(Pair.of("Password", "newPassword")));
+        utils.assertErrors(result, Collections.singletonList(Pair.of("RequiredPassword", "newPassword")));
     }
 
     /**
@@ -573,7 +573,7 @@ public class AdministratorIntegrationTest {
                 Pair.of("RequiredRussianName", "lastName"),
                 Pair.of("RequiredName", "position"),
                 Pair.of("OptionalRussianName", "patronymic"),
-                Pair.of("Password", "newPassword")
+                Pair.of("RequiredPassword", "newPassword")
         ));
 
     }

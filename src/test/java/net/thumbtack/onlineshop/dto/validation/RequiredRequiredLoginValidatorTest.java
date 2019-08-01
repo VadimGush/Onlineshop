@@ -15,9 +15,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class LoginValidatorTest {
+public class RequiredRequiredLoginValidatorTest {
 
-    private LoginValidator validator;
+    private RequiredLoginValidator validator;
 
     @Mock
     private ConstraintValidatorContext mockContext;
@@ -30,7 +30,7 @@ public class LoginValidatorTest {
         when(mockContext.buildConstraintViolationWithTemplate(any()))
                 .thenReturn(mockBuilder);
 
-        validator = new LoginValidator();
+        validator = new RequiredLoginValidator();
         ReflectionTestUtils.setField(
                 validator,
                 "maxNameLength",

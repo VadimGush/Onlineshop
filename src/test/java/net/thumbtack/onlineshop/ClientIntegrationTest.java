@@ -227,10 +227,10 @@ public class ClientIntegrationTest {
                 Pair.of("RequiredRussianName", "firstName"),
                 Pair.of("RequiredRussianName", "lastName"),
                 Pair.of("NotBlank", "email"),
-                Pair.of("Phone", "phone"),
+                Pair.of("RequiredPhone", "phone"),
                 Pair.of("NotBlank", "address"),
-                Pair.of("Login", "login"),
-                Pair.of("Password", "password")
+                Pair.of("RequiredLogin", "login"),
+                Pair.of("RequiredPassword", "password")
         ));
     }
 
@@ -267,9 +267,9 @@ public class ClientIntegrationTest {
                 Pair.of("RequiredRussianName", "firstName"),
                 Pair.of("RequiredRussianName", "lastName"),
                 Pair.of("OptionalRussianName", "patronymic"),
-                Pair.of("Phone", "phone"),
-                Pair.of("Login", "login"),
-                Pair.of("Password", "password")
+                Pair.of("RequiredPhone", "phone"),
+                Pair.of("RequiredLogin", "login"),
+                Pair.of("RequiredPassword", "password")
         ));
     }
 
@@ -288,7 +288,7 @@ public class ClientIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string("{}"));
 
-        // Login
+        // RequiredLogin
         // Логин не чувствителен к регистру
         MvcResult result = utils.post("/api/sessions", session, new LoginDto(
                 "denis", "Denis225"))
@@ -349,8 +349,8 @@ public class ClientIntegrationTest {
                 .andReturn();
 
         utils.assertErrors(result, Arrays.asList(
-                Pair.of("Login", "login"),
-                Pair.of("Password", "password")
+                Pair.of("RequiredLogin", "login"),
+                Pair.of("RequiredPassword", "password")
         ));
 
     }

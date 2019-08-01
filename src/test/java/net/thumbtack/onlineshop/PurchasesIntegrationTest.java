@@ -295,6 +295,7 @@ public class PurchasesIntegrationTest {
     /**
      * Проверяет что запись о покупке в JSON соответсвует переданному покупателю
      * и товару
+     *
      * @param client покупатель
      * @param product товар
      * @param purchase запись о покупке в JSON

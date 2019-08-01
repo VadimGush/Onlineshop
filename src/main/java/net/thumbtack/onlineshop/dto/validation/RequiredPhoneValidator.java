@@ -5,11 +5,11 @@ import javax.validation.ConstraintValidatorContext;
 
 import static net.thumbtack.onlineshop.dto.validation.ValidatorUtils.setMessage;
 
-public class PhoneValidator implements
-        ConstraintValidator<Phone, String> {
+public class RequiredPhoneValidator implements
+        ConstraintValidator<RequiredPhone, String> {
 
     @Override
-    public void initialize(Phone constraintAnnotation) {
+    public void initialize(RequiredPhone constraintAnnotation) {
 
     }
 

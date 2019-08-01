@@ -14,6 +14,7 @@ public class PurchasesDto {
 
     // Ведомость
     private List<PurchaseDto> purchases = new ArrayList<>();
+
     // Сколько всего товара было выкуплено во всей выборке
     private Integer totalCount = 0;
     // На какую сумму было выкуплено товара в выборке

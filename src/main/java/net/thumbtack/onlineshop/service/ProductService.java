@@ -166,12 +166,11 @@ public class ProductService extends GeneralService {
             throw new ServiceException(ServiceException.ErrorCode.PRODUCT_NOT_FOUND);
         }
 
-        // Удаляем категории товара из БД
+        // Получаем список категорий
         List<ProductCategory> categories = productDao.getCategories(id);
 
-        for (ProductCategory category : categories) {
-            productDao.deleteCategory(category);
-        }
+        // Удаляем категории для данного товара
+        categories.forEach(category -> productDao.deleteCategory(category));
 
         // Удаляем в конце товар
         productDao.delete(product);

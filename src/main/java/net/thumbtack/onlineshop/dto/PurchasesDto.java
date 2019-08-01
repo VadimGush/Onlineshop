@@ -6,13 +6,12 @@ import net.thumbtack.onlineshop.domain.models.Purchase;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PurchasesDto {
 
-    // Сколько всего записей было найдено по данным критериям
-    private Long searchResults;
     // Ведомость
     private List<PurchaseDto> purchases = new ArrayList<>();
     // Сколько всего товара было выкуплено во всей выборке
@@ -20,20 +19,10 @@ public class PurchasesDto {
     // На какую сумму было выкуплено товара в выборке
     private Integer totalAmount = 0;
 
-    public PurchasesDto() {}
-
-    public void setSearchResults(Long searchResults) {
-        this.searchResults = searchResults;
-    }
-
     public void addPurchase(PurchaseDto purchase) {
         purchases.add(purchase);
         totalCount += purchase.getCount();
-        totalAmount += purchase.getTotalAmount();
-    }
-
-    public Long getSearchResults() {
-        return searchResults;
+        totalAmount += purchase.getAmount();
     }
 
     public List<PurchaseDto> getPurchases() {
@@ -52,7 +41,7 @@ public class PurchasesDto {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class PurchaseDto {
 
-        private static DateFormat format = new SimpleDateFormat();
+        private static DateFormat format = new SimpleDateFormat("dd.MM.YYYY HH:mm:ss");
 
         // Id клиента, который совершил покупку
         private Long clientId;
@@ -71,20 +60,29 @@ public class PurchasesDto {
         // Количество товаров
         private Integer count;
         // Сколько всего потрачено
-        private Integer totalAmount;
+        private Integer amount;
 
+        /**
+         * Полная запись о покупке товара
+         *
+         * @param purchase запись о покупке товара
+         */
         public PurchaseDto(Purchase purchase) {
+            this(purchase.getPrice(), purchase.getCount(), purchase.getDate());
+
             clientId = purchase.getAccount().getId();
             clientFullName = purchase.getAccount().getFullName();
 
             productId = purchase.getProduct().getId();
             productName = purchase.getProduct().getName();
+        }
 
-            date = format.format(purchase.getDate());
-            price = purchase.getPrice();
-            count = purchase.getCount();
+        private PurchaseDto(int price, int count, Date date) {
+            this.price = price;
+            this.count = count;
+            this.date = format.format(date);
 
-            totalAmount = price * count;
+            amount = price * count;
         }
 
         public Long getClientId() {
@@ -115,8 +113,8 @@ public class PurchasesDto {
             return count;
         }
 
-        public Integer getTotalAmount() {
-            return totalAmount;
+        public Integer getAmount() {
+            return amount;
         }
     }
 

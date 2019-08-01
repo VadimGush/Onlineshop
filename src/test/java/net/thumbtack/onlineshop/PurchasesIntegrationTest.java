@@ -311,7 +311,7 @@ public class PurchasesIntegrationTest {
         assertEquals((int)product.getCount(), purchase.get("count").asInt());
         assertEquals(
                 product.getCount() * product.getPrice(),
-                purchase.get("totalAmount").asInt()
+                purchase.get("amount").asInt()
         );
     }
 

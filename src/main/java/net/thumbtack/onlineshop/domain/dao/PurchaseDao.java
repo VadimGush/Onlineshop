@@ -8,6 +8,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
+import java.util.Collections;
 import java.util.List;
 
 @Transactional
@@ -76,6 +77,10 @@ public class PurchaseDao implements Dao {
      * @return история покупок
      */
     public List<Purchase> getProductsPurchases(List<Long> products, int limit, int offset) {
+        if (products == null || products.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         CriteriaBuilder builder = manager.getCriteriaBuilder();
         CriteriaQuery<Purchase> criteria = builder.createQuery(Purchase.class);
         Root<Purchase> from = criteria.from(Purchase.class);
@@ -104,6 +109,10 @@ public class PurchaseDao implements Dao {
      * @return история покупок
      */
     public List<Purchase> getClientsPurchases(List<Long> clients, int limit, int offset) {
+        if (clients == null || clients.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         CriteriaBuilder builder = manager.getCriteriaBuilder();
         CriteriaQuery<Purchase> criteria = builder.createQuery(Purchase.class);
         Root<Purchase> from = criteria.from(Purchase.class);

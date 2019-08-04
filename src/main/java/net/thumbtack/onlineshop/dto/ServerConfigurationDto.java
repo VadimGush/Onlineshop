@@ -17,15 +17,8 @@ public class ServerConfigurationDto {
         return maxNameLength;
     }
 
-    public void setMaxNameLength(int maxNameLength) {
-        this.maxNameLength = maxNameLength;
-    }
-
     public int getMinPasswordLength() {
         return minPasswordLength;
     }
 
-    public void setMinPasswordLength(int minPasswordLength) {
-        this.minPasswordLength = minPasswordLength;
-    }
 }

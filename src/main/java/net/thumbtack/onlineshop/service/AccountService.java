@@ -9,6 +9,7 @@ import net.thumbtack.onlineshop.dto.AccountDto;
 import net.thumbtack.onlineshop.dto.AdminDto;
 import net.thumbtack.onlineshop.dto.ClientDto;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -37,7 +38,7 @@ public class AccountService extends GeneralService {
      * @param client информация о клиенте
      * @return созданный аккаунт клиента
      */
-    public Account register(ClientDto client) throws ServiceException {
+    public Pair<Account, String> register(ClientDto client) throws ServiceException {
 
         if (accountDao.exists(client.getLogin())) {
             throw new ServiceException(ServiceException.ErrorCode.LOGIN_ALREADY_IN_USE, "login");
@@ -45,6 +46,7 @@ public class AccountService extends GeneralService {
 
         client.setPhone(formatPhone(client.getPhone()));
 
+        // Регистрация клиента
         Account registeredClient = AccountFactory.createClient(
                 client.getFirstName(),
                 client.getLastName(),
@@ -56,7 +58,12 @@ public class AccountService extends GeneralService {
                 client.getPassword()
         );
         accountDao.insert(registeredClient);
-        return registeredClient;
+
+        // Создание сессии
+        Session session = new Session(UUID.randomUUID().toString(), registeredClient);
+        sessionDao.insert(session);
+
+        return Pair.of(registeredClient, session.getUUID());
 
     }
 
@@ -66,12 +73,13 @@ public class AccountService extends GeneralService {
      * @param admin регистрационная инфа об админе
      * @return аккаунт зарегистрированного администратора
      */
-    public Account register(AdminDto admin) throws ServiceException {
+    public Pair<Account, String> register(AdminDto admin) throws ServiceException {
 
         if (accountDao.exists(admin.getLogin())) {
             throw new ServiceException(ServiceException.ErrorCode.LOGIN_ALREADY_IN_USE, "login");
         }
 
+        // Регистрация админа
         Account registeredAdmin = AccountFactory.createAdmin(
                 admin.getFirstName(),
                 admin.getLastName(),
@@ -81,7 +89,12 @@ public class AccountService extends GeneralService {
                 admin.getPassword()
         );
         accountDao.insert(registeredAdmin);
-        return registeredAdmin;
+
+        // Создание сессии
+        Session session = new Session(UUID.randomUUID().toString(), registeredAdmin);
+        sessionDao.insert(session);
+
+        return Pair.of(registeredAdmin, session.getUUID());
     }
 
     /**
@@ -95,7 +108,7 @@ public class AccountService extends GeneralService {
 
         Account account = getClient(sessionId);
 
-        if (!account.getPassword().equals(client.getOldPassword())) {
+        if (!accountDao.isPasswordMatch(account.getId(), client.getOldPassword())) {
             throw new ServiceException(ServiceException.ErrorCode.WRONG_PASSWORD, "oldPassword");
         }
 
@@ -125,7 +138,7 @@ public class AccountService extends GeneralService {
 
         Account account = getAdmin(sessionId);
 
-        if (!account.getPassword().equals(admin.getOldPassword())) {
+        if (!accountDao.isPasswordMatch(account.getId(), admin.getOldPassword())) {
             throw new ServiceException(ServiceException.ErrorCode.WRONG_PASSWORD, "oldPassword");
         }
 

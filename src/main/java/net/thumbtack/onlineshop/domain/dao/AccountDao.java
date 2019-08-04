@@ -2,6 +2,7 @@ package net.thumbtack.onlineshop.domain.dao;
 
 import net.thumbtack.onlineshop.domain.models.Account;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,10 +20,12 @@ import java.util.List;
 public class AccountDao implements Dao {
 
     private EntityManager manager;
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
-    public AccountDao(EntityManager manager) {
+    public AccountDao(EntityManager manager, PasswordEncoder passwordEncoder) {
         this.manager = manager;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -31,6 +34,9 @@ public class AccountDao implements Dao {
      * @param account аккаунт пользователя
      */
     public void insert(Account account) {
+        // Хеширование паролей
+        account.setPassword(passwordEncoder.encode(account.getPassword()));
+
         manager.persist(account);
     }
 
@@ -40,6 +46,9 @@ public class AccountDao implements Dao {
      * @param account аккаунт пользователя
      */
     public void update(Account account) {
+        // Хеширование паролей
+        account.setPassword(passwordEncoder.encode(account.getPassword()));
+
         manager.merge(account);
     }
 
@@ -51,21 +60,45 @@ public class AccountDao implements Dao {
      * @return аккаунт пользователя или null, если пользователь с данной парой не найден
      */
     public Account get(String login, String password) {
+
         CriteriaBuilder builder = manager.getCriteriaBuilder();
         CriteriaQuery<Account> criteria = builder.createQuery(Account.class);
         Root<Account> from = criteria.from(Account.class);
         criteria.select(from);
         criteria.where(
-                builder.equal(from.get("login"), login),
-                builder.and(),
-                builder.equal(from.get("password"), password));
+                builder.equal(from.get("login"), login)
+        );
         TypedQuery<Account> typed = manager.createQuery(criteria);
 
         try {
-            return typed.getSingleResult();
+            Account account = typed.getSingleResult();
+            if (passwordEncoder.matches(password, account.getPassword())) {
+                return account;
+            } else {
+                return null;
+            }
+
         } catch (NoResultException e) {
             return null;
         }
+    }
+
+    /**
+     * Совпадает ли переданный пароль с паролем пользователя
+     * под данным id
+     * @param id id пользователя
+     * @param password пароль для сравнения
+     * @return совпадает ли пароль с паролем пользователя (если пользователь не найден
+     * под данным id, то вернёт false)
+     */
+    public boolean isPasswordMatch(long id, String password) {
+        Account account = get(id);
+
+        if (account == null) {
+            return false;
+        }
+
+        return passwordEncoder.matches(password, account.getPassword());
     }
 
     /**

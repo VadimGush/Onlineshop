@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -29,7 +30,17 @@ public class AccountDaoTest {
     @Before
     public void setUpClass() {
         MockitoAnnotations.initMocks(this);
-        accountDao = new AccountDao(mockEntityManager);
+
+        // PasswordEncoder будет возвращать нам тот же самый пароль
+        PasswordEncoder mockPasswordEncoder = mock(PasswordEncoder.class);
+        // Кодирование пароля
+        when(mockPasswordEncoder.encode(anyString()))
+                .thenAnswer(i -> i.getArguments()[0]);
+        // Проверка пароля
+        when(mockPasswordEncoder.matches(anyString(), anyString()))
+                .thenAnswer(i -> i.getArguments()[0].equals(i.getArguments()[1]));
+
+        accountDao = new AccountDao(mockEntityManager, mockPasswordEncoder);
     }
 
     @Test
@@ -51,6 +62,7 @@ public class AccountDaoTest {
     @Test
     public void testGet() {
         Account account = generateAccount();
+        account.setPassword("password");
 
         CriteriaBuilder mockCriteriaBuilder = mock(CriteriaBuilder.class);
         CriteriaQuery<Account> mockCriteriaQuery = (CriteriaQuery<Account>) mock(CriteriaQuery.class);
@@ -68,18 +80,52 @@ public class AccountDaoTest {
         // Проверяем что был условный селект
         verify(mockCriteriaQuery).from(Account.class);
         verify(mockCriteriaQuery).select(any());
-        verify(mockCriteriaQuery).where(null, null, null);
+        verify(mockCriteriaQuery).where(nullable(Predicate.class));
 
         verify(mockRoot).get("login");
-        verify(mockRoot).get("password");
+        // verify(mockRoot).get("password");
 
         // Проверяем что реально была проверка логина и пароля
         verify(mockCriteriaBuilder).equal(null, "login");
-        verify(mockCriteriaBuilder).and();
-        verify(mockCriteriaBuilder).equal(null, "password");
+        // verify(mockCriteriaBuilder).and();
+        // verify(mockCriteriaBuilder).equal(null, "password");
 
         // А полученный аккунт реально из TypedQuery
         assertEquals(account, result);
+    }
+
+    @Test
+    public void testGetWithWrongPassword() {
+        Account account = generateAccount();
+        account.setPassword("password");
+
+        CriteriaBuilder mockCriteriaBuilder = mock(CriteriaBuilder.class);
+        CriteriaQuery<Account> mockCriteriaQuery = (CriteriaQuery<Account>) mock(CriteriaQuery.class);
+        TypedQuery<Account> mockTypedQuery = (TypedQuery<Account>) mock(TypedQuery.class);
+        Root<Account> mockRoot = (Root<Account>) mock(Root.class);
+
+        when(mockEntityManager.getCriteriaBuilder()).thenReturn(mockCriteriaBuilder);
+        when(mockCriteriaBuilder.createQuery(Account.class)).thenReturn(mockCriteriaQuery);
+        when(mockCriteriaQuery.from(Account.class)).thenReturn(mockRoot);
+        when(mockEntityManager.createQuery(mockCriteriaQuery)).thenReturn(mockTypedQuery);
+        when(mockTypedQuery.getSingleResult()).thenReturn(account);
+
+        assertNull(accountDao.get("login", "password12"));
+
+        // Проверяем что был условный селект
+        verify(mockCriteriaQuery).from(Account.class);
+        verify(mockCriteriaQuery).select(any());
+        verify(mockCriteriaQuery).where(nullable(Predicate.class));
+
+        verify(mockRoot).get("login");
+        // verify(mockRoot).get("password");
+
+        // Проверяем что реально была проверка логина и пароля
+        verify(mockCriteriaBuilder).equal(null, "login");
+        // verify(mockCriteriaBuilder).and();
+        // verify(mockCriteriaBuilder).equal(null, "password");
+
+        // А полученный аккунт реально из TypedQuery
     }
 
     @Test
@@ -101,15 +147,15 @@ public class AccountDaoTest {
         // Проверяем что был условный селект
         verify(mockCriteriaQuery).from(Account.class);
         verify(mockCriteriaQuery).select(any());
-        verify(mockCriteriaQuery).where(null, null, null);
+        verify(mockCriteriaQuery).where(nullable(Predicate.class));
 
         verify(mockRoot).get("login");
-        verify(mockRoot).get("password");
+        // verify(mockRoot).get("password");
 
         // Проверяем что реально была проверка логина и пароля
         verify(mockCriteriaBuilder).equal(null, "login");
-        verify(mockCriteriaBuilder).and();
-        verify(mockCriteriaBuilder).equal(null, "password");
+        // verify(mockCriteriaBuilder).and();
+        // verify(mockCriteriaBuilder).equal(null, "password");
 
     }
 
@@ -252,7 +298,7 @@ public class AccountDaoTest {
 
     private Account generateAccount() {
         return AccountFactory.createAdmin(
-                "werew", "werwe", "wrew", "werwe", "werw", "sewr"
+                "werew", "werwe", "wrew", "werwe", "werw", "ewrew"
         );
     }
 }

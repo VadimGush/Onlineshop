@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.util.Pair;
 import org.springframework.validation.BindingResult;
 
 import javax.servlet.http.HttpServletResponse;
@@ -54,14 +55,13 @@ public class AccountControllerTest {
         temp.setLastName("Gush");
 
         when(mockResult.hasErrors()).thenReturn(false);
-        when(mockAccountService.register(client)).thenReturn(temp);
+        when(mockAccountService.register(client)).thenReturn(Pair.of(temp, "session"));
 
         AccountDto result = accountController.registerClient(client, mockResult, mockResponse);
 
         assertEquals("login", client.getLogin());
         verify(mockAccountService).register(client);
         verify(mockResponse).addCookie(any());
-        verify(mockAccountService).login(temp.getLogin(), temp.getPassword());
 
         assertEquals(temp.getFirstName(), result.getFirstName());
         assertEquals(temp.getLastName(), result.getLastName());
@@ -96,14 +96,13 @@ public class AccountControllerTest {
         temp.setLastName("Gush");
 
         when(mockResult.hasErrors()).thenReturn(false);
-        when(mockAccountService.register(admin)).thenReturn(temp);
+        when(mockAccountService.register(admin)).thenReturn(Pair.of(temp, "session"));
 
         AccountDto result = accountController.registerAdmin(admin, mockResult, mockResponse);
 
         assertEquals("login", admin.getLogin());
         verify(mockAccountService).register(admin);
         verify(mockResponse).addCookie(any());
-        verify(mockAccountService).login(temp.getLogin(), temp.getPassword());
 
         assertEquals(temp.getFirstName(), result.getFirstName());
         assertEquals(temp.getLastName(), result.getLastName());

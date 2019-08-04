@@ -49,7 +49,8 @@ public class AccountServiceTest {
         // Логин не занят
         when(mockAccountDao.exists(admin.getLogin())).thenReturn(false);
 
-        Account result = accountService.register(new AdminDto(admin));
+        // TODO: Дописать тесты для сессии
+        Account result = accountService.register(new AdminDto(admin)).getFirst();
 
         verify(mockAccountDao).insert(any());
 
@@ -74,7 +75,8 @@ public class AccountServiceTest {
         // Логин не занят
         when(mockAccountDao.exists(admin.getLogin())).thenReturn(false);
 
-        Account result = accountService.register(new AdminDto(admin));
+        // TODO: Дописать тесты для сессии
+        Account result = accountService.register(new AdminDto(admin)).getFirst();
 
         verify(mockAccountDao).insert(any());
 
@@ -115,6 +117,8 @@ public class AccountServiceTest {
         Account admin = AccountFactory.createAdmin(
                 "werewrwe", "ewrwe", "werew", "erer2", "vadim", "23"
         );
+        admin.setId(3L);
+        when(mockAccountDao.isPasswordMatch(3L, "23")).thenReturn(true);
         when(mockSessionDao.get("token")).thenReturn(new Session("token", admin));
 
         // Изменяем аккаунт
@@ -140,6 +144,8 @@ public class AccountServiceTest {
         Account admin = AccountFactory.createAdmin(
                 "werewrwe", "ewrwe", "werew", "erer2", "vadim", "23"
         );
+        admin.setId(3L);
+        when(mockAccountDao.isPasswordMatch(3L, "43")).thenReturn(false);
         when(mockSessionDao.get("token")).thenReturn(new Session("token", admin));
 
         try {
@@ -265,8 +271,9 @@ public class AccountServiceTest {
         // Логин свободен
         when(mockAccountDao.exists(client.getLogin())).thenReturn(false);
 
+        // TODO: Дописать тесты для сессии
         // Регаем
-        Account result = accountService.register(new ClientDto(client));
+        Account result = accountService.register(new ClientDto(client)).getFirst();
 
         verify(mockAccountDao).insert(any());
 
@@ -292,8 +299,9 @@ public class AccountServiceTest {
         // Логин свободен
         when(mockAccountDao.exists(client.getLogin())).thenReturn(false);
 
+        // TODO: Дописать тесты для сессии
         // Регаем
-        Account result = accountService.register(new ClientDto(client));
+        Account result = accountService.register(new ClientDto(client)).getFirst();
 
         verify(mockAccountDao).insert(any());
 
@@ -326,7 +334,8 @@ public class AccountServiceTest {
     @Test
     public void testClientEdit() throws ServiceException {
         Account client = generateClient();
-
+        client.setId(3L);
+        when(mockAccountDao.isPasswordMatch(3L, client.getPassword())).thenReturn(true);
         when(mockSessionDao.get("token")).thenReturn(new Session("token", client));
 
         ClientDto edited = createClientEditDto(
@@ -354,7 +363,8 @@ public class AccountServiceTest {
     public void testClientEditWrongPassword() throws ServiceException {
 
         Account client = generateClient();
-
+        client.setId(3L);
+        when(mockAccountDao.isPasswordMatch(3L, "wrong")).thenReturn(false);
         when(mockSessionDao.get("token")).thenReturn(new Session("token", client));
 
         ClientDto edited = createClientEditDto(

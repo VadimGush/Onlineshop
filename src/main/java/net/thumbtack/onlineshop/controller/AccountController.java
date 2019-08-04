@@ -9,8 +9,8 @@ import net.thumbtack.onlineshop.dto.actions.Edit;
 import net.thumbtack.onlineshop.dto.actions.Register;
 import net.thumbtack.onlineshop.dto.validation.ValidationException;
 import net.thumbtack.onlineshop.service.AccountService;
-import net.thumbtack.onlineshop.service.ServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -48,7 +48,7 @@ public class AccountController {
 
         client.setLogin(client.getLogin().toLowerCase());
 
-        return setCookieAndReturn(accountService.register(client), response);
+        return setSessionAndReturn(accountService.register(client), response);
     }
 
     @PostMapping("admins")
@@ -64,7 +64,7 @@ public class AccountController {
 
         admin.setLogin(admin.getLogin().toLowerCase());
 
-        return setCookieAndReturn(accountService.register(admin), response);
+        return setSessionAndReturn(accountService.register(admin), response);
     }
 
 
@@ -139,15 +139,14 @@ public class AccountController {
         return "{}";
     }
 
-    private AccountDto setCookieAndReturn(Account account, HttpServletResponse response) throws ServiceException {
+    private AccountDto setSessionAndReturn(Pair<Account, String> accountAndSession, HttpServletResponse response) {
         response.addCookie(
                 new Cookie(
                         "JAVASESSIONID",
-                        accountService.login(account.getLogin(), account.getPassword())
+                        accountAndSession.getSecond()
                 )
         );
-
-        return new AccountDto(account);
+        return new AccountDto(accountAndSession.getFirst());
     }
 
 

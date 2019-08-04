@@ -4,6 +4,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.spi.DocumentationType;
@@ -16,11 +18,14 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableAsync
 public class AppConfig {
 
+    /**
+     * Swagger для генерации документации.
+     */
     @Bean
     public Docket api() {
         /*
-        Писать документацию под swagger у меня не хватает времени, но
-        быстрого просмотра методов API пока оставлю
+        Я не особо задействовал swagger, так как не было времени писать
+        кроме JavaDoc отдельно документацию и под API для Swagger
          */
         return new Docket(DocumentationType.SWAGGER_2)
                 .select()
@@ -28,5 +33,14 @@ public class AppConfig {
                 .paths(PathSelectors.any())
                 .build();
     }
+
+    /**
+     * Хеширование паролей
+     */
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
 
 }

@@ -46,7 +46,7 @@ public class AccountControllerTest {
     public void testRegisterClient() throws Exception {
 
         ClientDto client = new ClientDto();
-        client.setLogin("LOGIN");
+        client.setLogin("login");
 
         Account temp = new Account();
         temp.setLogin("login");
@@ -87,7 +87,7 @@ public class AccountControllerTest {
     public void testRegisterAdmin() throws Exception {
 
         AdminDto admin = new AdminDto();
-        admin.setLogin("LOGIN");
+        admin.setLogin("login");
 
         Account temp = new Account();
         temp.setLogin("login");
@@ -217,7 +217,7 @@ public class AccountControllerTest {
         expected.setLastName("gush");
 
         LoginDto account = new LoginDto();
-        account.setLogin("LOGIN");
+        account.setLogin("login");
         account.setPassword("pass");
         when(mockResult.hasErrors()).thenReturn(false);
         when(mockAccountService.login("login", "pass")).thenReturn("token");

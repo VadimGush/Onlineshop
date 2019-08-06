@@ -4,29 +4,35 @@
 ## Сборка и запуск
 
 ### База данных
-Логин, пароль пользователя и имя базы данных можно указать ``main/resources/application.properties``.
+Логин, пароль пользователя и имя базы данных необходимо указать в файле настроек.
+База данных должна иметь кодировку UTF-8.
 
-Для тестирования системы используйте отдельную базу данных и укажите её настройки в 
-``test/resources/application.properties``.
+Файлы настроек находятся в ``src/main/resources``:
 
-**Внимание**: база данных должна иметь кодировку UTF-8. Установить данную кодировку
-можно использовав команду ниже (MySQL):
-```sql
-alter database `<database_name>` character set utf8 collate utf8_general_ci
+| Имя файла | Назначение |
+| --------- | ---------- |
+| application.properties | Настройки Spring и DB для запуска из .jar |
+| config.properties | Конфигурация сервера для запуска из .jar |
+| application-production.properties | Настройки Spring и DB для запуска из Docker'a |
+| config-production.properties | Конфигурация сервера для запуска из Docker'a | 
+
+### Сборка 
+Собираем jar файл:
+```bash
+gradle jar
 ```
 
 ### Запуск
-Собираем проект
-```bash
-gradle build
-```
+Запустить онлайн магазин можно прямо из jar, но мы будем использовать docker, так как он облегчает
+разворачивание нашего сервиса на сервера. Убедитесь что вы создали файлы ``application-production.properties``
+и ``config-production.properties``, так как Docker image использует именно эти файлы настроек.
 
-Создаём Docker image
+Создаём Docker образ:
 ```bash
 sudo docker build . -t onlineshop
 ```
 
-Запускаем Docker контейнер
+Запускаем Docker контейнер:
 ```bash
 sudo docker run -p 80:80 -d onlineshop
 ```

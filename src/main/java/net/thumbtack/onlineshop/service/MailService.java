@@ -123,8 +123,8 @@ public class MailService {
     private String createProductEntry(String name, int count, int price) {
         return
                 "<b>Товар:</b>" + name + "<br>" +
-                        "<b>Количество:</b> " + count + "<br>" +
-                        "<b>Цена за единицу:</b> " + price + "руб. <br>";
+                "<b>Количество:</b> " + count + "<br>" +
+                "<b>Цена за единицу:</b> " + price + "руб. <br>";
     }
 
 }

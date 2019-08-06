@@ -46,8 +46,6 @@ public class AccountController {
             throw new ValidationException(result);
         }
 
-        client.setLogin(client.getLogin().toLowerCase());
-
         return setSessionAndReturn(accountService.register(client), response);
     }
 
@@ -61,8 +59,6 @@ public class AccountController {
         if (result.hasErrors()) {
             throw new ValidationException(result);
         }
-
-        admin.setLogin(admin.getLogin().toLowerCase());
 
         return setSessionAndReturn(accountService.register(admin), response);
     }
@@ -123,7 +119,6 @@ public class AccountController {
             throw new ValidationException(result);
         }
 
-        account.setLogin(account.getLogin().toLowerCase());
         String session = accountService.login(account.getLogin(), account.getPassword());
         response.addCookie(new Cookie("JAVASESSIONID", session));
 

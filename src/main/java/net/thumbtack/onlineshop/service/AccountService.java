@@ -40,6 +40,10 @@ public class AccountService extends GeneralService {
      */
     public Pair<Account, String> register(ClientDto client) throws ServiceException {
 
+        // Логин не чувствителен к регистру
+        client.setLogin(client.getLogin().toLowerCase());
+
+        // Проверяем занят ли он
         if (accountDao.exists(client.getLogin())) {
             throw new ServiceException(ServiceException.ErrorCode.LOGIN_ALREADY_IN_USE, "login");
         }
@@ -74,6 +78,9 @@ public class AccountService extends GeneralService {
      * @return аккаунт зарегистрированного администратора
      */
     public Pair<Account, String> register(AdminDto admin) throws ServiceException {
+
+        // Логин не чувствителен
+        admin.setLogin(admin.getLogin().toLowerCase());
 
         if (accountDao.exists(admin.getLogin())) {
             throw new ServiceException(ServiceException.ErrorCode.LOGIN_ALREADY_IN_USE, "login");
@@ -178,6 +185,9 @@ public class AccountService extends GeneralService {
      * @return идентификатор новой сессии
      */
     public String login(String login, String password) throws ServiceException {
+        // не чувствителен к регистру
+        login = login.toLowerCase();
+
         Account account = accountDao.get(login, password);
 
         if (account == null) {

@@ -251,7 +251,7 @@ public class AccountControllerTest {
     }
 
     @Test
-    public void testLogout() throws Exception {
+    public void testLogout() {
 
         accountController.logout("token");
         verify(mockAccountService).logout("token");

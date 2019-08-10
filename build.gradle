@@ -1,44 +1,48 @@
 
+// Settings for Gradle plugins
 buildscript {
     repositories {
         mavenCentral()
     }
-    dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.1.6.RELEASE")
-        classpath("org.hibernate:hibernate-gradle-plugin:5.4.3.Final")
-        classpath("org.hibernate:hibernate-testing:5.4.3.Final")
-        classpath("com.fasterxml.jackson.core:jackson-databind:2.9.8")
-    }
 }
 
-apply plugin: 'java'
-apply plugin: 'idea'
-apply plugin: 'org.springframework.boot'
-apply plugin: 'io.spring.dependency-management'
-apply plugin: 'org.hibernate.orm'
+// plugins for Gradle
+plugins {
+    id "java"
+    id "idea"
+    id "org.springframework.boot" version "2.1.6.RELEASE"
+    id "io.spring.dependency-management" version "1.0.8.RELEASE"
+}
 
+// Project information
 group 'thumbtack'
 version '1.0-SNAPSHOT'
-
 sourceCompatibility = 1.8
 
+// repositories for project
 repositories {
     mavenCentral()
 }
 
+// dependencies for project
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.springframework.boot:spring-boot-starter-test")
-    
+
+    // For compile and runtime
+    implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+    implementation "org.springframework.boot:spring-boot-starter-test"
+
+    // Only for compile
     compile "org.hibernate:hibernate-core:5.4.3.Final"
     compile "mysql:mysql-connector-java:5.1.6"
     compile "commons-validator:commons-validator:1.4.0"
-    compile group: 'com.konghq', name: 'unirest-java', version: '2.3.10'
-    compile group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
-    compile group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.9.2'
-    compile group: 'org.springframework.security', name: 'spring-security-core', version: '5.1.5.RELEASE'
+    compile "com.konghq:unirest-java:2.3.10"
+    compile "io.springfox:springfox-swagger2:2.9.2"
+    compile "io.springfox:springfox-swagger-ui:2.9.2"
+    compile "org.springframework.security:spring-security-core:5.1.5.RELEASE"
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    testCompile "com.h2database:h2"
+    // Only for compile tests
+    testCompile "junit:junit:4.12"
 }
+
+
